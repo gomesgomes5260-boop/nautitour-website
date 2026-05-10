@@ -144,6 +144,78 @@ export function getOrder(id: string): Promise<PagarmeOrder> {
   return pagarmeFetch<PagarmeOrder>(`/orders/${id}`);
 }
 
+export type CreateCardOrderInput = {
+  bookingId: string;
+  bookingCode: string;
+  amountCents: number;
+  description: string;
+  cardToken: string; // generated client-side via /tokens
+  installments?: number; // default 1
+  customer: {
+    name: string;
+    email: string;
+    phone?: string;
+    document?: string;
+  };
+  // Up to 13 chars; appears on the card statement.
+  statementDescriptor?: string;
+};
+
+/**
+ * Create a Pagar.me order with a single credit-card charge using a tokenized
+ * card. PAN/CVV never reach the server — only the opaque `card_token`.
+ *
+ * Card orders are typically synchronous: the response status will be `paid`
+ * on approval or `failed` otherwise. The webhook still fires (and is
+ * idempotent) for any post-authorization events (refunds, chargebacks).
+ */
+export function createCreditCardOrder(input: CreateCardOrderInput): Promise<PagarmeOrder> {
+  const document = input.customer.document?.replace(/\D/g, '') || undefined;
+  const installments = Math.max(1, Math.min(input.installments ?? 1, 12));
+
+  const body = {
+    code: input.bookingCode,
+    customer: {
+      name: input.customer.name,
+      email: input.customer.email,
+      phones: input.customer.phone
+        ? { mobile_phone: parsePhone(input.customer.phone) }
+        : undefined,
+      document,
+      document_type: document ? (document.length === 11 ? 'CPF' : 'CNPJ') : undefined,
+      type: document && document.length === 14 ? 'company' : 'individual',
+    },
+    items: [
+      {
+        amount: input.amountCents,
+        description: input.description,
+        quantity: 1,
+        code: input.bookingCode,
+      },
+    ],
+    payments: [
+      {
+        payment_method: 'credit_card',
+        credit_card: {
+          card_token: input.cardToken,
+          installments,
+          statement_descriptor: (input.statementDescriptor ?? 'NAUTITOUR').slice(0, 13),
+        },
+      },
+    ],
+    metadata: {
+      booking_id: input.bookingId,
+      booking_code: input.bookingCode,
+    },
+  };
+
+  return pagarmeFetch<PagarmeOrder>('/orders', {
+    method: 'POST',
+    body,
+    idempotencyKey: `booking-${input.bookingId}-card`,
+  });
+}
+
 /**
  * Best-effort parse of a Brazilian phone string (e.g. "(22) 99999-9999")
  * into Pagar.me's expected shape. If digits don't fit the BR mobile mold

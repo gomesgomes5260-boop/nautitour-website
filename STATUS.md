@@ -64,7 +64,7 @@
 | Reserva lancha (per_slot, exclusiva) | ✅ | Marca sold_out na hora |
 | Inquiry locação privativa | ✅ | RPC `create_inquiry_request` + WhatsApp |
 | Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta chave + URL pública pra testar webhook |
-| Pagamento cartão | 🔴 | Aguardando integração com Pagar.me JS (tokenize) |
+| Pagamento cartão | 🟡 | Tokenização client-side via `/v5/tokens`; cobrança síncrona com confirmação imediata + webhook idempotente |
 | Webhook Pagar.me → confirmar | ✅ | `/api/webhooks/pagarme` valida HMAC e chama RPC idempotente |
 | E-mail de confirmação da reserva | 🔴 | Precisa Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
@@ -309,16 +309,17 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 - ✅ `src/lib/pagarme/{config,client,webhook}.ts` — cliente HTTP, HMAC verifier, modo `off|allowlist|live`
 - ✅ `src/lib/supabase/admin.ts` — service_role client (server-only)
 - ✅ Migration `012` — tour de teste (R$ 1,00, `is_test_only`), RPCs `confirm_booking_payment` e `mark_booking_payment_failed` (idempotentes)
-- ✅ `/reserva/[code]/pagamento` — gera order PIX e mostra QR code + copy/paste; faz polling até webhook confirmar
-- ✅ `/api/webhooks/pagarme` — valida assinatura HMAC antes de tocar o banco
+- ✅ `/reserva/[code]/pagamento` — seletor PIX | Cartão. PIX gera QR + copy/paste e faz polling; cartão tokeniza no browser e cobra de forma síncrona
+- ✅ `src/lib/pagarme/tokenize.ts` — POST direto pro `/v5/tokens` com a `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`. PAN/CVV não tocam nosso servidor
+- ✅ `/api/webhooks/pagarme` — valida assinatura HMAC antes de tocar o banco; idempotente
 - ✅ Botão "Ir para pagamento" em `/reserva/[code]`
 
 **Pendente (depende de você):**
 - 🔴 Configurar env vars em `.env.local` (não cole no chat — ver "Env vars Pagar.me" abaixo)
 - 🔴 Configurar webhook URL no painel Pagar.me e copiar o secret
 - 🔴 Deploy no Vercel pra ter URL pública (webhook não funciona em localhost)
-- 🔴 Validação end-to-end com 1 transação real de R$ 1,00 no `tour-de-teste`
-- 🔴 Cartão de crédito (tokenize via Pagar.me JS)
+- 🔴 Validação end-to-end com 1 transação real de R$ 1,00 no `tour-de-teste` (PIX e cartão)
+- 🔴 Parcelamento (hoje fixo em 1x à vista)
 - 🔴 Soft hold + cron de expiração
 - 🔴 E-mails transacionais (Resend)
 - 🔴 Lead recapture e-mail
@@ -334,6 +335,7 @@ PAGARME_MODE=allowlist
 PAGARME_ALLOWED_EMAILS=seu-email@dominio.com
 PAGARME_API_KEY=<a chave secreta de produção que você já tem>
 PAGARME_WEBHOOK_SECRET=<gerar no painel Pagar.me ao criar o webhook>
+NEXT_PUBLIC_PAGARME_PUBLIC_KEY=<a chave pública (pk_…) do mesmo ambiente>
 SUPABASE_SERVICE_ROLE_KEY=<copiar do painel Supabase: Project Settings > API>
 ```
 

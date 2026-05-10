@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { canPay, getMode } from '@/lib/pagarme/config';
-import PixCheckout from './PixCheckout';
+import PaymentMethodPicker from './PaymentMethodPicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +63,7 @@ export default async function PagamentoPage({
               </a>
             </div>
           ) : (
-            <PixCheckout
+            <PaymentMethodPicker
               bookingCode={row.booking_code}
               totalCents={row.total_cents}
             />
