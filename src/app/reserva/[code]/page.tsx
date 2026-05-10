@@ -88,13 +88,13 @@ export default async function ReservaPage({
           </dl>
 
           {booking.status === 'pending_payment' && (
-            <button
-              disabled
-              className="w-full px-6 py-4 text-white text-base font-semibold rounded-full opacity-50 cursor-not-allowed"
+            <Link
+              href={`/reserva/${booking.booking_code}/pagamento`}
+              className="block w-full px-6 py-4 text-center text-white text-base font-semibold rounded-full"
               style={{ backgroundColor: 'rgb(9, 110, 171)' }}
             >
-              Pagamento (Pagar.me) — em breve
-            </button>
+              Ir para pagamento
+            </Link>
           )}
 
           <Link

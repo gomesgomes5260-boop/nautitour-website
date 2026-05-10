@@ -63,8 +63,9 @@
 | Reserva escuna (per_passenger) | ✅ | RPC `create_booking_pending` |
 | Reserva lancha (per_slot, exclusiva) | ✅ | Marca sold_out na hora |
 | Inquiry locação privativa | ✅ | RPC `create_inquiry_request` + WhatsApp |
-| Pagamento PIX/cartão | ⏸️ | Aguardando chaves Pagar.me |
-| Webhook Pagar.me → confirmar | ⏸️ |  |
+| Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta chave + URL pública pra testar webhook |
+| Pagamento cartão | 🔴 | Aguardando integração com Pagar.me JS (tokenize) |
+| Webhook Pagar.me → confirmar | ✅ | `/api/webhooks/pagarme` valida HMAC e chama RPC idempotente |
 | E-mail de confirmação da reserva | 🔴 | Precisa Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
 | Soft hold de assentos | 🔴 | Cron de expiração — depois do Pagar.me |
@@ -102,6 +103,7 @@
 9. `009_lancha_real_schedules` — horários 09:30 e 14:00 BRT
 10. `010_inquiry_extras_and_rpc` — start/end_time + open_bar + RPC inquiry
 11. `011_pentest_column_grants` — restringe colunas updateáveis em customers e revoga writes diretos das demais tabelas
+12. `012_pagarme_test_tour_and_payment_rpc` — `tours.is_test_only`, tour `tour-de-teste` (R$ 1,00, oculto do público), RPCs `confirm_booking_payment` / `mark_booking_payment_failed` (acessíveis só via service_role)
 
 ---
 
@@ -301,15 +303,45 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 
 ## 11. Próximos passos sugeridos
 
-### P3 — Quando Pagar.me chegar
-- Checkout PIX/cartão + webhook
-- Soft hold + cron de expiração
-- E-mails transacionais (Resend)
-- Lead recapture e-mail
+### P3 — Pagar.me (em andamento, modo live com salvaguardas)
+
+**Pronto:**
+- ✅ `src/lib/pagarme/{config,client,webhook}.ts` — cliente HTTP, HMAC verifier, modo `off|allowlist|live`
+- ✅ `src/lib/supabase/admin.ts` — service_role client (server-only)
+- ✅ Migration `012` — tour de teste (R$ 1,00, `is_test_only`), RPCs `confirm_booking_payment` e `mark_booking_payment_failed` (idempotentes)
+- ✅ `/reserva/[code]/pagamento` — gera order PIX e mostra QR code + copy/paste; faz polling até webhook confirmar
+- ✅ `/api/webhooks/pagarme` — valida assinatura HMAC antes de tocar o banco
+- ✅ Botão "Ir para pagamento" em `/reserva/[code]`
+
+**Pendente (depende de você):**
+- 🔴 Configurar env vars em `.env.local` (não cole no chat — ver "Env vars Pagar.me" abaixo)
+- 🔴 Configurar webhook URL no painel Pagar.me e copiar o secret
+- 🔴 Deploy no Vercel pra ter URL pública (webhook não funciona em localhost)
+- 🔴 Validação end-to-end com 1 transação real de R$ 1,00 no `tour-de-teste`
+- 🔴 Cartão de crédito (tokenize via Pagar.me JS)
+- 🔴 Soft hold + cron de expiração
+- 🔴 E-mails transacionais (Resend)
+- 🔴 Lead recapture e-mail
 
 ### P4 — Admin
 - Painel interno seguindo `admin-dashboard.md`
 - Role admin + RLS adicional
+
+### Env vars Pagar.me — checklist pra você preencher em `.env.local`
+
+```
+PAGARME_MODE=allowlist
+PAGARME_ALLOWED_EMAILS=seu-email@dominio.com
+PAGARME_API_KEY=<a chave secreta de produção que você já tem>
+PAGARME_WEBHOOK_SECRET=<gerar no painel Pagar.me ao criar o webhook>
+SUPABASE_SERVICE_ROLE_KEY=<copiar do painel Supabase: Project Settings > API>
+```
+
+Notas:
+- `PAGARME_MODE=allowlist` enquanto estamos testando — só os e-mails listados conseguem usar o checkout PIX. Todo mundo continua vendo "em breve".
+- Quando o webhook estiver validado e quisermos abrir pra todo mundo, troca pra `PAGARME_MODE=live`.
+- Em produção (Vercel), as mesmas variáveis vão em **Project Settings → Environment Variables**.
+- O webhook URL a configurar no painel Pagar.me será: `https://<dominio-vercel>/api/webhooks/pagarme`. Eventos a habilitar: `order.paid`, `charge.paid`, `order.payment_failed`, `charge.payment_failed`, `charge.refunded`.
 
 ### P5 — Go-live
 - Vercel deploy + domínio + region migration Supabase

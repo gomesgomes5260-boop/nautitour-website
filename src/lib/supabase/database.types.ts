@@ -359,6 +359,7 @@ export type Database = {
           gallery: string[]
           highlights: Json
           id: string
+          is_test_only: boolean
           max_capacity: number | null
           name: string
           slug: string
@@ -376,6 +377,7 @@ export type Database = {
           gallery?: string[]
           highlights?: Json
           id?: string
+          is_test_only?: boolean
           max_capacity?: number | null
           name: string
           slug: string
@@ -393,6 +395,7 @@ export type Database = {
           gallery?: string[]
           highlights?: Json
           id?: string
+          is_test_only?: boolean
           max_capacity?: number | null
           name?: string
           slug?: string
@@ -437,6 +440,30 @@ export type Database = {
         Returns: {
           inquiry_id: string
         }[]
+      }
+      confirm_booking_payment: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_paid_at: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+        }
+        Returns: undefined
+      }
+      mark_booking_payment_failed: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+          p_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Returns: undefined
       }
       gen_booking_code: { Args: never; Returns: string }
       get_booking_by_code: {
