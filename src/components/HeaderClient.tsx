@@ -60,13 +60,25 @@ export default function HeaderClient({ user }: Props) {
           <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Sobre Nós</Link>
           <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Barco / Escuna</Link>
           <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Lancha</Link>
+          <Link href="/locacao-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Locação Privativa</Link>
         </div>
         <div className="flex gap-6 items-center ml-auto">
           {displayName ? (
             <>
-              <span style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}>
+              <Link
+                href="/minhas-reservas"
+                style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
+                className="hover:opacity-80 transition-opacity"
+              >
+                Minhas reservas
+              </Link>
+              <Link
+                href="/minha-conta"
+                style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
+                className="hover:opacity-80 transition-opacity"
+              >
                 Olá, {displayName}
-              </span>
+              </Link>
               <form action="/api/auth/signout" method="post">
                 <button
                   type="submit"
@@ -112,12 +124,27 @@ export default function HeaderClient({ user }: Props) {
             <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Sobre Nós</Link>
             <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Barco / Escuna</Link>
             <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Lancha</Link>
+            <Link href="/locacao-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Locação Privativa</Link>
             <hr className="my-2" />
             {displayName ? (
               <>
                 <span style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}>
                   Olá, {displayName}
                 </span>
+                <Link
+                  href="/minhas-reservas"
+                  style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Minhas reservas
+                </Link>
+                <Link
+                  href="/minha-conta"
+                  style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Minha conta
+                </Link>
                 <form action="/api/auth/signout" method="post">
                   <button
                     type="submit"

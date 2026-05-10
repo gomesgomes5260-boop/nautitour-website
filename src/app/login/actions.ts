@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
@@ -16,5 +17,5 @@ export async function loginAction(input: {
     password: input.password,
   });
   if (error) return { ok: false, error: error.message };
-  redirect(input.redirectTo || '/');
+  redirect(safeRedirectPath(input.redirectTo));
 }
