@@ -1,99 +1,25 @@
-'use client';
+import { createClient } from '@/lib/supabase/server';
+import HeaderClient from './HeaderClient';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+export default async function Header() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const phoneNumbers = [
-    { number: '(22) 99773-4466', display: '(22) 99773-4466' },
-    { number: '(22) 99996-3664', display: '(22) 99996-3664' },
-    { number: '(22) 98805-2238', display: '(22) 98805-2238' },
-    { number: '(22) 99908-7800', display: '(22) 99908-7800' },
-  ];
+  let name: string | null = null;
+  if (user) {
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('full_name')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+    name = customer?.full_name ?? (user.user_metadata?.full_name as string | null) ?? null;
+  }
 
   return (
-    <header>
-      <div
-        style={{ backgroundColor: 'rgb(217, 0, 6)', height: '51px', padding: '15px 75px' }}
-        className="flex justify-between items-center"
-      >
-        <div className="flex items-center gap-4">
-          <div style={{ color: 'white', fontSize: '12px', fontWeight: '500' }}>
-            <a href="mailto:passeiodeescuna.tx@gmail.com" className="hover:opacity-80">
-              passeiodeescuna.tx@gmail.com
-            </a>
-          </div>
-          <div className="flex gap-2" style={{ color: 'white', fontSize: '12px' }}>
-            {phoneNumbers.map((phone, index) => (
-              <div key={index} className="flex items-center">
-                {index > 0 && <span className="mx-1">|</span>}
-                <a href={`tel:${phone.number.replace(/\D/g, '')}`} className="hover:opacity-80">
-                  {phone.display}
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div />
-      </div>
-
-      <nav
-        style={{ borderBottom: '1px solid rgb(234, 238, 243)' }}
-        className="bg-white h-24 px-12 flex items-center justify-between hidden md:flex"
-      >
-        <Link href="/">
-          <div style={{ width: '278px', height: '73px', position: 'relative' }}>
-            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
-          </div>
-        </Link>
-        <div className="flex gap-8 ml-auto mr-auto">
-          <Link href="/" style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Home</Link>
-          <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Sobre N\u00f3s</Link>
-          <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Barco / Escuna</Link>
-          <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Lancha</Link>
-        </div>
-        <div className="flex gap-6 items-center ml-auto">
-          <Link href="/login" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Entrar</Link>
-          <Link href="/signup" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Cadastre-se</Link>
-          <button style={{ color: 'black' }} className="hover:opacity-80 transition-opacity" aria-label="Shopping Cart">
-            <ShoppingCart size={20} />
-          </button>
-        </div>
-      </nav>
-
-      <div className="md:hidden bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between h-20">
-        <Link href="/">
-          <div style={{ width: '140px', height: '40px', position: 'relative' }}>
-            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
-          </div>
-        </Link>
-        <div className="flex gap-4 items-center">
-          <button style={{ color: 'black' }} className="hover:opacity-80 transition-opacity" aria-label="Shopping Cart">
-            <ShoppingCart size={20} />
-          </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu" className="hover:opacity-80 transition-opacity">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex flex-col gap-4">
-            <Link href="/" style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Home</Link>
-            <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Sobre N\u00f3s</Link>
-            <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Barco / Escuna</Link>
-            <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Lancha</Link>
-            <hr className="my-2" />
-            <Link href="/login" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Entrar</Link>
-            <Link href="/signup" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Cadastre-se</Link>
-          </div>
-        </div>
-      )}
-    </header>
+    <HeaderClient
+      user={user ? { email: user.email ?? null, name } : null}
+    />
   );
 }
