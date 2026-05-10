@@ -235,7 +235,66 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 8. **Domínio** — comprou? registrar onde?
 9. **Idade mínima / regras p/ crianças** — checkbox `is_child` existe sem regra
 10. **Comissão de afiliados** — vi `commission_payments` no projeto antigo — vai ser necessário?
-11. **Templates de inspiração para o design** *(entrega pendente do cliente)* — antes de iniciar a fase de design, o cliente deve entregar referências visuais (links, screenshots, sites concorrentes que admira, paleta complementar) que sirvam de norte para tipografia, espaçamento, hierarquia e tom. Sem isso, qualquer redesign será suposição.
+11. **Design system completo** *(entrega pendente do cliente)* — antes da fase de design, reunir e entregar todos os elementos abaixo. Itens marcados 🟡 já existem parcialmente em `docs/design-system/` ou em `public/images/`, mas precisam ser revisados/ampliados pra virar um sistema robusto. Sem isso, qualquer redesign será suposição.
+
+    **Identidade visual**
+    - 🟡 **Logo** — versões em uso (PNGs full color, mono charcoal, mono red, white). Faltam: SVGs vetoriais, símbolo isolado (sem texto), versões horizontal/vertical, favicon (`favicon.ico` + `apple-touch-icon.png`) e área de respiro mínima documentada.
+    - 🔴 Brandbook curto (1–2 páginas): usos permitidos / proibidos do logo, sobre fundos claros e escuros.
+
+    **Templates / referências de design**
+    - 🔴 Links/screenshots de sites concorrentes ou de inspiração que o cliente admira (3–5 referências), com nota do que gosta em cada um (tipografia, fotografia, layout, tom).
+    - 🔴 Wireframes ou mockups (Figma/imagens), mesmo que rascunho, das telas-chave: home, página de tour, checkout, confirmação.
+
+    **Tipografia**
+    - 🟡 Famílias atuais: Plus Jakarta Sans + Inter (via Google Fonts). Confirmar se ficam ou trocar.
+    - 🔴 Escala tipográfica: tamanhos para H1/H2/H3/H4, body, small, caption + line-heights e pesos por nível.
+    - 🔴 Web fonts próprias (se trocar Google Fonts) e regras de fallback.
+
+    **Paleta de cores**
+    - 🟡 Primárias em uso: azul `rgb(9,110,171)`, vermelho `rgb(219,56,44)`, vermelho escuro `rgb(217,0,6)`. Existe `docs/design-system/colors_and_type.css` mas o app inteiro usa inline styles — não há tokens consumidos.
+    - 🔴 Paleta completa documentada: primárias + secundárias + neutros (escala de cinzas) + estados (success, warning, error, info) + background/surface.
+    - 🔴 Decisão: dark mode? Se sim, paleta espelhada.
+    - 🔴 Validação de contraste WCAG AA para combinações texto/fundo.
+
+    **Iconografia**
+    - 🟡 12 spot icons SVG em `public/images/icons/` (anchor, boat, cocktail, drinks, embarque, escolha, island, pague, sun, tripulacao, wheel, bilingue) + `lucide-react` para UI. Faltam: ícones para FAQ/contato/políticas, social (Facebook/Instagram/YouTube já são SVGs inline no Footer), bandeiras (se idiomas), pagamento (PIX, bandeiras de cartão), estados (check, alerta).
+    - 🔴 Tamanhos padrão e estilo (outline vs filled) documentados.
+
+    **Banco de imagens**
+    - 🟡 Categorias atuais: aerea, buzios, clientes, drinks-bordo, equipe, escuna, ilhas, misc. Faltam: pasta `lancha-privativa` (vazia), certificações (`cert-buzios.png`, `cert-cadastur.png` que dão 404), covers definitivos por tour (`tours.cover_image_url`) e galeria por tour (`tours.gallery`).
+    - 🔴 Diretrizes de fotografia: aspect ratios padrão (16:9, 4:3, 1:1), tratamento (filtro/saturação), uso de pessoas/rostos, releases assinados.
+    - 🔴 Versões otimizadas (WebP/AVIF) ou definir que o `next/image` cuida.
+
+    **Tokens de espaçamento e layout**
+    - 🔴 Escala de spacing (ex: 4/8/12/16/24/32/48/64/96) + breakpoints responsivos definidos.
+    - 🔴 Grid e largura máxima de container.
+
+    **Bordas, raios e sombras**
+    - 🔴 Border-radius scale (sm, md, lg, full).
+    - 🔴 Shadow scale (elevation 1–4) e border weights.
+
+    **Componentes UI documentados**
+    - 🔴 Botões (primário, secundário, terciário, ghost) × tamanhos (sm/md/lg) × estados (default, hover, focus, disabled, loading).
+    - 🔴 Inputs/textarea/select × estados (default, focus, error, disabled) + mensagens de validação.
+    - 🔴 Cards, badges/chips, alerts/toasts, modais, tabs, acordeão, paginação, tooltips, skeletons de loading.
+    - 🔴 Headers/footers responsivos (atual já existe, mas sem padrão formal).
+
+    **Animação e microinterações**
+    - 🔴 Durações (fast/normal/slow) e easing padrão.
+    - 🔴 Padrões (fade, slide, scale) e quando usar cada um.
+
+    **Acessibilidade**
+    - 🔴 Estilo de focus ring visível em todos os interativos.
+    - 🔴 Tamanho mínimo de área de toque (44×44px).
+    - 🔴 Alt text padrão para fotos do banco.
+
+    **Tom de voz / copy**
+    - 🔴 Vocabulário preferido vs evitado (ex: "passeio" vs "tour"), uso de PT-BR, formal/informal.
+    - 🔴 Padrões de CTA ("Reservar agora" vs "Comprar"), mensagens de erro humanas.
+
+    **Implementação no código**
+    - 🔴 Migrar inline styles → tokens (CSS variables ou Tailwind config). Hoje cada componente repete cores em `style={{ color: 'rgb(...)' }}`.
+    - 🔴 Convenção de naming dos tokens (ex: `color-primary-500`, `space-4`).
 12. **Banco de imagens no repositório** *(entrega pendente do cliente)* — fazer upload das fotos definitivas em alta resolução para `public/images/photos/` (substituindo placeholders quando aplicável) e também das imagens faltantes hoje: foto de **lancha privativa** (pasta vazia), **certificações** (`cert-buzios.png`, `cert-cadastur.png` referenciadas em `WhyChooseUs` que dão 404), e covers/galeria por tour (`tours.cover_image_url` e `tours.gallery`).
 
 ---
