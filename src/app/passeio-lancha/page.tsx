@@ -22,7 +22,7 @@ const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
 });
 
 // WhatsApp number for custom-time inquiries (international format, digits only)
-const WHATSAPP_NUMBER = '5522997734466';
+const WHATSAPP_NUMBER = '5522998479728';
 const WHATSAPP_MESSAGE = encodeURIComponent(
   'Olá! Gostaria de consultar um horário diferente para a lancha privativa.'
 );
