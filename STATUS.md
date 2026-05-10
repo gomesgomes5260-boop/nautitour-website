@@ -235,6 +235,8 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 8. **Domínio** — comprou? registrar onde?
 9. **Idade mínima / regras p/ crianças** — checkbox `is_child` existe sem regra
 10. **Comissão de afiliados** — vi `commission_payments` no projeto antigo — vai ser necessário?
+11. **Templates de inspiração para o design** *(entrega pendente do cliente)* — antes de iniciar a fase de design, o cliente deve entregar referências visuais (links, screenshots, sites concorrentes que admira, paleta complementar) que sirvam de norte para tipografia, espaçamento, hierarquia e tom. Sem isso, qualquer redesign será suposição.
+12. **Banco de imagens no repositório** *(entrega pendente do cliente)* — fazer upload das fotos definitivas em alta resolução para `public/images/photos/` (substituindo placeholders quando aplicável) e também das imagens faltantes hoje: foto de **lancha privativa** (pasta vazia), **certificações** (`cert-buzios.png`, `cert-cadastur.png` referenciadas em `WhyChooseUs` que dão 404), e covers/galeria por tour (`tours.cover_image_url` e `tours.gallery`).
 
 ---
 
