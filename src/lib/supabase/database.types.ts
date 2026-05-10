@@ -159,10 +159,13 @@ export type Database = {
         Row: {
           created_at: string
           customer_id: string
+          end_time: string | null
           id: string
+          interested_in_open_bar: boolean
           message: string | null
           passenger_count: number | null
           requested_date: string | null
+          start_time: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
           tour_id: string
           updated_at: string
@@ -171,10 +174,13 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_id: string
+          end_time?: string | null
           id?: string
+          interested_in_open_bar?: boolean
           message?: string | null
           passenger_count?: number | null
           requested_date?: string | null
+          start_time?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tour_id: string
           updated_at?: string
@@ -183,10 +189,13 @@ export type Database = {
         Update: {
           created_at?: string
           customer_id?: string
+          end_time?: string | null
           id?: string
+          interested_in_open_bar?: boolean
           message?: string | null
           passenger_count?: number | null
           requested_date?: string | null
+          start_time?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tour_id?: string
           updated_at?: string
@@ -411,6 +420,22 @@ export type Database = {
           booking_code: string
           booking_id: string
           total_cents: number
+        }[]
+      }
+      create_inquiry_request: {
+        Args: {
+          p_email: string
+          p_end_time: string
+          p_full_name: string
+          p_interested_in_open_bar?: boolean
+          p_message?: string
+          p_passenger_count: number
+          p_phone: string
+          p_requested_date: string
+          p_start_time: string
+        }
+        Returns: {
+          inquiry_id: string
         }[]
       }
       gen_booking_code: { Args: never; Returns: string }
