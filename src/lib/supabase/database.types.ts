@@ -397,7 +397,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_booking_pending: {
+        Args: {
+          p_cpf?: string
+          p_email: string
+          p_full_name: string
+          p_notes?: string
+          p_passengers?: Json
+          p_phone: string
+          p_schedule_id: string
+        }
+        Returns: {
+          booking_code: string
+          booking_id: string
+          total_cents: number
+        }[]
+      }
       gen_booking_code: { Args: never; Returns: string }
+      get_booking_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          booking_code: string
+          created_at: string
+          currency: string
+          customer_email: string
+          customer_full_name: string
+          departure_at: string
+          passenger_count: number
+          status: Database["public"]["Enums"]["booking_status"]
+          total_cents: number
+          tour_name: string
+          tour_slug: string
+        }[]
+      }
     }
     Enums: {
       booking_status:

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
@@ -137,13 +138,23 @@ export default async function PasseioEscunaPage() {
                             {price && !isSoldOut && ` • ${price}`}
                           </p>
                         </div>
-                        <button
-                          disabled={isSoldOut}
-                          className="px-6 py-2 text-white text-sm font-medium rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                          style={{ backgroundColor: 'rgb(9, 110, 171)' }}
-                        >
-                          {isSoldOut ? 'Esgotado' : 'Reservar'}
-                        </button>
+                        {isSoldOut ? (
+                          <button
+                            disabled
+                            className="px-6 py-2 text-white text-sm font-medium rounded-full opacity-50 cursor-not-allowed"
+                            style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+                          >
+                            Esgotado
+                          </button>
+                        ) : (
+                          <Link
+                            href={`/checkout/${schedule.id}`}
+                            className="px-6 py-2 text-white text-sm font-medium rounded-full"
+                            style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+                          >
+                            Reservar
+                          </Link>
+                        )}
                       </li>
                     );
                   })}
