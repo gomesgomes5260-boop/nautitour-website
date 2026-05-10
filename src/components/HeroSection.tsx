@@ -21,7 +21,7 @@ export default function HeroSection() {
         <div className="flex gap-8 flex-col md:flex-row">
           <div className="flex-1">
             <div className="relative w-full h-[300px] md:h-[400px] mb-6 rounded-lg overflow-hidden">
-              <Image src="/images/escuna-tour.jpg" alt="Passeio de Escuna em B\u00fazios" fill className="object-cover" priority />
+              <Image src="/images/photos/escuna/escuna-pier-01.jpg" alt="Passeio de Escuna em B\u00fazios" fill className="object-cover" priority />
             </div>
             <h2 className="text-[24px] font-bold mb-4" style={{ color: 'rgb(219, 56, 44)' }}>
               Passeio de Escuna em B\u00fazios
@@ -38,7 +38,7 @@ export default function HeroSection() {
 
           <div className="flex-1">
             <div className="relative w-full h-[300px] md:h-[400px] mb-6 rounded-lg overflow-hidden">
-              <Image src="/images/lancha-tour.jpg" alt="Passeio de Lancha (Meia Di\u00e1ria 3hs)" fill className="object-cover" priority />
+              <Image src="/images/photos/misc/cruzeiro-vista-01.jpg" alt="Passeio de Lancha (Meia Di\u00e1ria 3hs)" fill className="object-cover" priority />
             </div>
             <h2 className="text-[24px] font-bold mb-4" style={{ color: 'rgb(219, 56, 44)' }}>
               Passeio de Lancha (Meia Di\u00e1ria 3hs)

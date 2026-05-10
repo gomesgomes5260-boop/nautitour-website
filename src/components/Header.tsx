@@ -47,7 +47,7 @@ export default function Header() {
       >
         <Link href="/">
           <div style={{ width: '278px', height: '73px', position: 'relative' }}>
-            <Image src="/images/logo.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
+            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
           </div>
         </Link>
         <div className="flex gap-8 ml-auto mr-auto">
@@ -68,7 +68,7 @@ export default function Header() {
       <div className="md:hidden bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between h-20">
         <Link href="/">
           <div style={{ width: '140px', height: '40px', position: 'relative' }}>
-            <Image src="/images/logo.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
+            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
           </div>
         </Link>
         <div className="flex gap-4 items-center">
