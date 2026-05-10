@@ -34,6 +34,10 @@ export default async function CheckoutPage({
   if (!schedule || !schedule.tour) notFound();
 
   const tour = Array.isArray(schedule.tour) ? schedule.tour[0] : schedule.tour;
+  const isPrivate = tour.tour_type === 'private';
+  const pricingMode: 'per_passenger' | 'per_slot' = isPrivate
+    ? 'per_slot'
+    : 'per_passenger';
   const seatsLeft = schedule.capacity - schedule.seats_taken;
   const isSoldOut = schedule.status === 'sold_out' || seatsLeft <= 0;
   const isCancelled = schedule.status === 'cancelled';
@@ -60,7 +64,9 @@ export default async function CheckoutPage({
               {DATE_FORMATTER.format(new Date(schedule.departure_at))}
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              {seatsLeft} {seatsLeft === 1 ? 'vaga disponível' : 'vagas disponíveis'}
+              {isPrivate
+                ? `Lancha privativa — até ${schedule.capacity} pessoas`
+                : `${seatsLeft} ${seatsLeft === 1 ? 'vaga disponível' : 'vagas disponíveis'}`}
             </p>
           </div>
 
@@ -77,7 +83,12 @@ export default async function CheckoutPage({
               Esta saída não tem preço configurado. Entre em contato pelo WhatsApp.
             </p>
           ) : (
-            <CheckoutForm scheduleId={schedule.id} unitPriceCents={unitPriceCents} />
+            <CheckoutForm
+              scheduleId={schedule.id}
+              unitPriceCents={unitPriceCents}
+              pricingMode={pricingMode}
+              maxPassengers={schedule.capacity}
+            />
           )}
         </section>
       </main>

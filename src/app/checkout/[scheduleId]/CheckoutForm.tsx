@@ -8,6 +8,12 @@ type Passenger = { full_name: string; document: string; is_child: boolean };
 type Props = {
   scheduleId: string;
   unitPriceCents: number;
+  /**
+   * 'per_passenger' (escuna): total = unitPrice × passengers.
+   * 'per_slot' (lancha privativa): total = unitPrice (boat rental, fixed).
+   */
+  pricingMode: 'per_passenger' | 'per_slot';
+  maxPassengers: number;
 };
 
 const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
@@ -15,7 +21,12 @@ const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
-export default function CheckoutForm({ scheduleId, unitPriceCents }: Props) {
+export default function CheckoutForm({
+  scheduleId,
+  unitPriceCents,
+  pricingMode,
+  maxPassengers,
+}: Props) {
   const [contact, setContact] = useState({
     fullName: '',
     email: '',
@@ -29,7 +40,8 @@ export default function CheckoutForm({ scheduleId, unitPriceCents }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const total = unitPriceCents * passengers.length;
+  const total =
+    pricingMode === 'per_slot' ? unitPriceCents : unitPriceCents * passengers.length;
 
   const updatePassenger = (idx: number, patch: Partial<Passenger>) => {
     setPassengers((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
@@ -136,12 +148,14 @@ export default function CheckoutForm({ scheduleId, unitPriceCents }: Props) {
             <button
               type="button"
               onClick={() =>
-                setPassengers((p) => [
-                  ...p,
-                  { full_name: '', document: '', is_child: false },
-                ])
+                setPassengers((p) =>
+                  p.length < maxPassengers
+                    ? [...p, { full_name: '', document: '', is_child: false }]
+                    : p
+                )
               }
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+              disabled={passengers.length >= maxPassengers}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
             >
               +
             </button>
@@ -200,10 +214,17 @@ export default function CheckoutForm({ scheduleId, unitPriceCents }: Props) {
 
       <section className="bg-gray-50 rounded-lg p-6">
         <div className="flex justify-between items-center mb-2 text-gray-700">
-          <span>
-            {passengers.length} {passengers.length === 1 ? 'passageiro' : 'passageiros'} ×{' '}
-            {PRICE_FORMATTER.format(unitPriceCents / 100)}
-          </span>
+          {pricingMode === 'per_slot' ? (
+            <span>
+              Lancha privativa — {passengers.length}{' '}
+              {passengers.length === 1 ? 'pessoa' : 'pessoas'} (preço fixo do barco)
+            </span>
+          ) : (
+            <span>
+              {passengers.length} {passengers.length === 1 ? 'passageiro' : 'passageiros'} ×{' '}
+              {PRICE_FORMATTER.format(unitPriceCents / 100)}
+            </span>
+          )}
         </div>
         <div className="flex justify-between items-center text-2xl font-bold" style={{ color: 'rgb(219, 56, 44)' }}>
           <span>Total</span>
