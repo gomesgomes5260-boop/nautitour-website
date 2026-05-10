@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Guias bilíngues">
+  <path d="M8 14 L 32 14 L 32 38 L 22 38 L 14 46 L 14 38 L 8 38 Z"></path>
+  <path d="M14 22 L 26 22 M14 28 L 22 28"></path>
+  <path d="M32 30 L 56 30 L 56 50 L 50 50 L 44 56 L 44 50 L 32 50 Z"></path>
+  <path d="M38 38 L 50 38 M38 44 L 46 44"></path>
+</svg>

@@ -1,0 +1,284 @@
+/* ============================================================
+   Nautitour Passeios — Design Tokens
+   Real brand colors from the official logo:
+     • Charcoal #404040 — primary structural color
+     • Red      #C00010 — primary accent / "TOUR"
+     • Light gray #808080 — secondary text / "PASSEIOS"
+     • White surfaces
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* ----------  Color primitives (anchored to logo)  ---------- */
+
+  /* Charcoal — primary structural color (the wheel + "NAUTI" + boat outline). */
+  --charcoal-50:  #F4F4F4;
+  --charcoal-100: #E2E2E2;
+  --charcoal-200: #C8C8C8;
+  --charcoal-300: #A4A4A4;
+  --charcoal-400: #808080;  /* "PASSEIOS" gray */
+  --charcoal-500: #606060;
+  --charcoal-700: #404040;  /* "NAUTI" charcoal — primary */
+  --charcoal-900: #1F1F1F;
+
+  /* Red — primary accent ("TOUR" + boat fill). */
+  --red-50:  #FCEAEC;
+  --red-100: #F8C6CB;
+  --red-300: #E55A65;
+  --red-500: #D11B2A;
+  --red-600: #C00010;  /* exact brand red */
+  --red-700: #9B0010;
+  --red-900: #6E0008;
+
+  /* Sea — supporting color for tour photography overlays. Used sparingly. */
+  --sea-300: #6FB3C9;
+  --sea-500: #2F7E96;
+  --sea-700: #16526B;
+
+  /* Sand — warm support tint, never dominant. */
+  --sand-100: #F7F2E8;
+
+  /* Functional. */
+  --success: #1F8A4C;
+  --warning: #C8821A;
+  --danger:  var(--red-600);
+  --info:    var(--sea-500);
+
+  /* ----------  Semantic color roles  ---------- */
+  --bg-page:        #FFFFFF;
+  --bg-surface:     #FFFFFF;
+  --bg-surface-alt: var(--charcoal-50);
+  --bg-inverse:     var(--charcoal-700);
+  --bg-inverse-alt: var(--charcoal-900);
+
+  --fg-default:     var(--charcoal-700);
+  --fg-muted:       var(--charcoal-400);
+  --fg-subtle:      var(--charcoal-300);
+  --fg-on-inverse:  #FFFFFF;
+  --fg-on-inverse-muted: rgba(255,255,255,0.78);
+
+  --border-subtle:  rgba(64,64,64,0.12);
+  --border-default: rgba(64,64,64,0.20);
+  --border-strong:  rgba(64,64,64,0.40);
+
+  --accent-primary:       var(--red-600);
+  --accent-primary-hover: var(--red-700);
+  --accent-secondary:     var(--charcoal-700);
+  --accent-tertiary:      var(--sea-500);
+
+  /* Signature gradients — kept restrained, two-color only */
+  --gradient-flag:    linear-gradient(135deg, var(--red-600) 0%, var(--red-700) 100%);
+  --gradient-iron:    linear-gradient(180deg, var(--charcoal-700) 0%, var(--charcoal-900) 100%);
+  --gradient-mare:    linear-gradient(180deg, var(--sea-300) 0%, var(--sea-700) 100%);
+
+  /* Photo overlay — for putting copy over boat/landscape photography */
+  --overlay-bottom: linear-gradient(180deg, rgba(31,31,31,0) 0%, rgba(31,31,31,0.72) 100%);
+  --overlay-iron:   linear-gradient(180deg, rgba(31,31,31,0.40) 0%, rgba(31,31,31,0.65) 100%);
+
+  /* ----------  Typography  ---------- */
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-body:    "Montserrat", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  /* The logo wordmark is set in a heavy geometric sans (Montserrat-ish).
+     We use Montserrat for body/UI to feel cohesive with the wordmark,
+     and Fraunces for editorial display contrast. */
+
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-36: 2.25rem;
+  --fs-48: 3rem;
+  --fs-64: 4rem;
+  --fs-80: 5rem;
+
+  --lh-tight:   1.05;
+  --lh-snug:    1.2;
+  --lh-normal:  1.45;
+  --lh-relaxed: 1.65;
+
+  --ls-tight:   -0.02em;
+  --ls-normal:  0;
+  --ls-wordmark: 0.04em;       /* Logo wordmark spacing */
+  --ls-eyebrow:  0.18em;       /* PASSEIOS-style spacing */
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semi:    600;
+  --fw-bold:    700;
+  --fw-black:   800;
+  --fw-heavy:   900;
+
+  /* ----------  Spacing  ---------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* ----------  Radii  ---------- */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   16px;
+  --radius-xl:   28px;
+  --radius-pill: 999px;
+
+  /* ----------  Shadows — neutral, no warm tint (palette is cool/neutral)  ---------- */
+  --shadow-1: 0 1px 2px rgba(31, 31, 31, 0.08);
+  --shadow-2: 0 6px 18px rgba(31, 31, 31, 0.10), 0 1px 3px rgba(31, 31, 31, 0.06);
+  --shadow-3: 0 24px 56px rgba(31, 31, 31, 0.22), 0 4px 10px rgba(31, 31, 31, 0.10);
+
+  /* ----------  Motion  ---------- */
+  --ease-default: cubic-bezier(.2,.8,.2,1);
+  --ease-in:      cubic-bezier(.4,0,.7,.2);
+  --ease-out:     cubic-bezier(.2,.8,.2,1);
+  --ease-in-out:  cubic-bezier(.6,0,.4,1);
+
+  --dur-fast:   120ms;
+  --dur-medium: 240ms;
+  --dur-slow:   480ms;
+}
+
+/* ============================================================
+   Semantic typography classes
+   ============================================================ */
+
+body, .nt-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-default);
+  background: var(--bg-page);
+  font-weight: var(--fw-regular);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.nt-display {
+  font-family: var(--font-display);
+  font-size: clamp(var(--fs-48), 6vw, var(--fs-80));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: var(--fw-semi);
+  font-variation-settings: "opsz" 144;
+  color: var(--charcoal-700);
+}
+
+.nt-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(var(--fs-36), 4.5vw, var(--fs-64));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: var(--fw-semi);
+  font-variation-settings: "opsz" 96;
+  text-wrap: balance;
+  color: var(--charcoal-700);
+}
+
+.nt-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(var(--fs-30), 3.5vw, var(--fs-48));
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  font-weight: var(--fw-semi);
+  font-variation-settings: "opsz" 72;
+  text-wrap: balance;
+  color: var(--charcoal-700);
+}
+
+.nt-h3 {
+  font-family: var(--font-body);
+  font-size: var(--fs-30);
+  line-height: var(--lh-snug);
+  font-weight: var(--fw-bold);
+  color: var(--charcoal-700);
+  letter-spacing: var(--ls-tight);
+}
+
+.nt-h4 {
+  font-family: var(--font-body);
+  font-size: var(--fs-20);
+  line-height: var(--lh-snug);
+  font-weight: var(--fw-bold);
+  color: var(--charcoal-700);
+}
+
+/* The "wordmark style" — a label that picks up the two-tone logo treatment,
+   like NAUTITOUR with charcoal + red. Use sparingly: section headers, badges. */
+.nt-wordmark {
+  font-family: var(--font-body);
+  font-weight: var(--fw-heavy);
+  letter-spacing: var(--ls-wordmark);
+  text-transform: uppercase;
+  color: var(--charcoal-700);
+}
+.nt-wordmark .red { color: var(--red-600); }
+
+.nt-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-12);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  font-weight: var(--fw-bold);
+  color: var(--red-600);
+}
+
+.nt-lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-20);
+  line-height: var(--lh-relaxed);
+  color: var(--charcoal-500);
+  font-weight: var(--fw-regular);
+  text-wrap: pretty;
+}
+
+.nt-body-lg {
+  font-size: var(--fs-18);
+  line-height: var(--lh-relaxed);
+}
+
+.nt-meta {
+  font-size: var(--fs-14);
+  color: var(--charcoal-400);
+}
+
+.nt-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+  letter-spacing: 0;
+}
+
+.nt-price {
+  font-family: var(--font-body);
+  font-weight: var(--fw-heavy);
+  font-size: var(--fs-30);
+  line-height: 1;
+  color: var(--red-600);
+  letter-spacing: var(--ls-tight);
+}
+
+.nt-price-strike {
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  color: var(--charcoal-300);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-medium: 0ms;
+    --dur-slow: 0ms;
+  }
+}

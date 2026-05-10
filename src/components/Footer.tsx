@@ -62,7 +62,7 @@ export default function Footer() {
               </div>
             </div>
             <div className="text-white flex justify-center lg:justify-start">
-              <Image src="/images/logo-white-vertical.png" alt="Nautitour Logo" width={120} height={150} className="h-auto" />
+              <Image src="/images/logos/logo-white.png" alt="Nautitour Logo" width={120} height={150} className="h-auto" />
             </div>
           </div>
           <div className="border-t border-white border-opacity-30 pt-8 pb-8">
