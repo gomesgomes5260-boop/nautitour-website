@@ -42,10 +42,13 @@ export function getApiKey(): string {
   return k;
 }
 
-export function getWebhookSecret(): string {
-  const s = process.env.PAGARME_WEBHOOK_SECRET;
-  if (!s) throw new Error('PAGARME_WEBHOOK_SECRET is not set');
-  return s;
+export function getWebhookCredentials(): { user: string; password: string } {
+  const user = process.env.PAGARME_WEBHOOK_USER;
+  const password = process.env.PAGARME_WEBHOOK_PASSWORD;
+  if (!user || !password) {
+    throw new Error('PAGARME_WEBHOOK_USER and PAGARME_WEBHOOK_PASSWORD must be set');
+  }
+  return { user, password };
 }
 
 export function getApiUrl(): string {

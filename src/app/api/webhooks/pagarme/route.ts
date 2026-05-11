@@ -1,48 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
-  verifyWebhookSignature,
+  verifyWebhookBasicAuth,
   type PagarmeWebhookEvent,
 } from '@/lib/pagarme/webhook';
 
-// Force Node.js runtime — we use Node's `crypto` module for HMAC.
 export const runtime = 'nodejs';
-// Don't cache; every request is unique.
 export const dynamic = 'force-dynamic';
 
 /**
  * Pagar.me v5 webhook handler.
  *
  * Flow:
- * 1. Read raw body (signature is computed over the byte-exact body).
- * 2. Verify HMAC-SHA256 signature against PAGARME_WEBHOOK_SECRET.
+ * 1. Verify HTTP Basic Auth against PAGARME_WEBHOOK_USER/PAGARME_WEBHOOK_PASSWORD.
  *    Reject with 401 on mismatch, before touching the DB.
- * 3. Parse the event and dispatch to the right RPC:
+ * 2. Parse the event and dispatch to the right RPC:
  *    - order.paid / charge.paid    → confirm_booking_payment
  *    - order.payment_failed / charge.payment_failed → mark_booking_payment_failed
  *    Other event types are acknowledged but ignored.
- * 4. Respond 200 quickly so Pagar.me doesn't retry.
+ * 3. Respond 200 quickly so Pagar.me doesn't retry.
  */
 export async function POST(request: Request) {
   const rawBody = await request.text();
 
-  // Pagar.me sends the signature in `X-Hub-Signature` (legacy) or
-  // `x-pagar-signature` depending on configuration; accept both.
-  const signature =
-    request.headers.get('x-hub-signature') ??
-    request.headers.get('x-pagar-signature') ??
-    request.headers.get('x-signature');
-
   let valid = false;
   try {
-    valid = verifyWebhookSignature(rawBody, signature);
+    valid = verifyWebhookBasicAuth(request.headers.get('authorization'));
   } catch (err) {
-    console.error('[pagarme webhook] signature config error', err);
+    console.error('[pagarme webhook] auth config error', err);
     return NextResponse.json({ error: 'config' }, { status: 500 });
   }
   if (!valid) {
-    console.warn('[pagarme webhook] invalid signature');
-    return NextResponse.json({ error: 'invalid signature' }, { status: 401 });
+    console.warn('[pagarme webhook] invalid credentials');
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   let event: PagarmeWebhookEvent;

@@ -334,7 +334,8 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 PAGARME_MODE=allowlist
 PAGARME_ALLOWED_EMAILS=seu-email@dominio.com
 PAGARME_API_KEY=<a chave secreta de produção que você já tem>
-PAGARME_WEBHOOK_SECRET=<gerar no painel Pagar.me ao criar o webhook>
+PAGARME_WEBHOOK_USER=<usuário do Basic Auth configurado no webhook>
+PAGARME_WEBHOOK_PASSWORD=<senha do Basic Auth configurada no webhook>
 NEXT_PUBLIC_PAGARME_PUBLIC_KEY=<a chave pública (pk_…) do mesmo ambiente>
 SUPABASE_SERVICE_ROLE_KEY=<copiar do painel Supabase: Project Settings > API>
 ```
