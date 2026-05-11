@@ -95,7 +95,7 @@
 | Inquiry locação privativa | ✅ | RPC `create_inquiry_request` + WhatsApp |
 | Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta validação E2E (R$ 1,00) — ver "Onde paramos" |
 | Pagamento cartão | 🟡 | Tokenização client-side via `/v5/tokens`; falta validação E2E (R$ 1,00) |
-| Webhook Pagar.me → confirmar | 🟡 | `/api/webhooks/pagarme` valida HTTP Basic Auth e chama RPC idempotente; falta validar com chamada real |
+| Webhook Pagar.me → confirmar | 🟡 | `/api/webhooks/pagarme` valida HTTP Basic Auth e chama RPC idempotente; bug do `ON CONFLICT` parcial achado e corrigido na migration 014; ciclo completo end-to-end pendente de revalidação |
 | E-mail de confirmação da reserva | 🔴 | Precisa Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
 | Soft hold de assentos | 🔴 | Cron de expiração — depois do Pagar.me |
@@ -134,6 +134,8 @@
 10. `010_inquiry_extras_and_rpc` — start/end_time + open_bar + RPC inquiry
 11. `011_pentest_column_grants` — restringe colunas updateáveis em customers e revoga writes diretos das demais tabelas
 12. `012_pagarme_test_tour_and_payment_rpc` — `tours.is_test_only`, tour `tour-de-teste` (R$ 1,00, oculto do público), RPCs `confirm_booking_payment` / `mark_booking_payment_failed` (acessíveis só via service_role)
+13. `013_pentest_round2_amount_pii_refund` — amount validation no `confirm_booking_payment`, refund cancela booking, `get_booking_by_code` REVOKE de anon/authenticated, length caps no `create_booking_pending`
+14. `014_fix_payment_rpc_on_conflict_partial_index` — `ON CONFLICT (pagarme_charge_id) WHERE (pagarme_charge_id IS NOT NULL)` pra casar com o índice parcial. Bug latente das RPCs de pagamento descoberto no 1º teste E2E PIX real: o handler retornava 500, Pagar.me tentava 3x, booking ficava `pending_payment`. Fix isolado no banco — sem mudança de código
 
 ---
 
