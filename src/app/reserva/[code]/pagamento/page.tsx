@@ -23,6 +23,7 @@ export default async function PagamentoPage({
       booking_code,
       status,
       total_cents,
+      expires_at,
       tour:tours ( name ),
       customer:customers ( email )
     `
@@ -36,6 +37,7 @@ export default async function PagamentoPage({
     booking_code: string;
     status: string;
     total_cents: number;
+    expires_at: string | null;
     tour: { name: string } | { name: string }[] | null;
     customer: { email: string } | { email: string }[] | null;
   };
@@ -43,6 +45,9 @@ export default async function PagamentoPage({
 
   if (b.status !== 'pending_payment') {
     redirect(`/reserva/${code}`);
+  }
+  if (b.expires_at && new Date(b.expires_at) < new Date()) {
+    redirect(`/reserva/${code}?expired=1`);
   }
 
   const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;

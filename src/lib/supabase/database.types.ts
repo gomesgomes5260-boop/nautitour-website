@@ -58,6 +58,7 @@ export type Database = {
           created_at: string
           currency: string
           customer_id: string
+          expires_at: string | null
           id: string
           notes: string | null
           passenger_count: number
@@ -72,6 +73,7 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_id: string
+          expires_at?: string | null
           id?: string
           notes?: string | null
           passenger_count: number
@@ -86,6 +88,7 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_id?: string
+          expires_at?: string | null
           id?: string
           notes?: string | null
           passenger_count?: number
@@ -465,6 +468,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      expire_pending_bookings: { Args: never; Returns: number }
       gen_booking_code: { Args: never; Returns: string }
       get_booking_by_code: {
         Args: { p_code: string }

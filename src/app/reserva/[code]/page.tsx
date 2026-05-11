@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createAdminClient } from '@/lib/supabase/admin';
+import HoldCountdown from './HoldCountdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,6 +62,7 @@ export default async function ReservaPage({
       total_cents,
       currency,
       created_at,
+      expires_at,
       tour:tours ( name, slug ),
       schedule:tour_schedules ( departure_at ),
       customer:customers ( email, full_name )
@@ -78,6 +80,7 @@ export default async function ReservaPage({
     total_cents: number;
     currency: string;
     created_at: string;
+    expires_at: string | null;
     tour: { name: string; slug: string } | { name: string; slug: string }[] | null;
     schedule: { departure_at: string } | { departure_at: string }[] | null;
     customer: { email: string; full_name: string | null } | { email: string; full_name: string | null }[] | null;
@@ -103,10 +106,13 @@ export default async function ReservaPage({
           <div className={`border rounded-md p-4 mb-8 ${TONE_CLASSES[status.tone]}`}>
             <p className="font-semibold">{status.label}</p>
             {b.status === 'pending_payment' && (
-              <p className="text-sm mt-1">
-                Sua reserva está garantida pelos próximos minutos. Conclua o pagamento para
-                confirmá-la.
-              </p>
+              <>
+                <p className="text-sm mt-1">
+                  Sua reserva está garantida pelos próximos minutos. Conclua o pagamento para
+                  confirmá-la.
+                </p>
+                {b.expires_at && <HoldCountdown expiresAt={b.expires_at} />}
+              </>
             )}
           </div>
 
