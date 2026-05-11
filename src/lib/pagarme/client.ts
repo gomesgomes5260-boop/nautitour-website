@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { getApiKey, getApiUrl } from './config';
 
 /**
@@ -209,10 +210,20 @@ export function createCreditCardOrder(input: CreateCardOrderInput): Promise<Paga
     },
   };
 
+  // Pagar.me caches responses by Idempotency-Key. If we used a stable
+  // suffix like `-card`, a first attempt that failed (wrong CVV, declined,
+  // etc.) would lock the booking out — any later try with a different
+  // card would just replay the cached failure. Include a hash of the card
+  // token so each new card gets a fresh slot.
+  const tokenFingerprint = createHash('sha256')
+    .update(input.cardToken)
+    .digest('hex')
+    .slice(0, 12);
+
   return pagarmeFetch<PagarmeOrder>('/orders', {
     method: 'POST',
     body,
-    idempotencyKey: `booking-${input.bookingId}-card`,
+    idempotencyKey: `booking-${input.bookingId}-card-${tokenFingerprint}`,
   });
 }
 

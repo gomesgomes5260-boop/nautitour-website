@@ -17,8 +17,14 @@ export const dynamic = 'force-dynamic';
  * 2. Parse the event and dispatch to the right RPC:
  *    - order.paid / charge.paid    → confirm_booking_payment
  *    - order.payment_failed / charge.payment_failed → mark_booking_payment_failed
+ *    - charge.refunded → mark_booking_payment_failed (also cancels booking)
  *    Other event types are acknowledged but ignored.
  * 3. Respond 200 quickly so Pagar.me doesn't retry.
+ *
+ * Defense in depth:
+ * - The RPCs also validate amount (vs bookings.total_cents) and require a
+ *   non-empty pagarme_charge_id. The checks below short-circuit before
+ *   touching the DB for cleaner error handling.
  */
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -44,56 +50,94 @@ export async function POST(request: Request) {
 
   const bookingId = event.data?.metadata?.booking_id;
   if (!bookingId) {
-    // Not one of ours, but Pagar.me retries non-2xx. Acknowledge and ignore.
     return NextResponse.json({ ignored: 'no booking_id in metadata' });
   }
 
-  const admin = createAdminClient();
   const charge = event.data?.charges?.[0];
   const orderId = event.data?.id ?? '';
   const amountCents = event.data?.amount ?? 0;
   const paymentMethod = (charge?.payment_method ?? 'pix') as 'pix' | 'credit_card' | 'boleto';
 
+  const isPaidEvent = event.type === 'order.paid' || event.type === 'charge.paid';
+  const isFailEvent =
+    event.type === 'order.payment_failed' ||
+    event.type === 'charge.payment_failed' ||
+    event.type === 'charge.refunded';
+
+  if (!isPaidEvent && !isFailEvent) {
+    return NextResponse.json({ ignored: event.type });
+  }
+
+  // Require a non-empty charge id — both for our idempotency unique index
+  // and because the RPCs now reject empty values.
+  if (!charge?.id) {
+    console.warn('[pagarme webhook] missing charge.id', {
+      type: event.type,
+      bookingId,
+    });
+    return NextResponse.json({ ignored: 'missing charge id' });
+  }
+
+  const admin = createAdminClient();
+
+  // Pre-load the booking so we can validate amount before issuing the
+  // confirm RPC. The RPC also validates, but failing fast here lets us
+  // distinguish "amount mismatch" from "Pagar.me transient error" and
+  // avoid Pagar.me retrying a known-bad event forever.
+  const { data: bk, error: bkError } = await admin
+    .from('bookings')
+    .select('total_cents')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (bkError) {
+    console.error('[pagarme webhook] booking lookup failed', bkError);
+    return NextResponse.json({ error: 'booking lookup failed' }, { status: 500 });
+  }
+  if (!bk) {
+    // Most likely a stale event from another environment. Don't retry.
+    return NextResponse.json({ ignored: 'unknown booking' });
+  }
+  if (isPaidEvent && amountCents !== bk.total_cents) {
+    console.error('[pagarme webhook] amount mismatch', {
+      bookingId,
+      expected: bk.total_cents,
+      got: amountCents,
+      charge: charge.id,
+    });
+    return NextResponse.json(
+      { error: 'amount mismatch' },
+      { status: 422 }
+    );
+  }
+
   try {
-    switch (event.type) {
-      case 'order.paid':
-      case 'charge.paid': {
-        const paidAt = charge?.paid_at ?? new Date().toISOString();
-        const { error } = await admin.rpc('confirm_booking_payment', {
-          p_booking_id: bookingId,
-          p_pagarme_order_id: orderId,
-          p_pagarme_charge_id: charge?.id ?? '',
-          p_payment_method: paymentMethod,
-          p_amount_cents: amountCents,
-          p_paid_at: paidAt,
-          p_raw_response: event.data as never,
-        });
-        if (error) throw error;
-        break;
-      }
-      case 'order.payment_failed':
-      case 'charge.payment_failed':
-      case 'charge.refunded': {
-        const status = event.type.endsWith('refunded') ? 'refunded' : 'failed';
-        const { error } = await admin.rpc('mark_booking_payment_failed', {
-          p_booking_id: bookingId,
-          p_pagarme_order_id: orderId,
-          p_pagarme_charge_id: charge?.id ?? '',
-          p_payment_method: paymentMethod,
-          p_amount_cents: amountCents,
-          p_status: status,
-          p_raw_response: event.data as never,
-        });
-        if (error) throw error;
-        break;
-      }
-      default:
-        // Acknowledge other events without acting on them.
-        return NextResponse.json({ ignored: event.type });
+    if (isPaidEvent) {
+      const paidAt = charge.paid_at ?? new Date().toISOString();
+      const { error } = await admin.rpc('confirm_booking_payment', {
+        p_booking_id: bookingId,
+        p_pagarme_order_id: orderId,
+        p_pagarme_charge_id: charge.id,
+        p_payment_method: paymentMethod,
+        p_amount_cents: amountCents,
+        p_paid_at: paidAt,
+        p_raw_response: event.data as never,
+      });
+      if (error) throw error;
+    } else {
+      const status = event.type === 'charge.refunded' ? 'refunded' : 'failed';
+      const { error } = await admin.rpc('mark_booking_payment_failed', {
+        p_booking_id: bookingId,
+        p_pagarme_order_id: orderId,
+        p_pagarme_charge_id: charge.id,
+        p_payment_method: paymentMethod,
+        p_amount_cents: amountCents,
+        p_status: status,
+        p_raw_response: event.data as never,
+      });
+      if (error) throw error;
     }
   } catch (err) {
     console.error('[pagarme webhook] handler error', err);
-    // Return 500 so Pagar.me retries with backoff
     return NextResponse.json({ error: 'handler failed' }, { status: 500 });
   }
 

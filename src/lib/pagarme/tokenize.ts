@@ -36,6 +36,11 @@ export async function tokenizeCard(input: TokenizeCardInput): Promise<CardTokenR
   if (!publicKey) {
     throw new Error('NEXT_PUBLIC_PAGARME_PUBLIC_KEY não está configurado');
   }
+  // Fail closed if someone accidentally wires the secret key into the
+  // public env var — a secret key here would be sent to every browser.
+  if (!publicKey.startsWith('pk_')) {
+    throw new Error('NEXT_PUBLIC_PAGARME_PUBLIC_KEY inválido (precisa começar com pk_)');
+  }
 
   const body = {
     type: 'card',
