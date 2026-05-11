@@ -1,7 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { cookieNameFor, signBookingCode } from '@/lib/booking-session';
 
 export type CreateBookingInput = {
   scheduleId: string;
@@ -47,6 +49,18 @@ export async function createBookingAction(
   if (!row?.booking_code) {
     return { ok: false, error: 'Falha ao criar reserva' };
   }
+
+  // Bind this browser session to the booking. The payment actions check
+  // this cookie to prevent third parties from generating Pagar.me orders
+  // on a booking just by knowing its code.
+  const jar = await cookies();
+  jar.set(cookieNameFor(row.booking_code), signBookingCode(row.booking_code), {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24, // 24h — enough for the pending_payment window
+  });
 
   redirect(`/reserva/${row.booking_code}`);
 }

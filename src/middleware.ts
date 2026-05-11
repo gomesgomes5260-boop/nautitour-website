@@ -34,8 +34,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all paths except static assets and image optimization
+     * Match all paths except API routes, static assets and image optimization.
+     * API routes (notably the Pagar.me webhook and the signout endpoint) do
+     * their own auth and don't need session refresh.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

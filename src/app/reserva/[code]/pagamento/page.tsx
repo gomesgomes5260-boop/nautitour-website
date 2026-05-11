@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { canPay, getMode } from '@/lib/pagarme/config';
 import PaymentMethodPicker from './PaymentMethodPicker';
 
@@ -14,21 +14,42 @@ export default async function PagamentoPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
-  const { data: booking, error } = await supabase.rpc('get_booking_by_code', {
-    p_code: code,
-  });
-  if (error) throw error;
-  const row = booking?.[0];
-  if (!row) notFound();
+  const { data: booking } = await admin
+    .from('bookings')
+    .select(
+      `
+      booking_code,
+      status,
+      total_cents,
+      tour:tours ( name ),
+      customer:customers ( email )
+    `
+    )
+    .eq('booking_code', code)
+    .maybeSingle();
 
-  if (row.status !== 'pending_payment') {
+  if (!booking) notFound();
+
+  type Joined = {
+    booking_code: string;
+    status: string;
+    total_cents: number;
+    tour: { name: string } | { name: string }[] | null;
+    customer: { email: string } | { email: string }[] | null;
+  };
+  const b = booking as unknown as Joined;
+
+  if (b.status !== 'pending_payment') {
     redirect(`/reserva/${code}`);
   }
 
+  const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
+  const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
+
   const mode = getMode();
-  const allowed = canPay(row.customer_email);
+  const allowed = canPay(customer?.email ?? null);
 
   return (
     <>
@@ -37,9 +58,9 @@ export default async function PagamentoPage({
         <section className="px-[60px] py-12 max-w-2xl mx-auto">
           <p className="text-sm text-gray-500 mb-2">Pagamento da reserva</p>
           <h1 className="text-[36px] font-normal mb-1" style={{ color: 'rgb(219, 56, 44)' }}>
-            {row.booking_code}
+            {b.booking_code}
           </h1>
-          <p className="text-gray-600 mb-8">{row.tour_name}</p>
+          <p className="text-gray-600 mb-8">{tour?.name}</p>
 
           {!allowed ? (
             <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-md p-6">
@@ -48,11 +69,11 @@ export default async function PagamentoPage({
                 {mode === 'off'
                   ? 'Estamos finalizando a integração com o gateway de pagamento. Por enquanto, finalize a sua reserva pelo WhatsApp informando o código '
                   : 'Pagamento online ainda não liberado para este perfil. Finalize pelo WhatsApp informando o código '}
-                <strong>{row.booking_code}</strong>.
+                <strong>{b.booking_code}</strong>.
               </p>
               <a
                 href={`https://wa.me/5522998479728?text=${encodeURIComponent(
-                  `Olá! Quero finalizar a reserva ${row.booking_code}.`
+                  `Olá! Quero finalizar a reserva ${b.booking_code}.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -64,8 +85,8 @@ export default async function PagamentoPage({
             </div>
           ) : (
             <PaymentMethodPicker
-              bookingCode={row.booking_code}
-              totalCents={row.total_cents}
+              bookingCode={b.booking_code}
+              totalCents={b.total_cents}
             />
           )}
 

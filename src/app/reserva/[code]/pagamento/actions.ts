@@ -1,8 +1,11 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { canPay } from '@/lib/pagarme/config';
 import { createCreditCardOrder, createPixOrder } from '@/lib/pagarme/client';
+import { cookieNameFor, verifyBookingCode } from '@/lib/booking-session';
 
 export type CreatePixResult =
   | {
@@ -15,11 +18,58 @@ export type CreatePixResult =
   | { ok: false; error: string };
 
 /**
+ * Authorize a payment action against a booking.
+ *
+ * Returns ok if EITHER:
+ *   (a) the request carries the HttpOnly cookie set when the booking was
+ *       created (same browser session — handles guest checkout), or
+ *   (b) the request is authenticated AND the auth user owns the
+ *       customer row attached to the booking.
+ *
+ * Without one of these, knowing a booking_code is not enough to create
+ * Pagar.me orders against someone else's reservation.
+ */
+async function authorizeBooking(
+  bookingCode: string,
+  customerId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const jar = await cookies();
+  const signed = jar.get(cookieNameFor(bookingCode))?.value;
+  if (verifyBookingCode(bookingCode, signed)) {
+    return { ok: true };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return {
+      ok: false,
+      error:
+        'Sessão expirou. Volte para a página de detalhes da reserva e tente novamente.',
+    };
+  }
+
+  const admin = createAdminClient();
+  const { data: customer } = await admin
+    .from('customers')
+    .select('auth_user_id')
+    .eq('id', customerId)
+    .maybeSingle();
+  if (customer?.auth_user_id && customer.auth_user_id === user.id) {
+    return { ok: true };
+  }
+  return { ok: false, error: 'Esta reserva não pertence a este usuário.' };
+}
+
+/**
  * Create a PIX order for an existing pending booking. The server reads the
  * booking from the DB (admin client, since RLS would otherwise block public
  * reads) and re-derives the amount — never trusting the client.
  *
- * Gated by `canPay(customerEmail)` which honours PAGARME_MODE.
+ * Gated by canPay(customerEmail) which honours PAGARME_MODE, and by
+ * authorizeBooking() which proves the caller created/owns the booking.
  */
 export async function createPixForBookingAction(
   bookingCode: string
@@ -34,11 +84,14 @@ export async function createPixForBookingAction(
     .eq('booking_code', bookingCode)
     .maybeSingle();
 
-  if (bookingError) return { ok: false, error: bookingError.message };
+  if (bookingError) return { ok: false, error: 'Falha ao carregar reserva' };
   if (!booking) return { ok: false, error: 'Reserva não encontrada' };
   if (booking.status !== 'pending_payment') {
     return { ok: false, error: `Reserva já está ${booking.status}` };
   }
+
+  const auth = await authorizeBooking(bookingCode, booking.customer_id);
+  if (!auth.ok) return auth;
 
   const [{ data: customer }, { data: tour }] = await Promise.all([
     admin
@@ -91,8 +144,8 @@ export async function createPixForBookingAction(
       pagarmeOrderId: order.id,
     };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Falha ao gerar PIX';
-    return { ok: false, error: msg };
+    console.error('[createPixForBookingAction] error', err);
+    return { ok: false, error: 'Falha ao gerar PIX. Tente novamente em instantes.' };
   }
 }
 
@@ -104,7 +157,7 @@ export type CreateCardResult =
  * Charge an existing pending booking with a tokenized card. Amount comes
  * from booking.total_cents (server-side), never from the client.
  *
- * Card auth is synchronous in Pagar.me: if `status === 'paid'`, we eagerly
+ * Card auth is synchronous in Pagar.me: if status === 'paid', we eagerly
  * call confirm_booking_payment so the booking flips before the webhook
  * arrives (the webhook handler is idempotent on pagarme_charge_id, so a
  * later webhook is a no-op).
@@ -123,11 +176,14 @@ export async function createCardForBookingAction(input: {
     .eq('booking_code', input.bookingCode)
     .maybeSingle();
 
-  if (bookingError) return { ok: false, error: bookingError.message };
+  if (bookingError) return { ok: false, error: 'Falha ao carregar reserva' };
   if (!booking) return { ok: false, error: 'Reserva não encontrada' };
   if (booking.status !== 'pending_payment') {
     return { ok: false, error: `Reserva já está ${booking.status}` };
   }
+
+  const auth = await authorizeBooking(input.bookingCode, booking.customer_id);
+  if (!auth.ok) return auth;
 
   const [{ data: customer }, { data: tour }] = await Promise.all([
     admin
@@ -168,8 +224,6 @@ export async function createCardForBookingAction(input: {
     const charge = order.charges?.[0];
     const status = (order.status ?? '').toLowerCase();
 
-    // Card auth is sync — confirm the booking ourselves on success so the UI
-    // doesn't wait for the webhook. The webhook is idempotent on charge_id.
     if (status === 'paid' && charge?.id) {
       const { error: rpcError } = await admin.rpc('confirm_booking_payment', {
         p_booking_id: booking.id,
@@ -181,7 +235,8 @@ export async function createCardForBookingAction(input: {
         p_raw_response: order as never,
       });
       if (rpcError) {
-        return { ok: false, error: rpcError.message };
+        console.error('[createCardForBookingAction] confirm rpc error', rpcError);
+        return { ok: false, error: 'Pagamento aprovado mas falha ao registrar. Aguarde alguns segundos.' };
       }
       return { ok: true, status: 'paid', bookingCode: booking.booking_code };
     }
@@ -190,11 +245,9 @@ export async function createCardForBookingAction(input: {
       return { ok: false, error: 'Pagamento recusado pela operadora.' };
     }
 
-    // Some flows (3DS, fraud review) leave the order pending — let the user
-    // know we received it and the webhook will finalize it.
     return { ok: true, status: 'pending', bookingCode: booking.booking_code };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Falha ao processar pagamento';
-    return { ok: false, error: msg };
+    console.error('[createCardForBookingAction] error', err);
+    return { ok: false, error: 'Falha ao processar pagamento. Tente novamente.' };
   }
 }

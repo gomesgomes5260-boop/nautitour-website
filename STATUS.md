@@ -1,6 +1,6 @@
 # Nautitour — Status do Projeto
 
-Última atualização: 11/maio/2026 — produção no ar, faltando validação E2E do Pagar.me.
+Última atualização: 11/maio/2026 madrugada — produção no ar; 2º pentest realizado, fixes críticos aplicados; faltando validação E2E do Pagar.me.
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
 
@@ -14,22 +14,25 @@
 - ✅ Deploy de produção no ar: `https://nautitour-website.vercel.app`
 - ✅ Env vars no Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PAGARME_API_KEY`, `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`, `PAGARME_WEBHOOK_USER`, `PAGARME_WEBHOOK_PASSWORD`, `PAGARME_MODE=allowlist`
 - ✅ Webhook criado no painel Pagar.me com Basic Auth e URL `https://nautitour-website.vercel.app/api/webhooks/pagarme`
+- ✅ 2º pentest (3 agentes em paralelo) + fixes críticos aplicados na PR #4: amount validation no webhook + RPC, refund cancela booking, `get_booking_by_code` não exposta a anon, ownership cookie nas server actions de pagamento, idempotency-key do cartão com hash do token, assertion `pk_*` no tokenize, middleware exclui `/api`, length caps no `create_booking_pending`. Ver seção 6 abaixo.
 
 **Falta pra finalizar Pagar.me (próxima sessão):**
 
-1. **Adicionar `PAGARME_ALLOWED_EMAILS` no Vercel** (Production). Sem isso o modo `allowlist` bloqueia todo mundo — incluindo você.
-   - Valor: seu e-mail (separar por vírgula se for mais de um).
-   - Aguardar redeploy automático.
+1. **Mergear PR #3** (STATUS snapshot) e **PR #4** (fixes do 2º pentest).
 
-2. **Teste E2E PIX (R$ 1,00):**
+2. **Adicionar 2 env vars no Vercel** (Production):
+   - `PAGARME_ALLOWED_EMAILS` = seu e-mail (separar por vírgula se for mais de um).
+   - `BOOKING_SESSION_SECRET` = string longa aleatória (≥48 chars, gerada com `openssl rand -base64 48`). Pode ser omitido — nesse caso o sistema usa `SUPABASE_SERVICE_ROLE_KEY` como fallback. Recomendado setar separado pra poder rotacionar independente.
+
+3. **Teste E2E PIX (R$ 1,00):**
    - Abrir https://nautitour-website.vercel.app/checkout/e55dfc57-fb6c-4133-a353-f957250104c6 (tour-de-teste, 12/05 às 12:00 BRT)
    - Preencher form com o e-mail da allowlist + 1 passageiro = R$ 1,00
    - Pagar via PIX, esperar a página atualizar pra "Pagamento confirmado"
-   - Se travar em "pendente": painel Pagar.me → Webhooks → "Tentativas" pra ver o erro (provavelmente 401 = senha não bate)
+   - Se travar em "pendente": painel Pagar.me → Webhooks → "Tentativas" pra ver o erro
 
-3. **Teste E2E cartão (R$ 1,00):** mesma reserva, método "Cartão", `Idempotency-Key` é diferente do PIX então pode usar a mesma reserva ou criar nova.
+4. **Teste E2E cartão (R$ 1,00):** mesma reserva, método "Cartão".
 
-4. **Trocar `PAGARME_MODE` de `allowlist` pra `live`** quando os dois testes confirmarem. Aí o site está vendendo de verdade.
+5. **Trocar `PAGARME_MODE` de `allowlist` pra `live`** quando os dois testes confirmarem.
 
 ---
 
@@ -172,7 +175,12 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 - ✅ Open redirect search
 - ✅ Hardcoded secrets check
 
-### Achados corrigidos
+### Auditoria realizada — 2º pentest (madrugada 11/05)
+- ✅ 3 agentes em paralelo (webhook+Basic Auth, fluxo de pagamento, regressão+nova superfície)
+- ✅ Supabase advisor — security
+- ✅ Re-verificação de F1–F5
+
+### Achados corrigidos — 1ª rodada (F1–F5)
 
 | ID | Categoria | Descrição | Correção |
 |---|---|---|---|
@@ -182,6 +190,20 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 | F4 | A01 Access Control | Cliente podia escrever direto em `bookings`, `payments`, `tour_schedules`, `tours`, `inquiry_requests`, `lead_invitations` (escrita só deveria vir via RPCs) | Migration `011`: `revoke insert/update/delete` nessas tabelas para `anon` e `authenticated` |
 | F5 | A05 Misconfig | Sem security headers HTTP | `next.config.ts` agora envia `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security` |
 
+### Achados corrigidos — 2ª rodada (G1–G9, PR #4)
+
+| ID | Severidade | Descrição | Correção |
+|---|---|---|---|
+| G1 | **Alta** A04 | Webhook não comparava `event.data.amount` com `bookings.total_cents`. Atacante com credenciais do webhook podia pagar R$1 e confirmar reserva de R$1000 | Migration `013`: `confirm_booking_payment` aborta se amount ≠ total_cents. Handler também valida antes (mensagem de erro mais específica) |
+| G2 | **Alta** A01 | `get_booking_by_code` (SECURITY DEFINER, callable por anon) retornava `customer_email` + `customer_full_name`. Combinado com booking_code de 6 chars = base de clientes enumerável via REST | Migration `013`: REVOKE EXECUTE de anon/authenticated; pages migradas pra `createAdminClient()` (server-only) |
+| G3 | **Alta** A01 | `createPixForBookingAction` / `createCardForBookingAction` aceitavam `bookingCode` arbitrário sem provar posse → IDOR. Quem enumerasse um código alheio gerava order Pagar.me em nome da vítima | `src/lib/booking-session.ts`: HMAC do `booking_code` salvo em cookie HttpOnly no `createBookingAction`. Actions de pagamento exigem cookie OU `auth.uid()` casando com `customer.auth_user_id` |
+| G4 | Média A04 | `mark_booking_payment_failed` só mexia em `payments`, não em `bookings`. Chargeback fraudulento mantinha reserva `confirmed` — embarque grátis | Migration `013`: em `p_status='refunded'`, marca `bookings.status='cancelled'` |
+| G5 | Média A04 | `idempotencyKey = booking-<id>-card` cacheava a resposta da 1ª tentativa. Cliente errou CVV → ficava preso na falha em cache, sem poder tentar outro cartão | `client.ts`: idempotency-key vira `booking-<id>-card-<hash12(cardToken)>`. Cada cartão novo abre slot novo |
+| G6 | Baixa A05 | `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` era usada sem validar prefixo. Se alguém colasse `sk_…` por engano, o secret iria pro bundle | `tokenize.ts`: throw se não começa com `pk_` |
+| G7 | Baixa A05 | Middleware Supabase rodava em todas as rotas, incluindo `/api/webhooks/*` — overhead + chamada desnecessária a `auth.getUser()` em cada webhook | `middleware.ts`: matcher exclui `api/` |
+| G8 | Baixa A04 | Webhook aceitava `charge.id = ''` → várias linhas com PK vazio em `payments` | Handler e RPCs rejeitam charge id vazio |
+| G9 | Baixa A04 | `create_booking_pending` aceitava `p_notes`, `p_email`, etc. de tamanho ilimitado via PostgREST | Migration `013`: caps em e-mail (254), nome (200), notes (1000), passengers (200) |
+
 ### Achados aceitos / a tratar depois
 
 | ID | Severidade | Descrição | Mitigação prevista |
@@ -189,11 +211,15 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 | D1 | Baixa | `npm audit`: postcss <8.5.10 (XSS no CSS Stringify) — vulnerabilidade transitiva via `next` | Aguardar release do Next que bumpe o postcss; fix forçado downgrade quebra a build |
 | D2 | Média | RPC `create_booking_pending` (anon) pode ser chamado em loop pra esgotar capacidade de schedules | Captcha + rate limit no caminho HTTP; soft-hold com expiração |
 | D3 | Média | RPC `create_inquiry_request` (anon) pode ser spammado | Captcha + rate limit |
-| D4 | Baixa | `booking_code` tem 6 chars de alfabeto 32 (~10⁹) — enumerável em massa | Aumentar comprimento ou exigir email + código combinados em fluxos sensíveis; rate limit no `get_booking_by_code` |
-| D5 | Baixa | `/reserva/[code]` exibe e-mail do cliente — enumeração de código vazaria contatos | Rate limit + ofuscar e-mail (`a***@gmail.com`) na próxima iteração |
+| D4 | Baixa | `booking_code` tem 6 chars de alfabeto 32 (~10⁹) — enumerável em massa | Mitigado parcialmente em PR #4 (PII removida de `get_booking_by_code`, e-mail mascarado em `/reserva/[code]`, ownership cookie nas actions). Restante: rate limit no nível de página |
+| D5 | Baixa | `/reserva/[code]` exibia e-mail do cliente em claro | ✅ Mitigado em PR #4: e-mail mascarado (`a***@gmail.com`) |
 | D6 | Baixa | Sem CSP (Content-Security-Policy) | Definir `default-src 'self'` + nonces após estabilizar dependências |
 | D7 | Baixa | Sem error tracking em produção (Sentry) | Configurar antes do go-live |
-| D8 | Informativa | 4 lints "SECURITY DEFINER callable by anon/authenticated" no advisor do Supabase | **Intencional**: 3 RPCs precisam ser anon-callable (guest checkout + lookup + inquiry). Documentado |
+| D8 | Informativa | 4 lints "SECURITY DEFINER callable by anon/authenticated" no advisor do Supabase | **Intencional**: 2 RPCs precisam ser anon-callable (guest checkout + inquiry). PR #4 revogou `get_booking_by_code` → desceu de 6 pra 4 lints |
+| D9 | **Média** | **Oversell silencioso**: 2 clientes podem ter booking `pending_payment` na mesma vaga. Quando o 1º paga e vira `confirmed`, o trigger consome a vaga. Se o 2º também pagar antes do timeout, o `confirm_booking_payment` falha na constraint `seats_within_capacity` — Pagar.me já cobrou mas reserva fica em `pending_payment` pra sempre, sem refund automático | Soft hold com TTL: incrementar `seats_taken` em `pending_payment`, cron decrementa após 15min sem pagamento. Não foi corrigido no PR #4 porque exige cron/edge function e muda UX. Documentar e priorizar P3 |
+| D10 | Baixa | Mensagens de erro nas server actions devolvem `error.message` cru do Supabase — pode vazar nome de constraint/table e ajudar enumeração de e-mail em login/signup | Mapear erros conhecidos pra mensagens UX em PT-BR; logar o erro original server-side. PR #4 já fez isso pras actions de pagamento; falta login/signup/resetpw |
+| D11 | Baixa | `/api/auth/signout` não valida header `Origin` | Adicionar check `Origin === host` como defesa em profundidade |
+| D12 | Baixa | HSTS sem `preload` | Adicionar `; preload` quando migrar pro domínio próprio |
 
 ### Cobertura — OWASP Top 10
 | | Avaliação |
