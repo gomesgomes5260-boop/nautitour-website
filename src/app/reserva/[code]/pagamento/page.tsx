@@ -24,7 +24,7 @@ export default async function PagamentoPage({
       status,
       total_cents,
       expires_at,
-      tour:tours ( name ),
+      tour:tours ( name, tour_type ),
       customer:customers ( email )
     `
     )
@@ -38,7 +38,7 @@ export default async function PagamentoPage({
     status: string;
     total_cents: number;
     expires_at: string | null;
-    tour: { name: string } | { name: string }[] | null;
+    tour: { name: string; tour_type: string } | { name: string; tour_type: string }[] | null;
     customer: { email: string } | { email: string }[] | null;
   };
   const b = booking as unknown as Joined;
@@ -55,6 +55,9 @@ export default async function PagamentoPage({
 
   const mode = getMode();
   const allowed = canPay(customer?.email ?? null);
+
+  // Parcelamento: lancha (private) até 6x sem juros; escuna 1x à vista.
+  const maxInstallments = tour?.tour_type === 'private' ? 6 : 1;
 
   return (
     <>
@@ -92,6 +95,7 @@ export default async function PagamentoPage({
             <PaymentMethodPicker
               bookingCode={b.booking_code}
               totalCents={b.total_cents}
+              maxInstallments={maxInstallments}
             />
           )}
 

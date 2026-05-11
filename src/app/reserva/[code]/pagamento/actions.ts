@@ -200,7 +200,7 @@ export async function createCardForBookingAction(input: {
       .select('email, full_name, phone, cpf')
       .eq('id', booking.customer_id)
       .maybeSingle(),
-    admin.from('tours').select('name').eq('id', booking.tour_id).maybeSingle(),
+    admin.from('tours').select('name, tour_type').eq('id', booking.tour_id).maybeSingle(),
   ]);
 
   if (!customer?.email) return { ok: false, error: 'Cliente sem e-mail' };
@@ -214,6 +214,16 @@ export async function createCardForBookingAction(input: {
     };
   }
 
+  // Cap server-side de parcelamento: lancha (private) até 6x, escuna (scheduled) 1x.
+  // Cap adicional: cada parcela deve ter pelo menos R$ 100,00.
+  const tourMaxInstallments = tour.tour_type === 'private' ? 6 : 1;
+  const priceCap = Math.max(1, Math.floor(booking.total_cents / 10000));
+  const allowedMax = Math.max(1, Math.min(tourMaxInstallments, priceCap));
+  const requestedInstallments = Math.max(1, Math.min(input.installments ?? 1, 12));
+  if (requestedInstallments > allowedMax) {
+    return { ok: false, error: `Parcelamento máximo permitido: ${allowedMax}x` };
+  }
+
   try {
     const order = await createCreditCardOrder({
       bookingId: booking.id,
@@ -221,7 +231,7 @@ export async function createCardForBookingAction(input: {
       amountCents: booking.total_cents,
       description: `${tour.name} — ${booking.booking_code}`,
       cardToken: input.cardToken,
-      installments: input.installments ?? 1,
+      installments: requestedInstallments,
       customer: {
         name: input.cardHolderName.trim() || customer.full_name || customer.email,
         email: customer.email,

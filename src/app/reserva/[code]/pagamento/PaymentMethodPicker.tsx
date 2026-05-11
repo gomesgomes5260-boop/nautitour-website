@@ -9,9 +9,10 @@ type Method = 'pix' | 'card';
 type Props = {
   bookingCode: string;
   totalCents: number;
+  maxInstallments?: number;
 };
 
-export default function PaymentMethodPicker({ bookingCode, totalCents }: Props) {
+export default function PaymentMethodPicker({ bookingCode, totalCents, maxInstallments = 1 }: Props) {
   const [method, setMethod] = useState<Method>('pix');
 
   return (
@@ -31,14 +32,18 @@ export default function PaymentMethodPicker({ bookingCode, totalCents }: Props) 
           active={method === 'card'}
           onClick={() => setMethod('card')}
           label="Cartão"
-          sub="Crédito à vista"
+          sub={maxInstallments > 1 ? `Até ${maxInstallments}x sem juros` : 'Crédito à vista'}
         />
       </div>
 
       {method === 'pix' ? (
         <PixCheckout bookingCode={bookingCode} totalCents={totalCents} />
       ) : (
-        <CardCheckout bookingCode={bookingCode} totalCents={totalCents} />
+        <CardCheckout
+          bookingCode={bookingCode}
+          totalCents={totalCents}
+          maxInstallments={maxInstallments}
+        />
       )}
     </div>
   );
