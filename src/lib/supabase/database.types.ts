@@ -592,6 +592,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_cancel_booking: {
+        Args: { p_booking_id: string; p_reason: string }
+        Returns: undefined
+      }
+      admin_mark_refund_attempt: {
+        Args: {
+          p_booking_id: string
+          p_charge_id: string
+          p_ok: boolean
+          p_response: Json
+        }
+        Returns: undefined
+      }
       admin_update_inquiry: {
         Args: {
           p_admin_notes?: string

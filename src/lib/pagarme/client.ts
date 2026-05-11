@@ -242,3 +242,36 @@ function parsePhone(raw: string) {
     number: local.slice(2),
   };
 }
+
+export type RefundChargeResult =
+  | { ok: true; charge: PagarmeCharge; raw: unknown }
+  | { ok: false; error: string; raw: unknown };
+
+/**
+ * Refund a Pagar.me v5 charge — total by default, partial if amountCents
+ * is provided. Pagar.me also returns 200 when the charge is already
+ * refunded; we treat that as success.
+ */
+export async function refundCharge(
+  chargeId: string,
+  amountCents?: number
+): Promise<RefundChargeResult> {
+  if (!chargeId) {
+    return { ok: false, error: 'charge_id ausente', raw: null };
+  }
+  try {
+    const body: Record<string, unknown> = {};
+    if (amountCents !== undefined) body.amount = amountCents;
+    const data = await pagarmeFetch<PagarmeCharge>(
+      `/charges/${encodeURIComponent(chargeId)}`,
+      { method: 'DELETE', body }
+    );
+    return { ok: true, charge: data, raw: data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+      raw: null,
+    };
+  }
+}

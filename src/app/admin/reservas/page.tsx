@@ -220,11 +220,10 @@ export default async function AdminReservasPage({
                   </td>
                   <td className="px-4 py-2 text-right">
                     <Link
-                      href={`/reserva/${b.booking_code}`}
-                      target="_blank"
+                      href={`/admin/reservas/${b.booking_code}`}
                       className="text-[rgb(9,110,171)] hover:underline text-xs"
                     >
-                      Ver
+                      Abrir
                     </Link>
                   </td>
                 </tr>
