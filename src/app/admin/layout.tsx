@@ -43,6 +43,12 @@ export default async function AdminLayout({
             Manifesto
           </Link>
           <Link
+            href="/admin/inquiries"
+            className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
+          >
+            Inquiries
+          </Link>
+          <Link
             href="/admin/config"
             className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
           >

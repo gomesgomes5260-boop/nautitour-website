@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export type CreateInquiryInput = {
   email: string;
@@ -51,7 +52,7 @@ export async function createInquiryAction(
 ): Promise<CreateInquiryResult> {
   const supabase = await createClient();
 
-  const { error } = await supabase.rpc('create_inquiry_request', {
+  const { data, error } = await supabase.rpc('create_inquiry_request', {
     p_email: input.email.trim(),
     p_full_name: input.fullName.trim(),
     p_phone: input.phone.trim(),
@@ -65,6 +66,18 @@ export async function createInquiryAction(
 
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  // Marca whatsapp_contacted_at — cliente sai daqui pro WhatsApp agora.
+  // Service-role bypassa RLS (inquiry_requests não permite UPDATE direto).
+  const inquiryId = (data?.[0] as { inquiry_id?: string } | undefined)?.inquiry_id;
+  if (inquiryId) {
+    const admin = createAdminClient();
+    await admin
+      .from('inquiry_requests')
+      .update({ whatsapp_contacted_at: new Date().toISOString() })
+      .eq('id', inquiryId)
+      .is('whatsapp_contacted_at', null);
   }
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(

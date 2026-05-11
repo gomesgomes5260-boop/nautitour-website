@@ -219,6 +219,7 @@ export type Database = {
       }
       inquiry_requests: {
         Row: {
+          admin_notes: string | null
           created_at: string
           customer_id: string
           end_time: string | null
@@ -229,11 +230,14 @@ export type Database = {
           requested_date: string | null
           start_time: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
+          status_changed_at: string | null
+          status_changed_by: string | null
           tour_id: string
           updated_at: string
           whatsapp_contacted_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           customer_id: string
           end_time?: string | null
@@ -244,11 +248,14 @@ export type Database = {
           requested_date?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           tour_id: string
           updated_at?: string
           whatsapp_contacted_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           customer_id?: string
           end_time?: string | null
@@ -259,6 +266,8 @@ export type Database = {
           requested_date?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           tour_id?: string
           updated_at?: string
           whatsapp_contacted_at?: string | null
@@ -580,6 +589,14 @@ export type Database = {
           p_payment_method: Database["public"]["Enums"]["payment_method"]
           p_raw_response: Json
           p_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Returns: undefined
+      }
+      admin_update_inquiry: {
+        Args: {
+          p_admin_notes?: string
+          p_inquiry_id: string
+          p_status?: Database["public"]["Enums"]["inquiry_status"]
         }
         Returns: undefined
       }
