@@ -521,7 +521,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admins_with_email: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          created_by_email: string | null
+          email: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_booking_pending: {
@@ -592,6 +602,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_add_admin_by_email: {
+        Args: { p_email: string; p_role?: string }
+        Returns: string
+      }
       admin_cancel_booking: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: undefined
@@ -605,6 +619,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_remove_admin: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       admin_update_inquiry: {
         Args: {
           p_admin_notes?: string
@@ -612,6 +630,15 @@ export type Database = {
           p_status?: Database["public"]["Enums"]["inquiry_status"]
         }
         Returns: undefined
+      }
+      admin_update_tour_pricing: {
+        Args: {
+          p_apply_to_future_schedules?: boolean
+          p_base_price_cents?: number
+          p_max_capacity?: number
+          p_tour_id: string
+        }
+        Returns: number
       }
       block_schedule: {
         Args: { p_reason: string; p_schedule_id: string }

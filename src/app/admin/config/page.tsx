@@ -1,5 +1,10 @@
+import { redirect } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { isOwnerUser } from '@/lib/admin';
 import RegenerateButton from './RegenerateButton';
+import AdminsTable, { type AdminRow } from './AdminsTable';
+import TourPricingForm, { type TourRow } from './TourPricingForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +20,21 @@ const DATE = new Intl.DateTimeFormat('pt-BR', {
 export default async function AdminConfigPage() {
   const admin = createAdminClient();
 
-  const [{ data: templates }, { data: lastSchedule }, { data: nextSchedule }] =
-    await Promise.all([
+  // Auth contexto: precisamos saber se é owner pra mostrar form de add admin.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login?redirect=/admin/config');
+  const isOwner = await isOwnerUser(user.id);
+
+  const [
+    { data: templates },
+    { data: lastSchedule },
+    { data: nextSchedule },
+    { data: adminsRaw },
+    { data: toursRaw },
+  ] = await Promise.all([
       admin
         .from('schedule_templates')
         .select(`id, weekday, departure_time, capacity, active, tour:tours ( name, slug, tour_type )`)
@@ -35,7 +53,36 @@ export default async function AdminConfigPage() {
         .order('departure_at', { ascending: true })
         .limit(1)
         .maybeSingle(),
+      admin
+        .from('admins_with_email')
+        .select('user_id, email, role, created_at, created_by_email')
+        .order('created_at', { ascending: true }),
+      admin
+        .from('tours')
+        .select('id, name, slug, base_price_cents, max_capacity, tour_type')
+        .eq('active', true)
+        .order('name', { ascending: true }),
     ]);
+
+  const admins: AdminRow[] = (adminsRaw ?? []).flatMap((a) => {
+    if (!a.user_id || !a.email || !a.role || !a.created_at) return [];
+    if (a.role !== 'owner' && a.role !== 'operator') return [];
+    return [{
+      user_id: a.user_id,
+      email: a.email,
+      role: a.role,
+      created_at: a.created_at,
+      created_by_email: a.created_by_email ?? null,
+    }];
+  });
+
+  const tours: TourRow[] = (toursRaw ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    base_price_cents: t.base_price_cents,
+    max_capacity: t.max_capacity,
+  }));
 
   type Tpl = {
     id: string;
@@ -127,6 +174,41 @@ export default async function AdminConfigPage() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="bg-white border border-gray-200 rounded-md p-6">
+        <h2 className="text-lg font-semibold mb-2">Preços e capacidade</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Editar aqui altera o <strong>preço base</strong> e <strong>capacidade máxima</strong> de
+          cada tour. Marque a opção pra aplicar também às saídas futuras já agendadas
+          (caso contrário, só novas saídas geradas pelo cron usarão os novos valores).
+        </p>
+        <div className="space-y-4">
+          {tours.map((t) => (
+            <TourPricingForm key={t.id} tour={t} />
+          ))}
+          {tours.length === 0 && (
+            <p className="text-sm text-gray-500">Nenhum tour ativo.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="bg-white border border-gray-200 rounded-md p-6">
+        <h2 className="text-lg font-semibold mb-2">Administradores</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          <strong>Owners</strong> podem adicionar/remover outros admins. <strong>Operators</strong>{' '}
+          têm acesso ao painel mas não gerenciam admins.
+          {!isOwner && (
+            <span className="block mt-1 text-amber-700">
+              Você não é owner — visualização somente.
+            </span>
+          )}
+        </p>
+        <AdminsTable
+          admins={admins}
+          currentUserId={user.id}
+          isOwner={isOwner}
+        />
       </section>
     </div>
   );
