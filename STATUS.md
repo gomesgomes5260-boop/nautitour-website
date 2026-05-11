@@ -1,8 +1,35 @@
 # Nautitour — Status do Projeto
 
-Última atualização: maio/2026 — após Priority 1, Priority 2 e pentest.
+Última atualização: 11/maio/2026 — produção no ar, faltando validação E2E do Pagar.me.
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
+
+---
+
+## 🌅 Onde paramos (retomar amanhã)
+
+**O que foi feito hoje:**
+- ✅ PR #1 (16 commits: catálogo + auth + reserva + checkout + pentest + Pagar.me) mergeada em `main`
+- ✅ PR #2 (Basic Auth do webhook Pagar.me, substituindo HMAC) mergeada em `main`
+- ✅ Deploy de produção no ar: `https://nautitour-website.vercel.app`
+- ✅ Env vars no Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PAGARME_API_KEY`, `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`, `PAGARME_WEBHOOK_USER`, `PAGARME_WEBHOOK_PASSWORD`, `PAGARME_MODE=allowlist`
+- ✅ Webhook criado no painel Pagar.me com Basic Auth e URL `https://nautitour-website.vercel.app/api/webhooks/pagarme`
+
+**Falta pra finalizar Pagar.me (próxima sessão):**
+
+1. **Adicionar `PAGARME_ALLOWED_EMAILS` no Vercel** (Production). Sem isso o modo `allowlist` bloqueia todo mundo — incluindo você.
+   - Valor: seu e-mail (separar por vírgula se for mais de um).
+   - Aguardar redeploy automático.
+
+2. **Teste E2E PIX (R$ 1,00):**
+   - Abrir https://nautitour-website.vercel.app/checkout/e55dfc57-fb6c-4133-a353-f957250104c6 (tour-de-teste, 12/05 às 12:00 BRT)
+   - Preencher form com o e-mail da allowlist + 1 passageiro = R$ 1,00
+   - Pagar via PIX, esperar a página atualizar pra "Pagamento confirmado"
+   - Se travar em "pendente": painel Pagar.me → Webhooks → "Tentativas" pra ver o erro (provavelmente 401 = senha não bate)
+
+3. **Teste E2E cartão (R$ 1,00):** mesma reserva, método "Cartão", `Idempotency-Key` é diferente do PIX então pode usar a mesma reserva ou criar nova.
+
+4. **Trocar `PAGARME_MODE` de `allowlist` pra `live`** quando os dois testes confirmarem. Aí o site está vendendo de verdade.
 
 ---
 
@@ -63,9 +90,9 @@
 | Reserva escuna (per_passenger) | ✅ | RPC `create_booking_pending` |
 | Reserva lancha (per_slot, exclusiva) | ✅ | Marca sold_out na hora |
 | Inquiry locação privativa | ✅ | RPC `create_inquiry_request` + WhatsApp |
-| Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta chave + URL pública pra testar webhook |
-| Pagamento cartão | 🟡 | Tokenização client-side via `/v5/tokens`; cobrança síncrona com confirmação imediata + webhook idempotente |
-| Webhook Pagar.me → confirmar | ✅ | `/api/webhooks/pagarme` valida HMAC e chama RPC idempotente |
+| Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta validação E2E (R$ 1,00) — ver "Onde paramos" |
+| Pagamento cartão | 🟡 | Tokenização client-side via `/v5/tokens`; falta validação E2E (R$ 1,00) |
+| Webhook Pagar.me → confirmar | 🟡 | `/api/webhooks/pagarme` valida HTTP Basic Auth e chama RPC idempotente; falta validar com chamada real |
 | E-mail de confirmação da reserva | 🔴 | Precisa Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
 | Soft hold de assentos | 🔴 | Cron de expiração — depois do Pagar.me |
@@ -203,9 +230,9 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 
 | Item | Status |
 |---|---|
-| Vercel deploy | 🔴 |
+| Vercel deploy | ✅ `nautitour-website.vercel.app` |
 | Domínio próprio | 🔴 |
-| Variáveis de ambiente em prod | 🔴 |
+| Variáveis de ambiente em prod | 🟡 Só falta `PAGARME_ALLOWED_EMAILS` |
 | Supabase em sa-east-1 (atual: us-west-2) | 🟡 Recomendar migração antes do go-live |
 | Backups DB | ✅ (Supabase auto) |
 | SMTP em prod (Resend ou similar) | 🔴 |
@@ -303,22 +330,23 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 
 ## 11. Próximos passos sugeridos
 
-### P3 — Pagar.me (em andamento, modo live com salvaguardas)
+### P3 — Pagar.me (em andamento, modo `allowlist` em produção)
 
 **Pronto:**
-- ✅ `src/lib/pagarme/{config,client,webhook}.ts` — cliente HTTP, HMAC verifier, modo `off|allowlist|live`
+- ✅ `src/lib/pagarme/{config,client,webhook}.ts` — cliente HTTP, Basic Auth verifier, modo `off|allowlist|live`
 - ✅ `src/lib/supabase/admin.ts` — service_role client (server-only)
 - ✅ Migration `012` — tour de teste (R$ 1,00, `is_test_only`), RPCs `confirm_booking_payment` e `mark_booking_payment_failed` (idempotentes)
 - ✅ `/reserva/[code]/pagamento` — seletor PIX | Cartão. PIX gera QR + copy/paste e faz polling; cartão tokeniza no browser e cobra de forma síncrona
 - ✅ `src/lib/pagarme/tokenize.ts` — POST direto pro `/v5/tokens` com a `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`. PAN/CVV não tocam nosso servidor
-- ✅ `/api/webhooks/pagarme` — valida assinatura HMAC antes de tocar o banco; idempotente
-- ✅ Botão "Ir para pagamento" em `/reserva/[code]`
+- ✅ `/api/webhooks/pagarme` — valida HTTP Basic Auth antes de tocar o banco; idempotente (PR #2)
+- ✅ Webhook configurado no painel Pagar.me (URL + Basic Auth)
+- ✅ Env vars do webhook em produção: `PAGARME_WEBHOOK_USER`, `PAGARME_WEBHOOK_PASSWORD`
 
-**Pendente (depende de você):**
-- 🔴 Configurar env vars em `.env.local` (não cole no chat — ver "Env vars Pagar.me" abaixo)
-- 🔴 Configurar webhook URL no painel Pagar.me e copiar o secret
-- 🔴 Deploy no Vercel pra ter URL pública (webhook não funciona em localhost)
-- 🔴 Validação end-to-end com 1 transação real de R$ 1,00 no `tour-de-teste` (PIX e cartão)
+**Pendente (próxima sessão):**
+- 🔴 `PAGARME_ALLOWED_EMAILS` no Vercel (Production)
+- 🔴 Teste E2E PIX (R$ 1,00) no tour-de-teste
+- 🔴 Teste E2E cartão (R$ 1,00) no tour-de-teste
+- 🔴 Trocar `PAGARME_MODE` de `allowlist` pra `live`
 - 🔴 Parcelamento (hoje fixo em 1x à vista)
 - 🔴 Soft hold + cron de expiração
 - 🔴 E-mails transacionais (Resend)
@@ -328,23 +356,23 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 - Painel interno seguindo `admin-dashboard.md`
 - Role admin + RLS adicional
 
-### Env vars Pagar.me — checklist pra você preencher em `.env.local`
+### Env vars Pagar.me — estado atual em produção (Vercel)
 
-```
-PAGARME_MODE=allowlist
-PAGARME_ALLOWED_EMAILS=seu-email@dominio.com
-PAGARME_API_KEY=<a chave secreta de produção que você já tem>
-PAGARME_WEBHOOK_USER=<usuário do Basic Auth configurado no webhook>
-PAGARME_WEBHOOK_PASSWORD=<senha do Basic Auth configurada no webhook>
-NEXT_PUBLIC_PAGARME_PUBLIC_KEY=<a chave pública (pk_…) do mesmo ambiente>
-SUPABASE_SERVICE_ROLE_KEY=<copiar do painel Supabase: Project Settings > API>
-```
+| Variável | Status |
+|---|---|
+| `PAGARME_MODE` | ✅ `allowlist` |
+| `PAGARME_ALLOWED_EMAILS` | 🔴 falta adicionar |
+| `PAGARME_API_KEY` | ✅ |
+| `PAGARME_WEBHOOK_USER` | ✅ |
+| `PAGARME_WEBHOOK_PASSWORD` | ✅ |
+| `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` | ✅ |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ |
 
 Notas:
-- `PAGARME_MODE=allowlist` enquanto estamos testando — só os e-mails listados conseguem usar o checkout PIX. Todo mundo continua vendo "em breve".
-- Quando o webhook estiver validado e quisermos abrir pra todo mundo, troca pra `PAGARME_MODE=live`.
-- Em produção (Vercel), as mesmas variáveis vão em **Project Settings → Environment Variables**.
-- O webhook URL a configurar no painel Pagar.me será: `https://<dominio-vercel>/api/webhooks/pagarme`. Eventos a habilitar: `order.paid`, `charge.paid`, `order.payment_failed`, `charge.payment_failed`, `charge.refunded`.
+- `PAGARME_MODE=allowlist` enquanto estamos testando — só os e-mails em `PAGARME_ALLOWED_EMAILS` conseguem pagar. Todo o resto vê "em breve".
+- Quando os testes E2E passarem, trocar pra `PAGARME_MODE=live`.
+- Webhook configurado em `https://nautitour-website.vercel.app/api/webhooks/pagarme` com HTTP Basic Auth (todos os eventos marcados; nosso handler ignora os que não trata).
 
 ### P5 — Go-live
 - Vercel deploy + domínio + region migration Supabase
