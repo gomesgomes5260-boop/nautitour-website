@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import CheckoutForm from './CheckoutForm';
 
 export const dynamic = 'force-dynamic';
@@ -22,9 +22,13 @@ export default async function CheckoutPage({
   params: Promise<{ scheduleId: string }>;
 }) {
   const { scheduleId } = await params;
-  const supabase = await createClient();
+  // Service-role read: bypasses the public tours_read RLS so the
+  // tour-de-teste (is_test_only=true) is reachable via direct link
+  // during E2E validation. Anyone who guesses a schedule UUID gets the
+  // checkout form; the booking RPC still rejects sold-out / cancelled.
+  const admin = createAdminClient();
 
-  const { data: schedule, error: scheduleError } = await supabase
+  const { data: schedule, error: scheduleError } = await admin
     .from('tour_schedules')
     .select('id, departure_at, capacity, seats_taken, price_cents, status, tour:tours(*)')
     .eq('id', scheduleId)
