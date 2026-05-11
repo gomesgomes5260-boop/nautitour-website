@@ -113,16 +113,25 @@ export async function POST(request: Request) {
   try {
     if (isPaidEvent) {
       const paidAt = charge.paid_at ?? new Date().toISOString();
-      const { error } = await admin.rpc('confirm_booking_payment', {
-        p_booking_id: bookingId,
-        p_pagarme_order_id: orderId,
-        p_pagarme_charge_id: charge.id,
-        p_payment_method: paymentMethod,
-        p_amount_cents: amountCents,
-        p_paid_at: paidAt,
-        p_raw_response: event.data as never,
-      });
+      const { data: didSend, error } = await admin.rpc(
+        'confirm_booking_payment_v2',
+        {
+          p_booking_id: bookingId,
+          p_pagarme_order_id: orderId,
+          p_pagarme_charge_id: charge.id,
+          p_payment_method: paymentMethod,
+          p_amount_cents: amountCents,
+          p_paid_at: paidAt,
+          p_raw_response: event.data as never,
+        }
+      );
       if (error) throw error;
+      if (didSend === true) {
+        const { sendBookingConfirmationFor } = await import('@/lib/email-flow');
+        await sendBookingConfirmationFor(admin, bookingId).catch((e) =>
+          console.error('[pagarme webhook] email send failed', e)
+        );
+      }
     } else {
       const status = event.type === 'charge.refunded' ? 'refunded' : 'failed';
       const { error } = await admin.rpc('mark_booking_payment_failed', {

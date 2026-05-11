@@ -55,6 +55,7 @@ export type Database = {
       bookings: {
         Row: {
           booking_code: string
+          confirmation_email_sent_at: string | null
           created_at: string
           currency: string
           customer_id: string
@@ -70,6 +71,7 @@ export type Database = {
         }
         Insert: {
           booking_code?: string
+          confirmation_email_sent_at?: string | null
           created_at?: string
           currency?: string
           customer_id: string
@@ -85,6 +87,7 @@ export type Database = {
         }
         Update: {
           booking_code?: string
+          confirmation_email_sent_at?: string | null
           created_at?: string
           currency?: string
           customer_id?: string
@@ -455,6 +458,18 @@ export type Database = {
           p_raw_response: Json
         }
         Returns: undefined
+      }
+      confirm_booking_payment_v2: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_paid_at: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+        }
+        Returns: boolean
       }
       mark_booking_payment_failed: {
         Args: {
