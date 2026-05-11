@@ -234,18 +234,27 @@ export async function createCardForBookingAction(input: {
     const status = (order.status ?? '').toLowerCase();
 
     if (status === 'paid' && charge?.id) {
-      const { error: rpcError } = await admin.rpc('confirm_booking_payment', {
-        p_booking_id: booking.id,
-        p_pagarme_order_id: order.id,
-        p_pagarme_charge_id: charge.id,
-        p_payment_method: 'credit_card',
-        p_amount_cents: order.amount,
-        p_paid_at: charge.paid_at ?? new Date().toISOString(),
-        p_raw_response: order as never,
-      });
+      const { data: didSend, error: rpcError } = await admin.rpc(
+        'confirm_booking_payment_v2',
+        {
+          p_booking_id: booking.id,
+          p_pagarme_order_id: order.id,
+          p_pagarme_charge_id: charge.id,
+          p_payment_method: 'credit_card',
+          p_amount_cents: order.amount,
+          p_paid_at: charge.paid_at ?? new Date().toISOString(),
+          p_raw_response: order as never,
+        }
+      );
       if (rpcError) {
         console.error('[createCardForBookingAction] confirm rpc error', rpcError);
         return { ok: false, error: 'Pagamento aprovado mas falha ao registrar. Aguarde alguns segundos.' };
+      }
+      if (didSend === true) {
+        const { sendBookingConfirmationFor } = await import('@/lib/email-flow');
+        await sendBookingConfirmationFor(admin, booking.id).catch((e) =>
+          console.error('[createCardForBookingAction] email send failed', e)
+        );
       }
       return { ok: true, status: 'paid', bookingCode: booking.booking_code };
     }
