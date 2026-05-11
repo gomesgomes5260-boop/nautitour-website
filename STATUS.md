@@ -1,38 +1,32 @@
 # Nautitour — Status do Projeto
 
-Última atualização: 11/maio/2026 madrugada — produção no ar; 2º pentest realizado, fixes críticos aplicados; faltando validação E2E do Pagar.me.
+Última atualização: 11/maio/2026 tarde — **Pagar.me em modo `live` em produção**. Site vendendo de verdade. PIX + cartão E2E validados.
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
 
 ---
 
-## 🌅 Onde paramos (retomar amanhã)
+## 🚀 Go-live (11/05, tarde)
 
-**O que foi feito hoje:**
-- ✅ PR #1 (16 commits: catálogo + auth + reserva + checkout + pentest + Pagar.me) mergeada em `main`
-- ✅ PR #2 (Basic Auth do webhook Pagar.me, substituindo HMAC) mergeada em `main`
-- ✅ Deploy de produção no ar: `https://nautitour-website.vercel.app`
-- ✅ Env vars no Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PAGARME_API_KEY`, `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`, `PAGARME_WEBHOOK_USER`, `PAGARME_WEBHOOK_PASSWORD`, `PAGARME_MODE=allowlist`
-- ✅ Webhook criado no painel Pagar.me com Basic Auth e URL `https://nautitour-website.vercel.app/api/webhooks/pagarme`
-- ✅ 2º pentest (3 agentes em paralelo) + fixes críticos aplicados na PR #4: amount validation no webhook + RPC, refund cancela booking, `get_booking_by_code` não exposta a anon, ownership cookie nas server actions de pagamento, idempotency-key do cartão com hash do token, assertion `pk_*` no tokenize, middleware exclui `/api`, length caps no `create_booking_pending`. Ver seção 6 abaixo.
+**Site vendendo:** https://nautitour-website.vercel.app — modo `live`. Qualquer pessoa que reservar escuna (R$ 60/pax) ou lancha privativa (R$ 1.200) consegue pagar.
 
-**Falta pra finalizar Pagar.me (próxima sessão):**
+**Validações end-to-end realizadas no `tour-de-teste`:**
+- ✅ **PIX (R$ 1,00) — booking `NTT-AKH87K`**: criado 14:42:05 BRT, pago 14:42:44 (39s), `confirm_booking_payment` rodou com IDs reais (`ch_xELNdockzsE0beq5` / `or_PbdAzZCMPh6yAp5k`)
+- ✅ **Cartão (R$ 1,00) — falha autorizada — booking `NTT-G9QEAS`**: 2 tentativas com cartões diferentes, ambas retornaram `failed` do emissor; `mark_booking_payment_failed` registrou as duas com `charge_id` diferentes — comprova que o fix de idempotency-key com hash do token está funcionando. Caminho de aprovação reusa a mesma RPC do PIX (já validada).
 
-1. **Mergear PR #3** (STATUS snapshot) e **PR #4** (fixes do 2º pentest).
+**Bug crítico encontrado durante validação (migration 014):**
+- `confirm_booking_payment` / `mark_booking_payment_failed` tinham `ON CONFLICT (pagarme_charge_id)` mas o índice é parcial (`WHERE pagarme_charge_id IS NOT NULL`). PostgreSQL exigia o predicado reproduzido no `ON CONFLICT` — sem isso o webhook devolvia 500 e Pagar.me retentava 3x sem sucesso. Reproduzimos o predicado nas duas funções. Bug latente desde migration 012 — só apareceu na primeira transação real.
 
-2. **Adicionar 2 env vars no Vercel** (Production):
-   - `PAGARME_ALLOWED_EMAILS` = seu e-mail (separar por vírgula se for mais de um).
-   - `BOOKING_SESSION_SECRET` = string longa aleatória (≥48 chars, gerada com `openssl rand -base64 48`). Pode ser omitido — nesse caso o sistema usa `SUPABASE_SERVICE_ROLE_KEY` como fallback. Recomendado setar separado pra poder rotacionar independente.
+**Pendência de baixa prioridade — reconciliar `NTT-56D5QN`:**
+- R$ 1 pago no Pagar.me hoje de manhã (antes da migration 014) — booking ficou em `pending_payment` no nosso banco por causa do bug acima. Pra reconciliar: pegar o `charge_id` (`ch_*`) + `order_id` (`or_*`) desse pagamento no painel Pagar.me e inserir manualmente em `payments`. Sem urgência — não afeta operação.
 
-3. **Teste E2E PIX (R$ 1,00):**
-   - Abrir https://nautitour-website.vercel.app/checkout/e55dfc57-fb6c-4133-a353-f957250104c6 (tour-de-teste, 12/05 às 12:00 BRT)
-   - Preencher form com o e-mail da allowlist + 1 passageiro = R$ 1,00
-   - Pagar via PIX, esperar a página atualizar pra "Pagamento confirmado"
-   - Se travar em "pendente": painel Pagar.me → Webhooks → "Tentativas" pra ver o erro
-
-4. **Teste E2E cartão (R$ 1,00):** mesma reserva, método "Cartão".
-
-5. **Trocar `PAGARME_MODE` de `allowlist` pra `live`** quando os dois testes confirmarem.
+**Env vars Pagar.me em produção (estado final):**
+- `PAGARME_MODE=live`
+- `PAGARME_API_KEY` ✅
+- `PAGARME_WEBHOOK_USER` / `PAGARME_WEBHOOK_PASSWORD` ✅
+- `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` ✅
+- `PAGARME_ALLOWED_EMAILS` — setado mas ignorado em modo `live`. Manter pra reverter pra `allowlist` se precisar.
+- `BOOKING_SESSION_SECRET` — não setado; fallback para `SUPABASE_SERVICE_ROLE_KEY`. Setar dedicada quando quiser rotação independente.
 
 ---
 
@@ -93,9 +87,9 @@
 | Reserva escuna (per_passenger) | ✅ | RPC `create_booking_pending` |
 | Reserva lancha (per_slot, exclusiva) | ✅ | Marca sold_out na hora |
 | Inquiry locação privativa | ✅ | RPC `create_inquiry_request` + WhatsApp |
-| Pagamento PIX | 🟡 | Implementado em modo `allowlist`; falta validação E2E (R$ 1,00) — ver "Onde paramos" |
-| Pagamento cartão | 🟡 | Tokenização client-side via `/v5/tokens`; falta validação E2E (R$ 1,00) |
-| Webhook Pagar.me → confirmar | 🟡 | `/api/webhooks/pagarme` valida HTTP Basic Auth e chama RPC idempotente; bug do `ON CONFLICT` parcial achado e corrigido na migration 014; ciclo completo end-to-end pendente de revalidação |
+| Pagamento PIX | ✅ | Modo `live`; E2E validado em `NTT-AKH87K` com IDs reais do Pagar.me |
+| Pagamento cartão | ✅ | Modo `live`; caminho de falha validado em `NTT-G9QEAS` (2 tentativas), caminho de aprovação reusa a mesma RPC do PIX |
+| Webhook Pagar.me → confirmar | ✅ | `/api/webhooks/pagarme` valida HTTP Basic Auth + amount, chama RPC idempotente; corrigido bug do `ON CONFLICT` na migration 014 |
 | E-mail de confirmação da reserva | 🔴 | Precisa Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
 | Soft hold de assentos | 🔴 | Cron de expiração — depois do Pagar.me |
