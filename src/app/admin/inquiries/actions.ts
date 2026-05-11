@@ -77,6 +77,59 @@ export async function updateInquiryNotesAction(
   return { ok: true };
 }
 
+export async function convertInquiryToBookingAction(input: {
+  inquiryId: string;
+  priceBRL: string; // ex: "1200.00"
+  departureAtISO: string; // datetime-local interpretado como BRT
+}): Promise<
+  { ok: true; bookingCode: string; paymentLinkToken: string }
+  | { ok: false; error: string }
+> {
+  const cents = Math.round(parseFloat(input.priceBRL.replace(',', '.')) * 100);
+  if (!Number.isFinite(cents) || cents < 100) {
+    return { ok: false, error: 'Preço inválido (mínimo R$ 1,00)' };
+  }
+  if (!input.departureAtISO) {
+    return { ok: false, error: 'Informe data/horário de saída' };
+  }
+  // datetime-local não tem timezone — interpretar como BRT.
+  const ts = `${input.departureAtISO}:00-03:00`;
+  const date = new Date(ts);
+  if (isNaN(date.getTime()) || date <= new Date()) {
+    return { ok: false, error: 'Data/horário deve ser no futuro' };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login?redirect=/admin/inquiries');
+  const ok = await isAdminUser(user.id);
+  if (!ok) return { ok: false, error: 'Sem permissão' };
+
+  const { data, error } = await supabase.rpc('admin_convert_inquiry_to_booking', {
+    p_inquiry_id: input.inquiryId,
+    p_price_cents: cents,
+    p_departure_at: date.toISOString(),
+  });
+  if (error) {
+    console.error('[convertInquiryToBookingAction]', error);
+    return { ok: false, error: error.message };
+  }
+  const row = data?.[0];
+  if (!row?.booking_code || !row?.payment_link_token) {
+    return { ok: false, error: 'Falha inesperada — conversão não retornou booking' };
+  }
+  revalidatePath('/admin/inquiries');
+  revalidatePath(`/admin/inquiries/${input.inquiryId}`);
+  revalidatePath('/admin/reservas');
+  return {
+    ok: true,
+    bookingCode: row.booking_code,
+    paymentLinkToken: row.payment_link_token,
+  };
+}
+
 // Server-side helper pra contar inquiries por status — chip filters.
 export async function getInquiryCounts(): Promise<Record<InquiryStatus, number>> {
   await requireAdminUserId();
