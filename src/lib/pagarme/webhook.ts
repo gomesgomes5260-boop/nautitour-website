@@ -1,24 +1,32 @@
-import { createHmac, timingSafeEqual } from 'crypto';
-import { getWebhookSecret } from './config';
+import { timingSafeEqual } from 'crypto';
+import { getWebhookCredentials } from './config';
 
 /**
- * Verify a Pagar.me webhook HMAC-SHA256 signature using a constant-time
+ * Verify a Pagar.me webhook HTTP Basic Auth header using a constant-time
  * comparison to avoid timing oracles.
  *
- * Pagar.me sends the signature as the raw request body's HMAC, encoded
- * either as hex or base64 depending on the dashboard configuration. We
- * accept both forms.
+ * Pagar.me v5 webhooks authenticate via Basic Auth: the user/password
+ * configured in the dashboard are sent in the standard
+ * `Authorization: Basic base64(user:password)` header.
  */
-export function verifyWebhookSignature(rawBody: string, signature: string | null): boolean {
-  if (!signature) return false;
-  const secret = getWebhookSecret();
-  const expectedHex = createHmac('sha256', secret).update(rawBody).digest('hex');
-  const expectedB64 = createHmac('sha256', secret).update(rawBody).digest('base64');
+export function verifyWebhookBasicAuth(authHeader: string | null): boolean {
+  if (!authHeader) return false;
+  const match = /^Basic\s+(.+)$/i.exec(authHeader.trim());
+  if (!match) return false;
 
-  // Normalize: strip leading "sha256=" if present
-  const provided = signature.replace(/^sha256=/i, '').trim();
+  let decoded: string;
+  try {
+    decoded = Buffer.from(match[1], 'base64').toString('utf8');
+  } catch {
+    return false;
+  }
+  const sep = decoded.indexOf(':');
+  if (sep < 0) return false;
+  const providedUser = decoded.slice(0, sep);
+  const providedPassword = decoded.slice(sep + 1);
 
-  return safeEqual(provided, expectedHex) || safeEqual(provided, expectedB64);
+  const { user, password } = getWebhookCredentials();
+  return safeEqual(providedUser, user) && safeEqual(providedPassword, password);
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -34,7 +42,7 @@ function safeEqual(a: string, b: string): boolean {
  */
 export type PagarmeWebhookEvent = {
   id: string;
-  type: string; // e.g. "order.paid", "charge.paid", "order.payment_failed"
+  type: string;
   data: {
     id?: string;
     code?: string;
