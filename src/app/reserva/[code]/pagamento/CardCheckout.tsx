@@ -8,12 +8,15 @@ import { createCardForBookingAction } from './actions';
 type Props = {
   bookingCode: string;
   totalCents: number;
+  maxInstallments?: number;
 };
 
 const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
 });
+
+const MIN_INSTALLMENT_CENTS = 10000; // R$ 100,00
 
 function formatCardNumber(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 19);
@@ -26,7 +29,7 @@ function formatExpiry(raw: string): string {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`;
 }
 
-export default function CardCheckout({ bookingCode, totalCents }: Props) {
+export default function CardCheckout({ bookingCode, totalCents, maxInstallments = 1 }: Props) {
   const router = useRouter();
   const [number, setNumber] = useState('');
   const [holder, setHolder] = useState('');
@@ -35,6 +38,13 @@ export default function CardCheckout({ bookingCode, totalCents }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'tokenizing' | 'charging'>('idle');
   const [isPending, startTransition] = useTransition();
+
+  // Cap baseado no valor: cada parcela precisa ter >= R$ 100,00.
+  const allowedInstallments = Math.max(
+    1,
+    Math.min(maxInstallments, Math.floor(totalCents / MIN_INSTALLMENT_CENTS) || 1)
+  );
+  const [installments, setInstallments] = useState<number>(allowedInstallments > 1 ? allowedInstallments : 1);
 
   const submitting = isPending || phase !== 'idle';
 
@@ -79,7 +89,7 @@ export default function CardCheckout({ bookingCode, totalCents }: Props) {
           bookingCode,
           cardToken: token.id,
           cardHolderName: holder,
-          installments: 1,
+          installments,
         });
 
         if (!result.ok) {
@@ -135,6 +145,26 @@ export default function CardCheckout({ bookingCode, totalCents }: Props) {
           className="w-full border border-gray-300 rounded-md px-3 py-2 uppercase"
         />
       </Field>
+
+      {allowedInstallments > 1 && (
+        <Field label="Parcelamento">
+          <select
+            value={installments}
+            onChange={(e) => setInstallments(Number(e.target.value))}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+          >
+            {Array.from({ length: allowedInstallments }, (_, i) => i + 1).map((n) => {
+              const perInstallment = Math.round(totalCents / n);
+              return (
+                <option key={n} value={n}>
+                  {n}x de {PRICE_FORMATTER.format(perInstallment / 100)}
+                  {n === 1 ? ' à vista' : ' sem juros'}
+                </option>
+              );
+            })}
+          </select>
+        </Field>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Validade (MM/AA)" required>
