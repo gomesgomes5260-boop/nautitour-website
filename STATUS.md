@@ -1,6 +1,6 @@
 # Nautitour — Status do Projeto
 
-Última atualização: 11/maio/2026 tarde — **Pagar.me em modo `live` em produção**. Site vendendo de verdade. PIX + cartão E2E validados.
+Última atualização: 11/maio/2026 noite — **Tier 0 concluído**. Site `live`, soft-hold de assentos, e-mail de confirmação via Resend e painel admin mínimo (reservas + manifesto + CSV).
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
 
@@ -27,6 +27,41 @@
 - `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` ✅
 - `PAGARME_ALLOWED_EMAILS` — setado mas ignorado em modo `live`. Manter pra reverter pra `allowlist` se precisar.
 - `BOOKING_SESSION_SECRET` — não setado; fallback para `SUPABASE_SERVICE_ROLE_KEY`. Setar dedicada quando quiser rotação independente.
+
+---
+
+## 🛠️ Tier 0 — soft-hold + Resend + admin (11/05, noite)
+
+3 PRs mergeadas em sequência fechando os piores riscos operacionais imediatos:
+
+**PR #7 — Soft-hold de assentos (migration 015)**
+- `bookings.expires_at` + cron `pg_cron` a cada 1min cancela bookings `pending_payment` expirados e devolve a vaga.
+- `create_booking_pending` consome `seats_taken` no insert (tour `scheduled`) com TTL de 10min. Tour `private` (lancha) continua imediato (sold_out na criação).
+- Pages `/reserva/[code]` e `/reserva/[code]/pagamento` revalidam `expires_at` antes de chamar Pagar.me + countdown UI client-side com auto-refresh.
+- PIX `expiresInSeconds` alinhado pra 600s (mesmo TTL do hold).
+- **Fecha D9 do pentest** (oversell silencioso por concorrência).
+
+**PR #8 — Resend + e-mail de confirmação (migration 015b)**
+- `bookings.confirmation_email_sent_at` + RPC `confirm_booking_payment_v2` returns `boolean`. UPDATE atomico com guarda em `IS NULL` garante idempotência: retry do webhook não dispara segundo e-mail.
+- `src/lib/email.ts` (Resend client), `src/lib/email-templates/booking-confirmation.ts` (HTML inline com cores #096EAB/#D90006, escape XSS), `src/lib/email-flow.ts` (join + envio).
+- Plugado em `api/webhooks/pagarme/route.ts` (PIX + retries de cartão) e em `actions.ts` (cartão aprovado em primeira chamada — PIX só vira `paid` via webhook).
+- Sem `RESEND_API_KEY`: warn + skip (degradação suave). Booking ainda confirma.
+
+**PR #9 — Painel admin (migration 016 + 016b)**
+- Tabela `public.admins (user_id, role)` com RLS (self_read + owner-all) e helper RPC `is_admin(uuid)`. Trigger em `auth.users` auto-promove `gomesgomes5260@gmail.com` a `owner` na primeira vez que ele criar conta.
+- `/admin/layout.tsx` — gate de auth + nav local. Sem user → `/login?redirect=...`. Sem admin → `/`.
+- `/admin/reservas` — tabela com filtros (de, até, status), até 500 linhas. Botão **Exportar CSV** gera CSV com BOM UTF-8 (até 5000 linhas). Server action re-valida auth + admin.
+- `/admin/manifesto?date=YYYY-MM-DD` — lista saídas do dia em BRT com ocupação. `/admin/manifesto/[scheduleId]` é print-friendly e lista todos `booking_passengers` das bookings `confirmed`.
+- `Header.tsx` mostra link **Admin** (vermelho, bold) quando `isAdmin=true`.
+
+**Env vars novas (Vercel, prod):**
+- ✅ `RESEND_API_KEY` (sensitive)
+- ✅ `RESEND_SENDER` = `Nautitour <onboarding@resend.dev>`
+- ✅ `NEXT_PUBLIC_SITE_URL` = `https://nautitour-website.vercel.app`
+
+**Caveats:**
+- Sender `onboarding@resend.dev` só entrega pra e-mails registrados na conta Resend. Pra produção real (cliente qualquer recebe), precisa de domínio próprio verificado (Tier 2).
+- Admin owner inicial: cadastrar `gomesgomes5260@gmail.com` em `/signup` — o trigger promove automaticamente.
 
 ---
 
@@ -70,9 +105,16 @@
 | `not-found.tsx` (404) | ✅ |
 | `error.tsx` (boundary global) | ✅ |
 
+### Admin
+| Rota | Status | Notas |
+|---|---|---|
+| `/admin/reservas` | ✅ | Tabela com filtros + export CSV. Auth-gated por `admins` |
+| `/admin/manifesto` | ✅ | Lista saídas do dia em BRT |
+| `/admin/manifesto/[scheduleId]` | ✅ | Print-friendly, lista passageiros confirmados |
+
 ### Faltando
 - 🔴 `/termos-de-uso` (legal)
-- 🔴 Páginas de admin (passo separado — ver seção 5)
+- 🔴 Admin Tier 1 (inquiries, calendário, cancel/refund — ver seção 5)
 
 ---
 
@@ -90,9 +132,9 @@
 | Pagamento PIX | ✅ | Modo `live`; E2E validado em `NTT-AKH87K` com IDs reais do Pagar.me |
 | Pagamento cartão | ✅ | Modo `live`; caminho de falha validado em `NTT-G9QEAS` (2 tentativas), caminho de aprovação reusa a mesma RPC do PIX |
 | Webhook Pagar.me → confirmar | ✅ | `/api/webhooks/pagarme` valida HTTP Basic Auth + amount, chama RPC idempotente; corrigido bug do `ON CONFLICT` na migration 014 |
-| E-mail de confirmação da reserva | 🔴 | Precisa Resend |
+| E-mail de confirmação da reserva | ✅ | PR #8 — Resend + RPC v2 idempotente. Caveat: sender padrão `onboarding@resend.dev` só entrega pra e-mails da conta Resend |
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
-| Soft hold de assentos | 🔴 | Cron de expiração — depois do Pagar.me |
+| Soft hold de assentos | ✅ | PR #7 — migration 015, TTL 10min, cron pg_cron a cada 1min. Fecha D9 |
 | Cancelamento pelo cliente (UI) | 🔴 |  |
 | Reembolso (UI) | 🔴 | Depende Pagar.me |
 
@@ -111,9 +153,12 @@
 ### RPCs (funções públicas)
 | Função | Acesso | Uso |
 |---|---|---|
-| `create_booking_pending` | anon, authenticated | Cria reserva pendente; lock no schedule |
-| `get_booking_by_code` | anon, authenticated | Lê reserva por código |
+| `create_booking_pending` | anon, authenticated | Cria reserva pendente; consome vaga no insert (scheduled) com TTL 10min |
+| `get_booking_by_code` | service_role | Lê reserva por código (PR #4 revogou anon/authenticated) |
 | `create_inquiry_request` | anon, authenticated | Salva lead da locação privativa |
+| `confirm_booking_payment_v2` | service_role | Confirma pagamento; retorna `boolean` indicando "primeira transição" pra idempotência de e-mail |
+| `expire_pending_bookings` | service_role (cron) | Cancela bookings `pending_payment` com `expires_at < now()` |
+| `is_admin` | authenticated, service_role | Checa se user é admin |
 
 ### Migrations aplicadas
 1. `001_initial_schema` — tabelas, enums, índices
@@ -130,6 +175,10 @@
 12. `012_pagarme_test_tour_and_payment_rpc` — `tours.is_test_only`, tour `tour-de-teste` (R$ 1,00, oculto do público), RPCs `confirm_booking_payment` / `mark_booking_payment_failed` (acessíveis só via service_role)
 13. `013_pentest_round2_amount_pii_refund` — amount validation no `confirm_booking_payment`, refund cancela booking, `get_booking_by_code` REVOKE de anon/authenticated, length caps no `create_booking_pending`
 14. `014_fix_payment_rpc_on_conflict_partial_index` — `ON CONFLICT (pagarme_charge_id) WHERE (pagarme_charge_id IS NOT NULL)` pra casar com o índice parcial. Bug latente das RPCs de pagamento descoberto no 1º teste E2E PIX real: o handler retornava 500, Pagar.me tentava 3x, booking ficava `pending_payment`. Fix isolado no banco — sem mudança de código
+15. `015_soft_hold_pending_bookings` — `bookings.expires_at` + reescrita do `create_booking_pending` (consome vaga no insert pra scheduled, TTL 10min) + trigger ajustado pra só devolver vaga em transições terminais + RPC `expire_pending_bookings` + `pg_cron` job a cada 1min. Fecha D9 do pentest
+16. `015b_confirmation_email_sent_at` — coluna `confirmation_email_sent_at` + RPC `confirm_booking_payment_v2` retorna `boolean` (true só na primeira transição, via UPDATE atomico). v1 vira wrapper void
+17. `016_admin_role` — tabela `admins`, RLS, RPC `is_admin`, seed do owner. RLS: self_read pra authenticated + ALL pra owners
+18. `016b_admin_auto_promote_seed` — trigger em `auth.users` auto-promove `gomesgomes5260@gmail.com` a `owner` no signup (lista hardcoded; pra Tier 1 viramos uma tabela `admin_seed`)
 
 ---
 
@@ -148,16 +197,17 @@
 
 ## 5. Admin (painel interno)
 
-Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
+Tier 0 ✅ (PR #9). Referência completa em `admin-dashboard.md`.
 
-- 🔴 Login admin (role separada)
-- 🔴 Lista de reservas (filtros, busca por código/email)
-- 🔴 Lista de inquiries (locações)
+- ✅ Login admin (role separada via tabela `admins` + helper `is_admin`)
+- ✅ Lista de reservas (filtros por data + status, export CSV até 5000 linhas)
+- ✅ Manifesto de embarque (print-friendly, lista `booking_passengers` confirmados)
+- 🔴 Lista de inquiries (locações privativas)
 - 🔴 Calendário de saídas
-- 🔴 Manifesto de embarque
-- 🔴 Cancelar / reembolsar
+- 🔴 Cancelar / reembolsar pelo painel
 - 🔴 Gerenciar tours, schedules, preços
 - 🔴 Bloquear datas (feriados, manutenção)
+- 🔴 UI pra adicionar/remover admins (hoje é SQL direto)
 
 ---
 
@@ -212,7 +262,7 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 | D6 | Baixa | Sem CSP (Content-Security-Policy) | Definir `default-src 'self'` + nonces após estabilizar dependências |
 | D7 | Baixa | Sem error tracking em produção (Sentry) | Configurar antes do go-live |
 | D8 | Informativa | 4 lints "SECURITY DEFINER callable by anon/authenticated" no advisor do Supabase | **Intencional**: 2 RPCs precisam ser anon-callable (guest checkout + inquiry). PR #4 revogou `get_booking_by_code` → desceu de 6 pra 4 lints |
-| D9 | **Média** | **Oversell silencioso**: 2 clientes podem ter booking `pending_payment` na mesma vaga. Quando o 1º paga e vira `confirmed`, o trigger consome a vaga. Se o 2º também pagar antes do timeout, o `confirm_booking_payment` falha na constraint `seats_within_capacity` — Pagar.me já cobrou mas reserva fica em `pending_payment` pra sempre, sem refund automático | Soft hold com TTL: incrementar `seats_taken` em `pending_payment`, cron decrementa após 15min sem pagamento. Não foi corrigido no PR #4 porque exige cron/edge function e muda UX. Documentar e priorizar P3 |
+| D9 | ~~Média~~ ✅ | ~~**Oversell silencioso**: 2 clientes podem ter booking `pending_payment` na mesma vaga.~~ **Resolvido em PR #7 (Tier 0)**: vaga consumida no insert, TTL 10min, cron `pg_cron` cancela holds expirados a cada 1min. Caso de aresta restante: cliente paga PIX após `expires_at` (improvável agora que PIX expira em 10min) — webhook é no-op, sem refund automático. Refund automático fica como follow-up |
 | D10 | Baixa | Mensagens de erro nas server actions devolvem `error.message` cru do Supabase — pode vazar nome de constraint/table e ajudar enumeração de e-mail em login/signup | Mapear erros conhecidos pra mensagens UX em PT-BR; logar o erro original server-side. PR #4 já fez isso pras actions de pagamento; falta login/signup/resetpw |
 | D11 | Baixa | `/api/auth/signout` não valida header `Origin` | Adicionar check `Origin === host` como defesa em profundidade |
 | D12 | Baixa | HSTS sem `preload` | Adicionar `; preload` quando migrar pro domínio próprio |
@@ -257,7 +307,7 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 | Variáveis de ambiente em prod | 🟡 Só falta `PAGARME_ALLOWED_EMAILS` |
 | Supabase em sa-east-1 (atual: us-west-2) | 🟡 Recomendar migração antes do go-live |
 | Backups DB | ✅ (Supabase auto) |
-| SMTP em prod (Resend ou similar) | 🔴 |
+| SMTP em prod (Resend ou similar) | ✅ Resend free tier (3k/mês). Sender `onboarding@resend.dev` até verificar domínio próprio (Tier 2) |
 
 ---
 
@@ -280,9 +330,9 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 2. **Política de cancelamento real** — placeholder hoje (48h/24h) — confirmar
 3. **Termos / privacidade** — texto preliminar; revisar com jurídico
 4. **Roteamento WhatsApp** — todos os inquiries pro `(22) 99847-9728`?
-5. **Soft hold** — quanto tempo segurar reserva pendente? Sugestão: 15min escuna, 30min lancha
-6. **Lista de admins** — quem terá acesso ao painel
-7. **E-mail provider** — Resend, Mailgun, SendGrid, ou SMTP próprio?
+5. ~~**Soft hold** — quanto tempo segurar reserva pendente?~~ ✅ **Resolvido** (PR #7): 10min pra tour scheduled; private continua imediato (sold_out na criação)
+6. ~~**Lista de admins** — quem terá acesso ao painel~~ ✅ **Resolvido** (PR #9): `gomesgomes5260@gmail.com` como owner. Mais admins via SQL `INSERT INTO admins...`; UI pra gerenciar é Tier 1
+7. ~~**E-mail provider** — Resend, Mailgun, SendGrid, ou SMTP próprio?~~ ✅ **Resolvido** (PR #8): Resend. Falta domínio próprio verificado pra entregar a cliente qualquer (Tier 2)
 8. **Domínio** — comprou? registrar onde?
 9. **Idade mínima / regras p/ crianças** — checkbox `is_child` existe sem regra
 10. **Comissão de afiliados** — vi `commission_payments` no projeto antigo — vai ser necessário?
@@ -365,36 +415,35 @@ Tudo 🔴. Referência em `admin-dashboard.md` (no `main`).
 - ✅ Env vars do webhook em produção: `PAGARME_WEBHOOK_USER`, `PAGARME_WEBHOOK_PASSWORD`
 
 **Pendente (próxima sessão):**
-- 🔴 `PAGARME_ALLOWED_EMAILS` no Vercel (Production)
-- 🔴 Teste E2E PIX (R$ 1,00) no tour-de-teste
-- 🔴 Teste E2E cartão (R$ 1,00) no tour-de-teste
-- 🔴 Trocar `PAGARME_MODE` de `allowlist` pra `live`
+- ✅ Teste E2E PIX (R$ 1,00) — feito (NTT-AKH87K)
+- ✅ Teste E2E cartão (R$ 1,00) — feito (NTT-G9QEAS, caminho de falha)
+- ✅ `PAGARME_MODE=live`
+- ✅ Soft hold + cron de expiração (PR #7)
+- ✅ E-mails transacionais (PR #8 — Resend)
 - 🔴 Parcelamento (hoje fixo em 1x à vista)
-- 🔴 Soft hold + cron de expiração
-- 🔴 E-mails transacionais (Resend)
-- 🔴 Lead recapture e-mail
+- 🔴 Lead recapture e-mail (tabela `lead_invitations` pronta, falta envio)
 
 ### P4 — Admin
-- Painel interno seguindo `admin-dashboard.md`
-- Role admin + RLS adicional
+- ✅ Tier 0: reservas + manifesto + CSV (PR #9)
+- 🔴 Tier 1: inquiries, calendário, cancel/refund pelo painel, gerenciamento de tours/schedules, UI pra gerenciar admins
 
-### Env vars Pagar.me — estado atual em produção (Vercel)
+### Env vars em produção (Vercel) — estado atual
 
-| Variável | Status |
-|---|---|
-| `PAGARME_MODE` | ✅ `allowlist` |
-| `PAGARME_ALLOWED_EMAILS` | 🔴 falta adicionar |
-| `PAGARME_API_KEY` | ✅ |
-| `PAGARME_WEBHOOK_USER` | ✅ |
-| `PAGARME_WEBHOOK_PASSWORD` | ✅ |
-| `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ |
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ |
+| Variável | Status | Notas |
+|---|---|---|
+| `PAGARME_MODE` | ✅ `live` |  |
+| `PAGARME_API_KEY` | ✅ |  |
+| `PAGARME_WEBHOOK_USER` / `PAGARME_WEBHOOK_PASSWORD` | ✅ |  |
+| `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` | ✅ | pk_ |
+| `PAGARME_ALLOWED_EMAILS` | 🟡 | Setado mas ignorado em modo `live`. Mantém pra reverter pra `allowlist` se precisar |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ |  |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ |  |
+| `RESEND_API_KEY` | ✅ | Sensitive |
+| `RESEND_SENDER` | ✅ | `Nautitour <onboarding@resend.dev>` |
+| `NEXT_PUBLIC_SITE_URL` | ✅ | `https://nautitour-website.vercel.app` |
+| `BOOKING_SESSION_SECRET` | 🟡 | Não setado; fallback pra `SUPABASE_SERVICE_ROLE_KEY` |
 
-Notas:
-- `PAGARME_MODE=allowlist` enquanto estamos testando — só os e-mails em `PAGARME_ALLOWED_EMAILS` conseguem pagar. Todo o resto vê "em breve".
-- Quando os testes E2E passarem, trocar pra `PAGARME_MODE=live`.
-- Webhook configurado em `https://nautitour-website.vercel.app/api/webhooks/pagarme` com HTTP Basic Auth (todos os eventos marcados; nosso handler ignora os que não trata).
+Webhook configurado em `https://nautitour-website.vercel.app/api/webhooks/pagarme` com HTTP Basic Auth (todos os eventos marcados; handler ignora os que não trata).
 
 ### P5 — Go-live
 - Vercel deploy + domínio + region migration Supabase
