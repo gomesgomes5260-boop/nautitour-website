@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
 import PrintButton from './PrintButton';
+import BlockScheduleButton from './BlockScheduleButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export default async function ManifestoSchedulePage({
 
   const { data: schedule } = await admin
     .from('tour_schedules')
-    .select(`id, departure_at, capacity, tour:tours ( name )`)
+    .select(`id, departure_at, capacity, status, tour:tours ( name )`)
     .eq('id', scheduleId)
     .maybeSingle();
 
@@ -34,6 +35,7 @@ export default async function ManifestoSchedulePage({
     id: string;
     departure_at: string;
     capacity: number;
+    status: string;
     tour: { name: string } | { name: string }[] | null;
   };
   const s = schedule as unknown as Sch;
@@ -83,8 +85,23 @@ export default async function ManifestoSchedulePage({
         >
           ← Voltar
         </Link>
-        <PrintButton />
+        <div className="flex gap-3">
+          {s.status !== 'cancelled' && (
+            <BlockScheduleButton
+              scheduleId={s.id}
+              confirmedBookings={rows.length}
+            />
+          )}
+          <PrintButton />
+        </div>
       </div>
+
+      {s.status === 'cancelled' && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded p-3 mb-4 text-sm print:hidden">
+          Esta saída está <strong>cancelada</strong>. Não aparece nas listas
+          públicas.
+        </div>
+      )}
 
       <div className="bg-white border border-gray-200 rounded-md p-6 print:border-0 print:rounded-none print:p-0">
         <header className="border-b border-gray-200 pb-4 mb-4">

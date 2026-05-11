@@ -35,6 +35,41 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_events: {
+        Row: {
+          actor_user_id: string | null
+          booking_id: string
+          created_at: string
+          id: string
+          kind: string
+          payload: Json | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          booking_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          booking_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_passengers: {
         Row: {
           birth_date: string | null
@@ -330,6 +365,50 @@ export type Database = {
           },
         ]
       }
+      schedule_templates: {
+        Row: {
+          active: boolean
+          capacity: number
+          created_at: string
+          departure_time: string
+          id: string
+          price_cents: number | null
+          tour_id: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          active?: boolean
+          capacity: number
+          created_at?: string
+          departure_time: string
+          id?: string
+          price_cents?: number | null
+          tour_id: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          active?: boolean
+          capacity?: number
+          created_at?: string
+          departure_time?: string
+          id?: string
+          price_cents?: number | null
+          tour_id?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_templates_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tour_schedules: {
         Row: {
           capacity: number
@@ -504,7 +583,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      block_schedule: {
+        Args: { p_reason: string; p_schedule_id: string }
+        Returns: number
+      }
       expire_pending_bookings: { Args: never; Returns: number }
+      generate_future_schedules: {
+        Args: { p_days_ahead?: number }
+        Returns: number
+      }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
       gen_booking_code: { Args: never; Returns: string }
       get_booking_by_code: {
