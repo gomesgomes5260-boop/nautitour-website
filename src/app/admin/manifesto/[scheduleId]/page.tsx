@@ -1,0 +1,148 @@
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { createAdminClient } from '@/lib/supabase/admin';
+import PrintButton from './PrintButton';
+
+export const dynamic = 'force-dynamic';
+
+const DATETIME = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  weekday: 'long',
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+export default async function ManifestoSchedulePage({
+  params,
+}: {
+  params: Promise<{ scheduleId: string }>;
+}) {
+  const { scheduleId } = await params;
+  const admin = createAdminClient();
+
+  const { data: schedule } = await admin
+    .from('tour_schedules')
+    .select(`id, departure_at, capacity, tour:tours ( name )`)
+    .eq('id', scheduleId)
+    .maybeSingle();
+
+  if (!schedule) notFound();
+  type Sch = {
+    id: string;
+    departure_at: string;
+    capacity: number;
+    tour: { name: string } | { name: string }[] | null;
+  };
+  const s = schedule as unknown as Sch;
+  const tour = Array.isArray(s.tour) ? s.tour[0] : s.tour;
+
+  const { data: bookings } = await admin
+    .from('bookings')
+    .select(
+      `
+      id,
+      booking_code,
+      passenger_count,
+      status,
+      customer:customers ( full_name, email, phone ),
+      passengers:booking_passengers ( full_name, document, is_child )
+    `
+    )
+    .eq('tour_schedule_id', scheduleId)
+    .eq('status', 'confirmed')
+    .order('booking_code', { ascending: true });
+
+  type BookingRow = {
+    id: string;
+    booking_code: string;
+    passenger_count: number;
+    status: string;
+    customer:
+      | { full_name: string | null; email: string; phone: string | null }
+      | { full_name: string | null; email: string; phone: string | null }[]
+      | null;
+    passengers: Array<{
+      full_name: string;
+      document: string | null;
+      is_child: boolean;
+    }>;
+  };
+  const rows = (bookings ?? []) as unknown as BookingRow[];
+
+  const totalPax = rows.reduce((acc, r) => acc + r.passenger_count, 0);
+
+  return (
+    <div className="print:bg-white">
+      <div className="flex items-center justify-between mb-6 print:hidden">
+        <Link
+          href="/admin/manifesto"
+          className="text-sm text-gray-600 hover:underline"
+        >
+          ← Voltar
+        </Link>
+        <PrintButton />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-md p-6 print:border-0 print:rounded-none print:p-0">
+        <header className="border-b border-gray-200 pb-4 mb-4">
+          <h1 className="text-xl font-semibold">{tour?.name ?? '—'}</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            {DATETIME.format(new Date(s.departure_at))}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            Passageiros confirmados: <strong>{totalPax}</strong> de {s.capacity}
+          </p>
+        </header>
+
+        {rows.length === 0 ? (
+          <p className="text-gray-500 text-sm py-8 text-center">
+            Nenhuma reserva confirmada para este horário.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase text-gray-600 border-b border-gray-200">
+              <tr>
+                <th className="py-2 pr-4">#</th>
+                <th className="py-2 pr-4">Reserva</th>
+                <th className="py-2 pr-4">Passageiro</th>
+                <th className="py-2 pr-4">Documento</th>
+                <th className="py-2 pr-4">Tipo</th>
+                <th className="py-2 pr-4">Contato</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.flatMap((b, bi) => {
+                const cust = Array.isArray(b.customer) ? b.customer[0] : b.customer;
+                return b.passengers.map((p, pi) => (
+                  <tr key={`${b.id}-${pi}`} className="border-b border-gray-100">
+                    <td className="py-2 pr-4 text-gray-500">
+                      {bi + 1}.{pi + 1}
+                    </td>
+                    <td className="py-2 pr-4 font-mono text-xs">
+                      {b.booking_code}
+                    </td>
+                    <td className="py-2 pr-4">{p.full_name}</td>
+                    <td className="py-2 pr-4 text-gray-700">
+                      {p.document ?? '—'}
+                    </td>
+                    <td className="py-2 pr-4 text-gray-700">
+                      {p.is_child ? 'Criança' : 'Adulto'}
+                    </td>
+                    <td className="py-2 pr-4 text-gray-700">
+                      {pi === 0
+                        ? `${cust?.full_name ?? ''} · ${cust?.phone ?? cust?.email ?? ''}`
+                        : ''}
+                    </td>
+                  </tr>
+                ));
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}

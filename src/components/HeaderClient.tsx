@@ -7,6 +7,7 @@ import { Menu, X, ShoppingCart } from 'lucide-react';
 
 type Props = {
   user: { email: string | null; name: string | null } | null;
+  isAdmin?: boolean;
 };
 
 const phoneNumbers = [
@@ -16,7 +17,7 @@ const phoneNumbers = [
   { number: '(22) 99908-7800', display: '(22) 99908-7800' },
 ];
 
-export default function HeaderClient({ user }: Props) {
+export default function HeaderClient({ user, isAdmin = false }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const displayName = user?.name?.split(' ')[0] ?? user?.email ?? null;
 
@@ -65,6 +66,15 @@ export default function HeaderClient({ user }: Props) {
         <div className="flex gap-6 items-center ml-auto">
           {displayName ? (
             <>
+              {isAdmin && (
+                <Link
+                  href="/admin/reservas"
+                  style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '700' }}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/minhas-reservas"
                 style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
@@ -131,6 +141,15 @@ export default function HeaderClient({ user }: Props) {
                 <span style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}>
                   Olá, {displayName}
                 </span>
+                {isAdmin && (
+                  <Link
+                    href="/admin/reservas"
+                    style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '700' }}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link
                   href="/minhas-reservas"
                   style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
