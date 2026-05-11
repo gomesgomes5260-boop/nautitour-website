@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       booking_passengers: {
         Row: {
           birth_date: string | null
@@ -484,6 +505,7 @@ export type Database = {
         Returns: undefined
       }
       expire_pending_bookings: { Args: never; Returns: number }
+      is_admin: { Args: { p_user_id: string }; Returns: boolean }
       gen_booking_code: { Args: never; Returns: string }
       get_booking_by_code: {
         Args: { p_code: string }
