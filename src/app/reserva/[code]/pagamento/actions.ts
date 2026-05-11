@@ -79,7 +79,7 @@ export async function createPixForBookingAction(
   const { data: booking, error: bookingError } = await admin
     .from('bookings')
     .select(
-      'id, booking_code, status, total_cents, passenger_count, customer_id, tour_id'
+      'id, booking_code, status, total_cents, passenger_count, customer_id, tour_id, expires_at'
     )
     .eq('booking_code', bookingCode)
     .maybeSingle();
@@ -88,6 +88,9 @@ export async function createPixForBookingAction(
   if (!booking) return { ok: false, error: 'Reserva não encontrada' };
   if (booking.status !== 'pending_payment') {
     return { ok: false, error: `Reserva já está ${booking.status}` };
+  }
+  if (booking.expires_at && new Date(booking.expires_at) < new Date()) {
+    return { ok: false, error: 'Reserva expirou. Faça uma nova reserva.' };
   }
 
   const auth = await authorizeBooking(bookingCode, booking.customer_id);
@@ -127,7 +130,10 @@ export async function createPixForBookingAction(
         phone: customer.phone ?? undefined,
         document: customer.cpf ?? undefined,
       },
-      expiresInSeconds: 3600,
+      // Aligned with the booking soft-hold TTL (10 min). If the cliente
+      // pays later than that, the booking is already cancelled and the
+      // webhook will reject the payment.
+      expiresInSeconds: 600,
     });
 
     const charge = order.charges?.[0];
@@ -172,7 +178,7 @@ export async function createCardForBookingAction(input: {
 
   const { data: booking, error: bookingError } = await admin
     .from('bookings')
-    .select('id, booking_code, status, total_cents, customer_id, tour_id')
+    .select('id, booking_code, status, total_cents, customer_id, tour_id, expires_at')
     .eq('booking_code', input.bookingCode)
     .maybeSingle();
 
@@ -180,6 +186,9 @@ export async function createCardForBookingAction(input: {
   if (!booking) return { ok: false, error: 'Reserva não encontrada' };
   if (booking.status !== 'pending_payment') {
     return { ok: false, error: `Reserva já está ${booking.status}` };
+  }
+  if (booking.expires_at && new Date(booking.expires_at) < new Date()) {
+    return { ok: false, error: 'Reserva expirou. Faça uma nova reserva.' };
   }
 
   const auth = await authorizeBooking(input.bookingCode, booking.customer_id);
