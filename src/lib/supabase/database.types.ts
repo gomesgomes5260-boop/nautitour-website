@@ -119,6 +119,7 @@ export type Database = {
           id: string
           notes: string | null
           passenger_count: number
+          payment_link_token: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_cents: number
           tour_id: string
@@ -135,6 +136,7 @@ export type Database = {
           id?: string
           notes?: string | null
           passenger_count: number
+          payment_link_token?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents: number
           tour_id: string
@@ -151,6 +153,7 @@ export type Database = {
           id?: string
           notes?: string | null
           passenger_count?: number
+          payment_link_token?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents?: number
           tour_id?: string
@@ -609,6 +612,18 @@ export type Database = {
       admin_cancel_booking: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: undefined
+      }
+      admin_convert_inquiry_to_booking: {
+        Args: {
+          p_departure_at: string
+          p_inquiry_id: string
+          p_price_cents: number
+        }
+        Returns: {
+          booking_code: string
+          booking_id: string
+          payment_link_token: string
+        }[]
       }
       admin_mark_refund_attempt: {
         Args: {

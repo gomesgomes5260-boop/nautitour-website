@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import InquiryActions from './InquiryActions';
+import ConvertInquiryButton from './ConvertInquiryButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +89,49 @@ export default async function InquiryDetailPage({
   const cust = Array.isArray(i.customer) ? i.customer[0] : i.customer;
   const tour = Array.isArray(i.tour) ? i.tour[0] : i.tour;
   const st = STATUS_LABEL[i.status];
+
+  // Lookup booking convertido via booking_events.kind='converted_from_inquiry'
+  const { data: convertedEvent } = await admin
+    .from('booking_events')
+    .select('booking_id, created_at')
+    .eq('kind', 'converted_from_inquiry')
+    .contains('payload', { inquiry_id: i.id })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let convertedBooking: {
+    booking_code: string;
+    status: string;
+    payment_link_token: string | null;
+  } | null = null;
+  if (convertedEvent?.booking_id) {
+    const { data: b } = await admin
+      .from('bookings')
+      .select('booking_code, status, payment_link_token')
+      .eq('id', convertedEvent.booking_id)
+      .maybeSingle();
+    if (b) convertedBooking = b;
+  }
+
+  // Defaults pro modal de conversão (datetime-local sem TZ, BRT implícito)
+  const todayPlus3 = new Date();
+  todayPlus3.setDate(todayPlus3.getDate() + 3);
+  const defaultDepartureAt = (() => {
+    if (i.requested_date) {
+      const time = i.start_time?.slice(0, 5) ?? '09:00';
+      return `${i.requested_date}T${time}`;
+    }
+    const yyyy = todayPlus3.getFullYear();
+    const mm = String(todayPlus3.getMonth() + 1).padStart(2, '0');
+    const dd = String(todayPlus3.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T09:00`;
+  })();
+  const paxNote = `Inquiry: ${i.passenger_count ?? '?'} pax · ${
+    i.interested_in_open_bar ? 'com open bar' : 'sem open bar'
+  }`;
+  const defaultPriceBRL = '';
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '');
 
   const whatsappText = encodeURIComponent(
     `Olá, ${cust?.full_name ?? ''}! Recebemos seu pedido de locação privativa da escuna para ${
@@ -221,6 +265,38 @@ export default async function InquiryDetailPage({
 
           <section className="bg-white border border-gray-200 rounded-md p-6">
             <h2 className="text-lg font-semibold mb-4">Ações</h2>
+            {convertedBooking ? (
+              <div className="bg-green-50 border border-green-200 rounded p-3 text-sm mb-4">
+                <p className="font-semibold text-green-900 mb-1">
+                  Convertido em reserva
+                </p>
+                <Link
+                  href={`/admin/reservas/${convertedBooking.booking_code}`}
+                  className="text-[rgb(9,110,171)] hover:underline font-mono"
+                >
+                  {convertedBooking.booking_code} →
+                </Link>
+                {convertedBooking.payment_link_token && convertedBooking.status === 'pending_payment' && (
+                  <div className="mt-2 text-xs text-gray-700">
+                    <strong>Link de pagamento</strong> (manda pro cliente):
+                    <div className="mt-1 p-2 bg-white border border-gray-200 rounded font-mono break-all">
+                      {siteUrl}/pagar/{convertedBooking.payment_link_token}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              (i.status === 'new' || i.status === 'contacted') && (
+                <div className="mb-4">
+                  <ConvertInquiryButton
+                    inquiryId={i.id}
+                    defaultDepartureAt={defaultDepartureAt}
+                    defaultPaxNote={paxNote}
+                    defaultPriceBRL={defaultPriceBRL}
+                  />
+                </div>
+              )
+            )}
             <InquiryActions
               inquiryId={i.id}
               currentStatus={i.status}
