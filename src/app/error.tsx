@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import Link from 'next/link';
 
 export default function GlobalError({
@@ -11,8 +12,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // TODO: enviar para Sentry ou outro tracker quando configurado
-    console.error(error);
+    Sentry.captureException(error, { extra: { digest: error.digest } });
   }, [error]);
 
   return (
