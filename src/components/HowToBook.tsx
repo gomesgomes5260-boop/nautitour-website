@@ -33,13 +33,16 @@ const steps: Step[] = [
 
 export default function HowToBook() {
   return (
-    <section className="bg-[var(--color-charcoal-50)] py-24 md:py-32 px-5 md:px-12">
+    <section className="bg-[var(--color-charcoal-50)] py-20 sm:py-24 md:py-32 px-5 sm:px-6 md:px-10 lg:px-12">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 md:mb-20 max-w-2xl mx-auto">
-          <span className="text-xs font-bold tracking-[0.24em] uppercase text-[var(--color-red-600)]">
+        <div className="text-center mb-12 md:mb-16 lg:mb-20 max-w-2xl mx-auto">
+          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
             Como funciona
           </span>
-          <h2 className="font-display text-[var(--color-charcoal-900)] text-4xl md:text-6xl font-semibold tracking-tight mt-4 mb-4">
+          <h2
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-4"
+            style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
+          >
             Reservar é fácil e rápido.
           </h2>
           <p className="text-[var(--color-charcoal-500)] text-base md:text-lg leading-relaxed">
@@ -47,11 +50,11 @@ export default function HowToBook() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
           {steps.map((step) => (
             <article
               key={step.num}
-              className="bg-white border border-[var(--color-charcoal-100)] rounded-3xl p-9 md:p-10"
+              className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl md:rounded-3xl p-7 sm:p-8 md:p-10"
             >
               <div className="flex items-center gap-5 mb-7">
                 <span className="font-display text-6xl font-semibold text-[var(--color-red-600)] leading-none">

@@ -4,13 +4,16 @@ import Logo from './Logo';
 
 export function MapSection() {
   return (
-    <section className="w-full bg-white py-20 md:py-28 px-5 md:px-12">
+    <section className="w-full bg-white py-16 sm:py-20 md:py-28 px-5 sm:px-6 md:px-10 lg:px-12">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12 md:mb-14">
-          <span className="text-xs font-bold tracking-[0.24em] uppercase text-[var(--color-red-600)]">
+        <div className="text-center mb-10 md:mb-14">
+          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
             Visite nossa loja
           </span>
-          <h3 className="font-display text-[var(--color-charcoal-900)] text-3xl md:text-5xl font-semibold tracking-tight mt-3">
+          <h3
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3"
+            style={{ fontSize: 'clamp(1.875rem, 5vw, 3rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
+          >
             Onde estamos.
           </h3>
           <p className="text-[var(--color-charcoal-500)] text-sm md:text-base mt-3">
@@ -37,8 +40,8 @@ export function MapSection() {
 export default function Footer() {
   return (
     <footer className="w-full bg-[var(--color-charcoal-900)] text-white">
-      <div className="max-w-7xl mx-auto px-5 md:px-12 py-20 md:py-28">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-16 mb-16 md:mb-20">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 lg:px-12 py-16 sm:py-20 md:py-28">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-20">
           {/* Brand column */}
           <div className="lg:col-span-1">
             <Logo size="lg" variant="white" />
