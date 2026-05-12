@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { authLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type SignupResult =
   | { ok: true; needsEmailConfirmation: boolean }
@@ -14,9 +15,15 @@ export async function signupAction(input: {
   fullName: string;
   phone: string;
 }): Promise<SignupResult> {
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+  const limit = await authLimiter.limit(ip);
+  if (!limit.success) {
+    return { ok: false, error: 'Muitas tentativas. Aguarde alguns minutos.' };
+  }
+
   const supabase = await createClient();
 
-  const headersList = await headers();
   const origin = headersList.get('origin');
   const host = headersList.get('host');
   const protocol = host?.includes('localhost') ? 'http' : 'https';

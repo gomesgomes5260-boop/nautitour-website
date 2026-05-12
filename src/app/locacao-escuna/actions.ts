@@ -1,7 +1,10 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { verifyTurnstile } from '@/lib/turnstile';
+import { inquiryLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type CreateInquiryInput = {
   email: string;
@@ -13,6 +16,7 @@ export type CreateInquiryInput = {
   passengerCount: number;
   interestedInOpenBar: boolean;
   message?: string;
+  turnstileToken: string | null;
 };
 
 export type CreateInquiryResult =
@@ -50,6 +54,21 @@ function buildWhatsAppMessage(input: CreateInquiryInput): string {
 export async function createInquiryAction(
   input: CreateInquiryInput
 ): Promise<CreateInquiryResult> {
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+
+  const captcha = await verifyTurnstile(input.turnstileToken, ip);
+  if (!captcha.ok) {
+    return { ok: false, error: captcha.error };
+  }
+  const limit = await inquiryLimiter.limit(ip);
+  if (!limit.success) {
+    return {
+      ok: false,
+      error: 'Muitas solicitações. Tente novamente em alguns minutos.',
+    };
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc('create_inquiry_request', {
