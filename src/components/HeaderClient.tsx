@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Menu, X, ShoppingCart, Mail, Phone } from 'lucide-react';
+import Wordmark from './Wordmark';
 
 type Props = {
   user: { email: string | null; name: string | null } | null;
@@ -11,89 +12,100 @@ type Props = {
 };
 
 const phoneNumbers = [
-  { number: '(22) 99773-4466', display: '(22) 99773-4466' },
-  { number: '(22) 99996-3664', display: '(22) 99996-3664' },
-  { number: '(22) 98805-2238', display: '(22) 98805-2238' },
-  { number: '(22) 99908-7800', display: '(22) 99908-7800' },
+  { number: '(22) 99773-4466' },
+  { number: '(22) 99996-3664' },
+  { number: '(22) 98805-2238' },
+  { number: '(22) 99908-7800' },
+];
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/sobre-nos', label: 'Sobre' },
+  { href: '/passeio-escuna', label: 'Passeio de Escuna' },
+  { href: '/passeio-lancha', label: 'Passeio de Lancha' },
+  { href: '/locacao-escuna', label: 'Locação Privativa' },
 ];
 
 export default function HeaderClient({ user, isAdmin = false }: Props) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
   const displayName = user?.name?.split(' ')[0] ?? user?.email ?? null;
 
   return (
-    <header>
-      <div
-        style={{ backgroundColor: 'rgb(217, 0, 6)', height: '51px', padding: '15px 75px' }}
-        className="flex justify-between items-center"
-      >
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      {/* Top contact bar — red-600 */}
+      <div className="hidden md:flex bg-[var(--color-red-600)] text-white text-xs px-12 py-2 items-center justify-between">
+        <a
+          href="mailto:passeiodeescuna.tx@gmail.com"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <Mail size={14} />
+          passeiodeescuna.tx@gmail.com
+        </a>
         <div className="flex items-center gap-4">
-          <div style={{ color: 'white', fontSize: '12px', fontWeight: '500' }}>
-            <a href="mailto:passeiodeescuna.tx@gmail.com" className="hover:opacity-80">
-              passeiodeescuna.tx@gmail.com
+          {phoneNumbers.map((p, i) => (
+            <a
+              key={i}
+              href={`tel:${p.number.replace(/\D/g, '')}`}
+              className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+            >
+              {i === 0 && <Phone size={14} />}
+              {p.number}
             </a>
-          </div>
-          <div className="flex gap-2" style={{ color: 'white', fontSize: '12px' }}>
-            {phoneNumbers.map((phone, index) => (
-              <div key={index} className="flex items-center">
-                {index > 0 && <span className="mx-1">|</span>}
-                <a href={`tel:${phone.number.replace(/\D/g, '')}`} className="hover:opacity-80">
-                  {phone.display}
-                </a>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-        <div />
       </div>
 
-      <nav
-        style={{ borderBottom: '1px solid rgb(234, 238, 243)' }}
-        className="bg-white h-24 px-12 flex items-center justify-between hidden md:flex"
-      >
-        <Link href="/">
-          <div style={{ width: '278px', height: '73px', position: 'relative' }}>
-            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
-          </div>
-        </Link>
-        <div className="flex gap-8 ml-auto mr-auto">
-          <Link href="/" style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Home</Link>
-          <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Sobre Nós</Link>
-          <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Barco / Escuna</Link>
-          <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Passeio de Lancha</Link>
-          <Link href="/locacao-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Locação Privativa</Link>
+      {/* Desktop nav */}
+      <nav className="hidden md:flex items-center justify-between h-20 px-12 border-b border-[var(--color-charcoal-100)]">
+        <Wordmark size="lg" showTagline />
+
+        <div className="flex items-center gap-8">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-semibold transition-colors ${
+                  isActive
+                    ? 'text-[var(--color-red-600)]'
+                    : 'text-[var(--color-charcoal-700)] hover:text-[var(--color-red-600)]'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
-        <div className="flex gap-6 items-center ml-auto">
+
+        <div className="flex items-center gap-5">
           {displayName ? (
             <>
               {isAdmin && (
                 <Link
                   href="/admin/reservas"
-                  style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '700' }}
-                  className="hover:opacity-80 transition-opacity"
+                  className="text-sm font-bold text-[var(--color-red-600)] hover:opacity-80 transition-opacity"
                 >
                   Admin
                 </Link>
               )}
               <Link
                 href="/minhas-reservas"
-                style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
-                className="hover:opacity-80 transition-opacity"
+                className="text-sm font-semibold text-[var(--color-charcoal-700)] hover:text-[var(--color-red-600)] transition-colors"
               >
                 Minhas reservas
               </Link>
               <Link
                 href="/minha-conta"
-                style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
-                className="hover:opacity-80 transition-opacity"
+                className="text-sm font-semibold text-[var(--color-charcoal-700)] hover:text-[var(--color-red-600)] transition-colors"
               >
                 Olá, {displayName}
               </Link>
               <form action="/api/auth/signout" method="post">
                 <button
                   type="submit"
-                  style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
-                  className="hover:opacity-80 transition-opacity"
+                  className="text-sm font-semibold text-[var(--color-charcoal-500)] hover:text-[var(--color-charcoal-900)] transition-colors"
                 >
                   Sair
                 </button>
@@ -101,74 +113,104 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
             </>
           ) : (
             <>
-              <Link href="/login" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Entrar</Link>
-              <Link href="/signup" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} className="hover:opacity-80 transition-opacity">Cadastre-se</Link>
+              <Link
+                href="/login"
+                className="text-sm font-semibold text-[var(--color-charcoal-700)] hover:text-[var(--color-red-600)] transition-colors"
+              >
+                Entrar
+              </Link>
+              <Link
+                href="/signup"
+                className="text-sm font-bold text-white bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] px-5 py-2 rounded-full transition-colors"
+              >
+                Cadastre-se
+              </Link>
             </>
           )}
-          <button style={{ color: 'black' }} className="hover:opacity-80 transition-opacity" aria-label="Shopping Cart">
+          <button
+            aria-label="Carrinho"
+            className="text-[var(--color-charcoal-700)] hover:text-[var(--color-red-600)] transition-colors"
+          >
             <ShoppingCart size={20} />
           </button>
         </div>
       </nav>
 
-      <div className="md:hidden bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between h-20">
-        <Link href="/">
-          <div style={{ width: '140px', height: '40px', position: 'relative' }}>
-            <Image src="/images/logos/logo-fullcolor.png" alt="Nautitour Logo" fill style={{ objectFit: 'contain' }} priority />
-          </div>
-        </Link>
-        <div className="flex gap-4 items-center">
-          <button style={{ color: 'black' }} className="hover:opacity-80 transition-opacity" aria-label="Shopping Cart">
+      {/* Mobile nav */}
+      <div className="md:hidden flex items-center justify-between h-16 px-5 border-b border-[var(--color-charcoal-100)]">
+        <Wordmark size="md" />
+        <div className="flex items-center gap-3">
+          <button
+            aria-label="Carrinho"
+            className="text-[var(--color-charcoal-700)] p-2"
+          >
             <ShoppingCart size={20} />
           </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu" className="hover:opacity-80 transition-opacity">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Menu"
+            className="text-[var(--color-charcoal-700)] p-2"
+          >
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
+      {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex flex-col gap-4">
-            <Link href="/" style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Home</Link>
-            <Link href="/sobre-nos" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Sobre Nós</Link>
-            <Link href="/passeio-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Barco / Escuna</Link>
-            <Link href="/passeio-lancha" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Passeio de Lancha</Link>
-            <Link href="/locacao-escuna" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Locação Privativa</Link>
-            <hr className="my-2" />
+        <div className="md:hidden bg-white border-b border-[var(--color-charcoal-100)] px-5 py-4">
+          <div className="flex flex-col gap-3">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`text-sm font-semibold py-1 ${
+                    isActive
+                      ? 'text-[var(--color-red-600)]'
+                      : 'text-[var(--color-charcoal-700)]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <hr className="border-[var(--color-charcoal-100)] my-2" />
             {displayName ? (
               <>
-                <span style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}>
+                <span className="text-sm font-semibold text-[var(--color-charcoal-700)]">
                   Olá, {displayName}
                 </span>
                 {isAdmin && (
                   <Link
                     href="/admin/reservas"
-                    style={{ color: 'rgb(192, 0, 0)', fontSize: '14px', fontWeight: '700' }}
                     onClick={() => setIsMenuOpen(false)}
+                    className="text-sm font-bold text-[var(--color-red-600)]"
                   >
                     Admin
                   </Link>
                 )}
                 <Link
                   href="/minhas-reservas"
-                  style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
                   onClick={() => setIsMenuOpen(false)}
+                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
                 >
                   Minhas reservas
                 </Link>
                 <Link
                   href="/minha-conta"
-                  style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
                   onClick={() => setIsMenuOpen(false)}
+                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
                 >
                   Minha conta
                 </Link>
                 <form action="/api/auth/signout" method="post">
                   <button
                     type="submit"
-                    style={{ color: 'black', fontSize: '14px', fontWeight: '600' }}
                     onClick={() => setIsMenuOpen(false)}
+                    className="text-sm font-semibold text-[var(--color-charcoal-500)]"
                   >
                     Sair
                   </button>
@@ -176,8 +218,20 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
               </>
             ) : (
               <>
-                <Link href="/login" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Entrar</Link>
-                <Link href="/signup" style={{ color: 'black', fontSize: '14px', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>Cadastre-se</Link>
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-sm font-bold text-white bg-[var(--color-red-600)] py-2 px-4 rounded-full text-center"
+                >
+                  Cadastre-se
+                </Link>
               </>
             )}
           </div>

@@ -1,37 +1,43 @@
-'use client';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 export default function CTASection() {
   return (
     <section
-      className="w-full py-20 px-4 md:py-[80px] md:px-[80px] text-center"
-      style={{
-        background: 'linear-gradient(135deg, #096EAB 0%, #075a8c 50%, #064d78 100%)',
-      }}
+      className="relative overflow-hidden py-20 md:py-28 px-5 md:px-12"
+      style={{ background: 'var(--gradient-iron)' }}
     >
-      <div className="max-w-4xl mx-auto">
+      {/* Decorative pattern - subtle diagonal lines */}
+      <div
+        className="absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(45deg, transparent 0, transparent 22px, rgba(255,255,255,0.5) 22px, rgba(255,255,255,0.5) 23px)',
+        }}
+      />
+
+      <div className="relative max-w-4xl mx-auto text-center">
+        <span className="inline-block text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-300)] mb-5">
+          Vem embarcar
+        </span>
         <h2
-          className="text-white mb-6 md:mb-8"
-          style={{ fontSize: '32px', fontWeight: 400 }}
+          className="font-display text-white text-4xl md:text-6xl font-semibold tracking-tight mb-6"
+          style={{ letterSpacing: '-0.02em' }}
         >
-          A Melhor Experi\u00eancia de Passeio de Barco e Escuna em B\u00fazios
+          A melhor experiência
+          <br />
+          de passeio em Búzios.
         </h2>
-        <div className="text-white text-base md:text-lg mb-8 space-y-2">
-          <p>Roteiros exclusivos pelas 12 praias mais famosas e 3 ilhas paradis\u00edacas.</p>
-          <p>Seguran\u00e7a, divers\u00e3o e o melhor atendimento da Regi\u00e3o dos Lagos.</p>
-        </div>
-        <button
-          className="text-white font-semibold hover:opacity-90 transition-opacity"
-          style={{
-            backgroundColor: 'rgb(9, 110, 171)',
-            borderRadius: '50px',
-            padding: '15px 70px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
+        <p className="text-white/80 text-base md:text-lg mb-10 max-w-2xl mx-auto">
+          12 praias, 3 ilhas, sol o dia todo. Seguro, divertido e com o melhor atendimento da Região dos Lagos.
+        </p>
+        <Link
+          href="/passeio-escuna"
+          className="inline-flex items-center gap-2 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-base px-8 py-4 rounded-full transition-colors"
         >
-          Ver Datas e Reservar Agora
-        </button>
+          Ver datas e reservar
+          <ChevronRight size={18} />
+        </Link>
       </div>
     </section>
   );
