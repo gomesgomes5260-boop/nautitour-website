@@ -31,6 +31,12 @@ export default async function AdminLayout({
       <div className="bg-gray-50 border-b border-gray-200">
         <nav className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex gap-6 text-sm">
           <Link
+            href="/admin/overview"
+            className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
+          >
+            Visão geral
+          </Link>
+          <Link
             href="/admin/reservas"
             className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
           >
