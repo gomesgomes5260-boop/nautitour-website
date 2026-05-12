@@ -30,13 +30,16 @@ const features: Feature[] = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-white py-24 md:py-32 px-5 md:px-12">
+    <section className="bg-white py-20 sm:py-24 md:py-32 px-5 sm:px-6 md:px-10 lg:px-12">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 md:mb-20 max-w-2xl">
-          <span className="text-xs font-bold tracking-[0.24em] uppercase text-[var(--color-red-600)]">
+        <div className="mb-12 md:mb-16 lg:mb-20 max-w-2xl">
+          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
             Por que a Nautitour
           </span>
-          <h2 className="font-display text-[var(--color-charcoal-900)] text-4xl md:text-6xl font-semibold tracking-tight mt-4 mb-5">
+          <h2
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-5"
+            style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
+          >
             Estrutura completa pra você relaxar.
           </h2>
           <p className="text-[var(--color-charcoal-500)] text-base md:text-lg leading-relaxed">
@@ -44,23 +47,23 @@ export default function WhyChooseUs() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-14 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 md:gap-14 mb-16 sm:mb-20 md:mb-28">
           {features.map((feature) => (
             <div key={feature.title} className="flex flex-col">
-              <span className="flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mb-6">
-                <feature.Icon size={28} />
+              <span className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mb-5 md:mb-6">
+                <feature.Icon size={26} />
               </span>
-              <h3 className="font-sans text-xl md:text-2xl font-bold text-[var(--color-charcoal-900)] mb-3">
+              <h3 className="font-sans text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-charcoal-900)] mb-3">
                 {feature.title}
               </h3>
-              <p className="text-[var(--color-charcoal-500)] text-base leading-relaxed">
+              <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base leading-relaxed">
                 {feature.description}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[var(--color-charcoal-100)] pt-16 md:pt-20">
+        <div className="border-t border-[var(--color-charcoal-100)] pt-12 sm:pt-16 md:pt-20">
           <p className="text-center text-[var(--color-charcoal-700)] text-sm font-semibold uppercase tracking-[0.2em] mb-10">
             Certificados pelos principais órgãos reguladores
           </p>
