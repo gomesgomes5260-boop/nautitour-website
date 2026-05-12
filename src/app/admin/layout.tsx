@@ -55,6 +55,12 @@ export default async function AdminLayout({
             Inquiries
           </Link>
           <Link
+            href="/admin/financeiro"
+            className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
+          >
+            Financeiro
+          </Link>
+          <Link
             href="/admin/config"
             className="text-gray-700 hover:text-[rgb(9,110,171)] font-medium"
           >
