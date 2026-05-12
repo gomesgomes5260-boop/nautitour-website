@@ -1,19 +1,19 @@
 import Link from 'next/link';
 import { Mail, MapPin } from 'lucide-react';
-import Wordmark from './Wordmark';
+import Logo from './Logo';
 
 export function MapSection() {
   return (
-    <section className="w-full bg-white py-12 md:py-16 px-5 md:px-12">
+    <section className="w-full bg-white py-20 md:py-28 px-5 md:px-12">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
+        <div className="text-center mb-12 md:mb-14">
+          <span className="text-xs font-bold tracking-[0.24em] uppercase text-[var(--color-red-600)]">
             Visite nossa loja
           </span>
-          <h3 className="font-display text-[var(--color-charcoal-900)] text-3xl md:text-4xl font-semibold tracking-tight mt-2">
+          <h3 className="font-display text-[var(--color-charcoal-900)] text-3xl md:text-5xl font-semibold tracking-tight mt-3">
             Onde estamos.
           </h3>
-          <p className="text-[var(--color-charcoal-500)] text-sm mt-2">
+          <p className="text-[var(--color-charcoal-500)] text-sm md:text-base mt-3">
             Travessa dos Pescadores, 326 · Búzios — RJ
           </p>
         </div>
@@ -37,12 +37,12 @@ export function MapSection() {
 export default function Footer() {
   return (
     <footer className="w-full bg-[var(--color-charcoal-900)] text-white">
-      <div className="max-w-7xl mx-auto px-5 md:px-12 py-14 md:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-14">
+      <div className="max-w-7xl mx-auto px-5 md:px-12 py-20 md:py-28">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-16 mb-16 md:mb-20">
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <Wordmark size="lg" variant="inverse" showTagline />
-            <p className="text-white/60 text-sm mt-5 leading-relaxed">
+            <Logo size="lg" variant="white" />
+            <p className="text-white/60 text-sm mt-6 leading-relaxed">
               Passeios de barco em Búzios desde sempre. Segurança certificada, equipe que conhece o mar.
             </p>
           </div>
