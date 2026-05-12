@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ShoppingCart, Mail, Phone } from 'lucide-react';
 import Logo from './Logo';
+import Container from './Container';
 
 type Props = {
   user: { email: string | null; name: string | null } | null;
@@ -33,34 +34,36 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
-      {/* Top contact bar — red-600 */}
-      <div className="hidden md:flex bg-[var(--color-red-600)] text-white text-xs px-12 py-2 items-center justify-between">
-        <a
-          href="mailto:passeiodeescuna.tx@gmail.com"
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <Mail size={14} />
-          passeiodeescuna.tx@gmail.com
-        </a>
-        <div className="flex items-center gap-4">
-          {phoneNumbers.map((p, i) => (
-            <a
-              key={i}
-              href={`tel:${p.number.replace(/\D/g, '')}`}
-              className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-            >
-              {i === 0 && <Phone size={14} />}
-              {p.number}
-            </a>
-          ))}
-        </div>
+      {/* Top contact bar */}
+      <div className="hidden md:block bg-[var(--color-red-600)] text-white text-xs">
+        <Container className="flex items-center justify-between py-2">
+          <a
+            href="mailto:passeiodeescuna.tx@gmail.com"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Mail size={14} />
+            passeiodeescuna.tx@gmail.com
+          </a>
+          <div className="flex items-center gap-4">
+            {phoneNumbers.map((p, i) => (
+              <a
+                key={i}
+                href={`tel:${p.number.replace(/\D/g, '')}`}
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+              >
+                {i === 0 && <Phone size={14} />}
+                {p.number}
+              </a>
+            ))}
+          </div>
+        </Container>
       </div>
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center justify-between h-24 px-12 border-b border-[var(--color-charcoal-100)]">
+      <Container className="hidden md:flex items-center justify-between h-24 border-b border-[var(--color-charcoal-100)]">
         <Logo size="lg" priority />
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-7">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -134,12 +137,12 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
             <ShoppingCart size={20} />
           </button>
         </div>
-      </nav>
+      </Container>
 
       {/* Mobile nav */}
-      <div className="md:hidden flex items-center justify-between h-20 px-5 border-b border-[var(--color-charcoal-100)]">
-        <Logo size="md" priority />
-        <div className="flex items-center gap-3">
+      <Container className="md:hidden flex items-center justify-between h-16 border-b border-[var(--color-charcoal-100)]">
+        <Logo size="sm" priority />
+        <div className="flex items-center gap-2">
           <button
             aria-label="Carrinho"
             className="text-[var(--color-charcoal-700)] p-2"
@@ -154,87 +157,89 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
             {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-      </div>
+      </Container>
 
-      {/* Mobile menu */}
+      {/* Mobile menu drawer */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[var(--color-charcoal-100)] px-5 py-4">
-          <div className="flex flex-col gap-3">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`text-sm font-semibold py-1 ${
-                    isActive
-                      ? 'text-[var(--color-red-600)]'
-                      : 'text-[var(--color-charcoal-700)]'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            <hr className="border-[var(--color-charcoal-100)] my-2" />
-            {displayName ? (
-              <>
-                <span className="text-sm font-semibold text-[var(--color-charcoal-700)]">
-                  Olá, {displayName}
-                </span>
-                {isAdmin && (
+        <div className="md:hidden bg-white border-b border-[var(--color-charcoal-100)]">
+          <Container className="py-5">
+            <div className="flex flex-col gap-3">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
                   <Link
-                    href="/admin/reservas"
+                    key={link.href}
+                    href={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-sm font-bold text-[var(--color-red-600)]"
+                    className={`text-sm font-semibold py-1 ${
+                      isActive
+                        ? 'text-[var(--color-red-600)]'
+                        : 'text-[var(--color-charcoal-700)]'
+                    }`}
                   >
-                    Admin
+                    {link.label}
                   </Link>
-                )}
-                <Link
-                  href="/minhas-reservas"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
-                >
-                  Minhas reservas
-                </Link>
-                <Link
-                  href="/minha-conta"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
-                >
-                  Minha conta
-                </Link>
-                <form action="/api/auth/signout" method="post">
-                  <button
-                    type="submit"
+                );
+              })}
+              <hr className="border-[var(--color-charcoal-100)] my-2" />
+              {displayName ? (
+                <>
+                  <span className="text-sm font-semibold text-[var(--color-charcoal-700)]">
+                    Olá, {displayName}
+                  </span>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/reservas"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-sm font-bold text-[var(--color-red-600)]"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <Link
+                    href="/minhas-reservas"
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-sm font-semibold text-[var(--color-charcoal-500)]"
+                    className="text-sm font-semibold text-[var(--color-charcoal-700)]"
                   >
-                    Sair
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-sm font-semibold text-[var(--color-charcoal-700)]"
-                >
-                  Entrar
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-sm font-bold text-white bg-[var(--color-red-600)] py-2 px-4 rounded-full text-center"
-                >
-                  Cadastre-se
-                </Link>
-              </>
-            )}
-          </div>
+                    Minhas reservas
+                  </Link>
+                  <Link
+                    href="/minha-conta"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-sm font-semibold text-[var(--color-charcoal-700)]"
+                  >
+                    Minha conta
+                  </Link>
+                  <form action="/api/auth/signout" method="post">
+                    <button
+                      type="submit"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-sm font-semibold text-[var(--color-charcoal-500)]"
+                    >
+                      Sair
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-sm font-semibold text-[var(--color-charcoal-700)]"
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-sm font-bold text-white bg-[var(--color-red-600)] py-2.5 px-4 rounded-full text-center"
+                  >
+                    Cadastre-se
+                  </Link>
+                </>
+              )}
+            </div>
+          </Container>
         </div>
       )}
     </header>

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { ShieldCheck, Wine, Globe2 } from 'lucide-react';
+import Container from './Container';
 
 type Feature = {
   Icon: typeof ShieldCheck;
@@ -12,48 +13,48 @@ const features: Feature[] = [
     Icon: ShieldCheck,
     title: 'Segurança certificada',
     description:
-      'Embarcações seguindo as normas da Marinha. Coletes para todos e marinheiros experientes garantindo um passeio 100% seguro.',
+      'Embarcações seguindo as normas da Marinha. Coletes para todos e marinheiros experientes.',
   },
   {
     Icon: Wine,
     title: 'Bar a bordo',
     description:
-      'Caipirinhas, petiscos frescos e drinks tropicais (opcional). Você só se preocupa em brindar à vista perfeita.',
+      'Caipirinhas, petiscos frescos e drinks tropicais (opcional). Brinde à vista perfeita.',
   },
   {
     Icon: Globe2,
     title: 'Guias bilíngues',
     description:
-      'Atendemos turistas do mundo todo com hospitalidade calorosa. Português e Espanhol pra ninguém perder a história local.',
+      'Atendemos turistas do mundo todo. Português e Espanhol pra ninguém perder a história local.',
   },
 ];
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-white py-20 sm:py-24 md:py-32 px-5 sm:px-6 md:px-10 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-12 md:mb-16 lg:mb-20 max-w-2xl">
-          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
+    <section className="bg-white py-16 sm:py-20 md:py-28">
+      <Container>
+        <div className="mb-12 md:mb-16 max-w-2xl">
+          <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)]">
             Por que a Nautitour
           </span>
           <h2
-            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-5"
-            style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-3 sm:mb-4"
+            style={{ fontSize: 'clamp(1.75rem, 5.5vw, 3.5rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
           >
             Estrutura completa pra você relaxar.
           </h2>
-          <p className="text-[var(--color-charcoal-500)] text-base md:text-lg leading-relaxed">
-            Segurança, diversão e atendimento bom de verdade. O passeio vira a melhor memória da viagem.
+          <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base md:text-lg leading-relaxed">
+            Segurança, diversão e atendimento bom de verdade.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 md:gap-14 mb-16 sm:mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-14 sm:mb-16 md:mb-20">
           {features.map((feature) => (
             <div key={feature.title} className="flex flex-col">
-              <span className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mb-5 md:mb-6">
-                <feature.Icon size={26} />
+              <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mb-4">
+                <feature.Icon size={22} />
               </span>
-              <h3 className="font-sans text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-charcoal-900)] mb-3">
+              <h3 className="font-sans text-lg sm:text-xl font-bold text-[var(--color-charcoal-900)] mb-2">
                 {feature.title}
               </h3>
               <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base leading-relaxed">
@@ -63,16 +64,16 @@ export default function WhyChooseUs() {
           ))}
         </div>
 
-        <div className="border-t border-[var(--color-charcoal-100)] pt-12 sm:pt-16 md:pt-20">
-          <p className="text-center text-[var(--color-charcoal-700)] text-sm font-semibold uppercase tracking-[0.2em] mb-10">
+        <div className="border-t border-[var(--color-charcoal-100)] pt-10 sm:pt-12 md:pt-16">
+          <p className="text-center text-[var(--color-charcoal-700)] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] mb-8">
             Certificados pelos principais órgãos reguladores
           </p>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-20">
-            <Image src="/images/cert-buzios.png" alt="Certificação Búzios" width={130} height={130} />
-            <Image src="/images/cert-cadastur.png" alt="Certificação CADASTUR" width={130} height={130} />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12 md:gap-16">
+            <Image src="/images/cert-buzios.png" alt="Certificação Búzios" width={110} height={110} />
+            <Image src="/images/cert-cadastur.png" alt="Certificação CADASTUR" width={110} height={110} />
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
