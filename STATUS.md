@@ -1,6 +1,6 @@
 # Nautitour — Status do Projeto
 
-Última atualização: 11/maio/2026 noite — **Tier 0 + Tier 1 concluídos**. Site `live` com soft-hold, e-mail confirmação, painel admin completo (reservas com drawer/cancel/refund, manifesto heatmap, inquiries, config: schedule generator + preços + admins).
+Última atualização: 12/maio/2026 — **Tiers 0, 1 e 2 (7/8) concluídos**. Site `live` com soft-hold, e-mail confirmação, painel admin completo, parcelamento de cartão (lancha 6x), conversão inquiry→booking, dashboard overview, financeiro, clientes CRM-light, cancelamento pelo cliente até 48h. Restante: **PR-Final** (swap domínio apex pro Vercel + Resend verificado + lead recapture) — aguardando configuração DNS no painel mpjunior.
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
 
@@ -62,6 +62,50 @@
 **Caveats:**
 - Sender `onboarding@resend.dev` só entrega pra e-mails registrados na conta Resend. Pra produção real (cliente qualquer recebe), precisa de domínio próprio verificado (Tier 2).
 - Admin owner inicial: cadastrar `gomesgomes5260@gmail.com` em `/signup` — o trigger promove automaticamente.
+
+---
+
+## 🚀 Tier 2 — escala, receita, UX e retenção (12/05)
+
+6 PRs mergeadas (J, K, M, N, O, P). 2 itens (I + L) ficam pra **PR-Final** quando o swap apex do `nautitour.com.br` for feito (DNS hoje gerenciado por mpjunior; precisa adicionar records do Resend lá pro lead recapture funcionar de verdade).
+
+**PR #17 — Parcelamento de cartão (sem migration)**
+- Lancha (tour_type='private'): até 6x sem juros, mínimo R$ 100/parcela
+- Escuna (tour_type='scheduled'): 1x à vista
+- `CardCheckout.tsx` ganha `<select>` "Nx de R$ Y,YY sem juros"
+- `pagamento/actions.ts` faz re-check server-side de `tour_type` (defense in depth contra burla do select)
+
+**PR #18 — Conversão inquiry→booking 1-click (migration 021)**
+- `bookings.payment_link_token text` + unique index parcial
+- RPC `admin_convert_inquiry_to_booking(inquiry_id, price_cents, departure_at)` cria schedule dedicado private/sold_out + booking pending_payment com TTL 24h + token urlsafe
+- Rota pública `/pagar/[token]`: valida token, setta cookie HMAC, redireciona pra pagamento
+- `/admin/inquiries/[id]` ganha botão "Converter em reserva" (modal preço + datetime) e card verde com link de pagamento depois de converter
+
+**PR #19 — Dashboard "Visão geral" (sem migration)**
+- Nova rota `/admin/overview`, `/admin` redireciona pra ela, "Visão geral" vira primeira aba do nav
+- 4 KPIs (Receita do mês, Embarques hoje, Ocupação 7d, Reembolsos)
+- Card "Saídas de hoje" + bar chart SVG inline "Receita 14 dias" + feed "Atividade recente" (10 últimos `booking_events` com whitelist)
+- Tour-de-teste excluído de tudo
+
+**PR #20 — Financeiro (sem migration)**
+- Nova rota `/admin/financeiro` com filtro mensal `?month=YYYY-MM` + nav prev/hoje/next
+- 4 KPIs (Receita do mês, A receber, Reembolsos, Cancelados)
+- Card "Receita por método" (PIX/cartão/boleto) com barras horizontais coloridas
+- Card "Receita por produto" stacked bar 100% colorida por tour
+- Tabela top-20 transações com link pra reserva admin
+
+**PR #21 — Cancelamento pelo cliente até 48h antes (migration 022)**
+- RPC `customer_cancel_booking(p_booking_id, p_reason)` SECURITY DEFINER com 4 checagens: auth.uid, ownership via customer.auth_user_id, status confirmed/pending_payment, departure_at > now+48h
+- Cliente autenticado vê botão "Cancelar reserva" em `/reserva/[code]` e link inline em `/minhas-reservas`. Mensagem clara se <48h orienta WhatsApp
+- Refund continua manual (admin processa pelo botão da PR #13). Modal avisa "em até 5 dias úteis"
+- Guest sem login: botão não aparece (resolve quando PR-L for ao ar)
+
+**PR #22 — Clientes CRM-light (sem migration)**
+- Nova rota `/admin/clientes` lista top 50 com busca (nome/e-mail) + sort (gasto/recência/count)
+- 4 KPIs globais (Clientes ativos, Recorrentes, Ticket médio, Guests %)
+- Tags automáticas: VIP (≥R$3000), Recorrente (>1 booking), Lancha (já reservou private), Guest (no drawer)
+- Avatar com hash determinístico (8 cores, sem libs)
+- `/admin/clientes/[id]`: drawer com dados pessoais, 3 KPIs, histórico completo de bookings com link admin
 
 ---
 
@@ -153,13 +197,23 @@
 ### Admin
 | Rota | Status | Notas |
 |---|---|---|
-| `/admin/reservas` | ✅ | Tabela com filtros + export CSV. Auth-gated por `admins` |
-| `/admin/reservas/[code]` | ✅ | Drawer com detalhes + Reenviar e-mail / Cancelar / Tentar reembolso (refund híbrido) |
-| `/admin/inquiries` | ✅ | Lista com chips de filtro por status (new/contacted/won/lost) |
-| `/admin/inquiries/[id]` | ✅ | Drawer com detalhes do pedido + cliente + workflow + notas internas |
-| `/admin/manifesto` | ✅ | Heatmap mensal de ocupação com cores por % cheio |
-| `/admin/manifesto/[scheduleId]` | ✅ | Print-friendly + botão "Bloquear saída" com motivo |
-| `/admin/config` | ✅ | Schedule generator (cron + botão manual) · Templates · Preços e capacidade · Administradores |
+| `/admin` | ✅ | Redirect → `/admin/overview` |
+| `/admin/overview` | ✅ | KPIs do mês + saídas de hoje + receita 14d + atividade recente |
+| `/admin/reservas` | ✅ | Tabela com filtros + export CSV |
+| `/admin/reservas/[code]` | ✅ | Drawer detalhes + Reenviar e-mail / Cancelar / Tentar reembolso |
+| `/admin/inquiries` | ✅ | Lista com chips de filtro por status |
+| `/admin/inquiries/[id]` | ✅ | Drawer + workflow + notas internas + **converter em reserva** |
+| `/admin/clientes` | ✅ | Top 50 + KPIs + busca + sort + tags |
+| `/admin/clientes/[id]` | ✅ | Drawer com dados + histórico completo de bookings |
+| `/admin/financeiro` | ✅ | KPIs mensais + receita por método/produto + transações |
+| `/admin/manifesto` | ✅ | Heatmap mensal de ocupação |
+| `/admin/manifesto/[scheduleId]` | ✅ | Print-friendly + botão "Bloquear saída" |
+| `/admin/config` | ✅ | Schedule generator · Templates · Preços/Capacidade · Administradores |
+
+### Cliente / público
+| Rota | Status | Notas |
+|---|---|---|
+| `/pagar/[token]` | ✅ | Token público gerado em conversão inquiry→booking; setta cookie e redireciona pra pagamento |
 
 ### Faltando
 - 🔴 `/termos-de-uso` (legal)
@@ -185,8 +239,10 @@
 | E-mail "complete cadastro" (lead recapture) | 🔴 | Tabela `lead_invitations` pronta, falta envio |
 | Soft hold de assentos | ✅ | PR #7 — migration 015, TTL 10min, cron pg_cron a cada 1min. Fecha D9 |
 | Cancelamento pelo admin | ✅ | PR #13 (Tier 1.F) — `/admin/reservas/[code]` modal motivo. Refund híbrido: admin tenta automático ou marca pra refund manual |
-| Cancelamento pelo cliente (UI) | 🔴 |  |
+| Cancelamento pelo cliente (UI) | ✅ | PR #21 — auth user dono cancela até 48h antes via `/reserva/[code]` ou `/minhas-reservas` |
 | Reembolso automático pelo admin | ✅ | PR #13 — `refundCharge` em Pagar.me v5 (`DELETE /charges/{id}`); fluxo híbrido |
+| Parcelamento de cartão | ✅ | PR #17 — lancha 6x sem juros (Nautitour absorve); escuna 1x; min R$ 100/parcela |
+| Conversão inquiry→booking 1-click | ✅ | PR #18 — RPC admin + link público `/pagar/[token]` mandado pro cliente via WhatsApp |
 
 ---
 
@@ -195,7 +251,8 @@
 ### Estrutura
 | Item | Status |
 |---|---|
-| 12 tabelas + 6 enums | ✅ (adicionadas no Tier 0/1: `admins`, `booking_events`, `schedule_templates`) |
+| 12 tabelas + 6 enums | ✅ (Tier 0/1: `admins`, `booking_events`, `schedule_templates`) |
+| Colunas adicionadas Tier 2: `bookings.payment_link_token` (PR #18) | ✅ |
 | 1 view (`admins_with_email`, security_invoker) | ✅ |
 | RLS em todas as tabelas | ✅ |
 | Triggers (`on_auth_user_created`, `on_auth_user_created_admin_seed`, `tg_booking_update_seats`, `set_updated_at`) | ✅ |
@@ -219,6 +276,8 @@
 | `admin_add_admin_by_email` | authenticated (owner) | Adiciona admin com role owner/operator |
 | `admin_remove_admin` | authenticated (owner) | Remove admin (não-self, não-último-owner) |
 | `admin_update_tour_pricing` | authenticated (admin) | Edita `base_price_cents`/`max_capacity` + opcionalmente propaga pros schedules futuros |
+| `admin_convert_inquiry_to_booking` | authenticated (admin) | Cria schedule dedicado + booking pending_payment com token público de pagamento (Tier 2.K) |
+| `customer_cancel_booking` | authenticated (dono) | Cancela própria reserva até 48h antes da saída (Tier 2.O) |
 
 ### Migrations aplicadas
 1. `001_initial_schema` — tabelas, enums, índices
@@ -244,6 +303,8 @@
 21. `018_inquiry_admin_lifecycle` — `inquiry_requests` ganha `admin_notes`, `status_changed_at`, `status_changed_by`; RPC `admin_update_inquiry` com auto-set de `whatsapp_contacted_at` na transição pra `contacted`
 22. `019_admin_cancel_refund_and_events_backfill` — RPC `admin_cancel_booking` + RPC `admin_mark_refund_attempt`; backfill retroativo de `booking_events` (`created`, `payment_paid`, `payment_failed`) pros bookings existentes
 23. `020_admin_management_and_pricing` — view `admins_with_email` (security_invoker) + RPC `admin_add_admin_by_email` (owner-only) + RPC `admin_remove_admin` (owner-only, guardrails) + RPC `admin_update_tour_pricing` com opção apply-to-future-schedules
+24. `021_admin_convert_inquiry_to_booking` — `bookings.payment_link_token text` + unique index parcial + RPC `admin_convert_inquiry_to_booking` (cria schedule dedicado private/sold_out + booking pending_payment com TTL 24h + token urlsafe gerado via `pgcrypto.gen_random_bytes`)
+25. `022_customer_cancel_booking` — RPC `customer_cancel_booking` SECURITY DEFINER com checagens de auth/ownership/status/janela 48h. Logging em `booking_events` com `had_paid_payment` no payload
 
 ---
 
@@ -262,25 +323,25 @@
 
 ## 5. Admin (painel interno)
 
-Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11/#12/#13/#14/#15). Referência completa em `admin-dashboard.md`.
+Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11-#15) + Tier 2 ✅ (PRs #17-#22). Referência completa em `admin-dashboard.md`.
 
-- ✅ Login admin (role separada via tabela `admins` + helper `is_admin`; roles `owner`/`operator`)
+- ✅ Dashboard "Visão geral" (KPIs do mês + saídas de hoje + bar chart 14d + atividade recente)
 - ✅ Lista de reservas (filtros por data + status, export CSV até 5000 linhas)
 - ✅ Drawer detalhe de reserva (passageiros + pagamentos + timeline) com botões Reenviar e-mail / Cancelar / Tentar reembolso automático
-- ✅ Lista de inquiries de locação privativa (filtros, drawer com workflow new→contacted→won/lost + notas internas)
+- ✅ Lista de inquiries de locação privativa (filtros, drawer com workflow new→contacted→won/lost + notas internas + **conversão em booking 1-click com link de pagamento público**)
 - ✅ Manifesto de embarque (print-friendly, lista `booking_passengers` confirmados)
 - ✅ Calendário/heatmap mensal de saídas com ocupação colorida
+- ✅ Clientes (lista top 50 + busca + sort + tags VIP/Recorrente/Lancha/Guest + drawer histórico)
+- ✅ Financeiro (4 KPIs + receita por método + receita por produto + tabela transações por mês)
 - ✅ Cancelar / reembolsar pelo painel (refund híbrido — automático ou manual)
 - ✅ Bloquear saídas (feriados, manutenção) com motivo + cancelamento automático das reservas
 - ✅ Gerenciar admins (adicionar por e-mail / remover, owner-only)
 - ✅ Editar preços e capacidades dos tours (com opção apply-to-future-schedules)
-- 🔴 Calendário/heatmap modo semanal (toggle) — Tier 2
-- 🔴 Templates de horário editáveis pela UI (criar/desativar) — Tier 2
-- 🔴 Conversão inquiry→booking em 1 clique — Tier 2
-- 🔴 Dashboard "Visão geral" (KPIs do mês + atividade recente) — Tier 2
-- 🔴 Clientes (KPIs + top clientes + drawer histórico) — Tier 2
-- 🔴 Financeiro (receita por método + donut + últimas transações) — Tier 2
-- 🔴 Roles além de owner/operator (comandante, financeiro) — Tier 2
+- ✅ Login admin (roles `owner`/`operator`)
+- 🔴 Calendário/heatmap modo semanal (toggle) — Tier 3
+- 🔴 Templates de horário editáveis pela UI (criar/desativar) — Tier 3
+- 🔴 Roles além de owner/operator (comandante, financeiro) — Tier 3
+- 🔴 Paginação na lista de clientes (top 50 atual) — Tier 3 quando virar gargalo
 
 ---
 
@@ -494,13 +555,25 @@ Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11/#12/#13/#14/#15). Referência completa 
 - ✅ Soft hold + cron de expiração (PR #7)
 - ✅ E-mails transacionais (PR #8 — Resend)
 - ✅ Cancelamento + reembolso automático pelo admin (PR #13 — refund híbrido)
-- 🔴 Parcelamento (hoje fixo em 1x à vista) — Tier 2
-- 🔴 Lead recapture e-mail (tabela `lead_invitations` pronta, falta envio) — Tier 2
+- ✅ Parcelamento de cartão (PR #17 — lancha 6x sem juros)
+- 🔜 Lead recapture e-mail — depende da PR-Final (Resend com domínio verificado)
 
 ### P4 — Admin
 - ✅ Tier 0: reservas + manifesto + CSV (PR #9)
 - ✅ Tier 1 completo (PRs #11-#15): schedule generator + cron, inquiries com workflow, drawer reserva com cancel/refund híbrido, heatmap mensal, admin management UI + edição de preços/capacidades
-- 🔴 Tier 2: dashboard overview com KPIs, clientes (top + histórico), financeiro (receita por método), conversão inquiry→booking 1-click, templates de horário editáveis
+- ✅ Tier 2 completo (PRs #17-#22): parcelamento cartão, conversão inquiry→booking, dashboard overview, financeiro, cancelamento cliente, clientes CRM
+- 🔴 Tier 3: paginação clientes, templates de horário editáveis na UI, roles extras (comandante/financeiro), heatmap semanal toggle, refund parcial automatizado
+
+### P5 — PR-Final (swap domínio + Resend verificado + lead recapture)
+
+**O que falta pra projeto fechar:**
+
+1. **DNS do domínio `nautitour.com.br`** hoje está com `ns1/ns2.mpjunior.com.br`. Adicionar 4 records do Resend (1 MX + 2 TXT + 1 DKIM) no painel da mpjunior pra verificar subdomínio `mail.nautitour.com.br` — não toca o site WordPress atual.
+2. Configurar domínio próprio `nautitour.com.br` no Vercel + atualizar DNS apex pra apontar pra Vercel quando estiver tudo testado (fim do projeto).
+3. Atualizar envs Vercel:
+   - `RESEND_SENDER=Nautitour <reservas@mail.nautitour.com.br>`
+   - `NEXT_PUBLIC_SITE_URL=https://nautitour.com.br` (no swap final)
+4. Implementar **lead recapture e-mail** (PR-L original): RPC `create_lead_invitation_for_customer` + endpoint `/claim?token=...` + template + disparo automático após booking confirmed pra customers `is_guest=true`. Tabela `lead_invitations` já existe (migration 005), só falta lógica.
 
 ### Env vars em produção (Vercel) — estado atual
 
