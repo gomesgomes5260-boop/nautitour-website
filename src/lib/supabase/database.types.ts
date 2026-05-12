@@ -537,6 +537,10 @@ export type Database = {
       }
     }
     Functions: {
+      customer_cancel_booking: {
+        Args: { p_booking_id: string; p_reason: string }
+        Returns: undefined
+      }
       create_booking_pending: {
         Args: {
           p_cpf?: string

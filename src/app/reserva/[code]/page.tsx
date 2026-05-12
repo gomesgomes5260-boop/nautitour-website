@@ -3,7 +3,9 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import HoldCountdown from './HoldCountdown';
+import CancelBookingButton from './CancelBookingButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +58,7 @@ export default async function ReservaPage({
     .from('bookings')
     .select(
       `
+      id,
       booking_code,
       status,
       passenger_count,
@@ -65,7 +68,7 @@ export default async function ReservaPage({
       expires_at,
       tour:tours ( name, slug ),
       schedule:tour_schedules ( departure_at ),
-      customer:customers ( email, full_name )
+      customer:customers ( email, full_name, auth_user_id )
     `
     )
     .eq('booking_code', code)
@@ -74,6 +77,7 @@ export default async function ReservaPage({
   if (!booking) notFound();
 
   type Joined = {
+    id: string;
     booking_code: string;
     status: string;
     passenger_count: number;
@@ -83,7 +87,10 @@ export default async function ReservaPage({
     expires_at: string | null;
     tour: { name: string; slug: string } | { name: string; slug: string }[] | null;
     schedule: { departure_at: string } | { departure_at: string }[] | null;
-    customer: { email: string; full_name: string | null } | { email: string; full_name: string | null }[] | null;
+    customer:
+      | { email: string; full_name: string | null; auth_user_id: string | null }
+      | { email: string; full_name: string | null; auth_user_id: string | null }[]
+      | null;
   };
   const b = booking as unknown as Joined;
   const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
@@ -91,6 +98,35 @@ export default async function ReservaPage({
   const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
 
   const status = STATUS_LABEL[b.status] ?? { label: b.status, tone: 'blue' as const };
+
+  // Cancelar pelo cliente: precisa auth user logado = dono do booking,
+  // status confirmed/pending_payment, departure_at > now + 48h.
+  const supabaseAuth = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabaseAuth.auth.getUser();
+  const isOwner =
+    !!authUser &&
+    !!customer?.auth_user_id &&
+    customer.auth_user_id === authUser.id;
+  const cancellableStatus = b.status === 'confirmed' || b.status === 'pending_payment';
+  const departureMs = schedule?.departure_at ? new Date(schedule.departure_at).getTime() : null;
+  const hoursUntil = departureMs ? (departureMs - Date.now()) / (1000 * 60 * 60) : null;
+  const within48 = hoursUntil !== null && hoursUntil >= 48;
+  const canCancel = isOwner && cancellableStatus && within48;
+
+  // Payment paid? (pra avisar do refund manual no modal)
+  let hasPaidPayment = false;
+  if (canCancel) {
+    const { data: paid } = await admin
+      .from('payments')
+      .select('id')
+      .eq('booking_id', b.id)
+      .eq('status', 'paid')
+      .limit(1)
+      .maybeSingle();
+    hasPaidPayment = !!paid;
+  }
 
   return (
     <>
@@ -140,6 +176,35 @@ export default async function ReservaPage({
             >
               Ir para pagamento
             </Link>
+          )}
+
+          {canCancel && (
+            <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-gray-500">
+                Cancelar até 48h antes da saída.{' '}
+                {hoursUntil !== null && (
+                  <span>
+                    Faltam{' '}
+                    {hoursUntil > 24
+                      ? `${Math.floor(hoursUntil / 24)} dias`
+                      : `${Math.floor(hoursUntil)}h`}
+                    .
+                  </span>
+                )}
+              </p>
+              <CancelBookingButton
+                bookingCode={b.booking_code}
+                hasPaidPayment={hasPaidPayment}
+              />
+            </div>
+          )}
+
+          {isOwner && cancellableStatus && !within48 && (
+            <p className="mt-6 pt-6 border-t border-gray-200 text-xs text-gray-500">
+              Cancelar pelo site só é possível até 48h antes da saída. Pra
+              cancelar agora, fale com a gente pelo WhatsApp informando o código{' '}
+              <strong>{b.booking_code}</strong>.
+            </p>
           )}
 
           <Link

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
+import CancelBookingButton from '@/app/reserva/[code]/CancelBookingButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,35 @@ export default async function MinhasReservasPage() {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
+
+  // Para cada booking, determinar se cliente pode cancelar inline (48h cutoff)
+  // e se há payment pago (pra aviso no modal).
+  function canCancelClientSide(
+    status: string,
+    departureAt: string | null | undefined
+  ): boolean {
+    if (status !== 'confirmed' && status !== 'pending_payment') return false;
+    if (!departureAt) return false;
+    const hoursUntil = (new Date(departureAt).getTime() - Date.now()) / 3600000;
+    return hoursUntil >= 48;
+  }
+
+  // Bulk-fetch payment status (paid) pra avisar do refund manual
+  const cancellableIds = (bookings ?? [])
+    .filter((b) => {
+      const sched = Array.isArray(b.tour_schedules) ? b.tour_schedules[0] : b.tour_schedules;
+      return canCancelClientSide(b.status, sched?.departure_at ?? null);
+    })
+    .map((b) => b.id);
+  let paidByBookingId = new Set<string>();
+  if (cancellableIds.length > 0) {
+    const { data: paidPayments } = await supabase
+      .from('payments')
+      .select('booking_id')
+      .in('booking_id', cancellableIds)
+      .eq('status', 'paid');
+    paidByBookingId = new Set((paidPayments ?? []).map((p) => p.booking_id));
+  }
 
   return (
     <>
@@ -119,13 +149,22 @@ export default async function MinhasReservasPage() {
                         {PRICE_FORMATTER.format(b.total_cents / 100)}
                       </p>
                     </div>
-                    <Link
-                      href={`/reserva/${b.booking_code}`}
-                      className="px-4 py-2 text-sm font-medium rounded-full border"
-                      style={{ color: 'rgb(9, 110, 171)', borderColor: 'rgb(9, 110, 171)' }}
-                    >
-                      Ver detalhes
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      {canCancelClientSide(b.status, schedule?.departure_at ?? null) && (
+                        <CancelBookingButton
+                          bookingCode={b.booking_code}
+                          variant="inline"
+                          hasPaidPayment={paidByBookingId.has(b.id)}
+                        />
+                      )}
+                      <Link
+                        href={`/reserva/${b.booking_code}`}
+                        className="px-4 py-2 text-sm font-medium rounded-full border"
+                        style={{ color: 'rgb(9, 110, 171)', borderColor: 'rgb(9, 110, 171)' }}
+                      >
+                        Ver detalhes
+                      </Link>
+                    </div>
                   </li>
                 );
               })}
