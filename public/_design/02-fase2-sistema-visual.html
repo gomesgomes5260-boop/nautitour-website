@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Nautitour — Fase 2: Sistema Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Azul-mar (primary) */
+    --mar-50:  #e6f3fa;
+    --mar-100: #cce6f5;
+    --mar-200: #99cdeb;
+    --mar-300: #66b4e1;
+    --mar-400: #339bd7;
+    --mar-500: #096EAB;
+    --mar-600: #085c8f;
+    --mar-700: #074a73;
+    --mar-800: #053857;
+    --mar-900: #04263b;
+    --mar-950: #02141f;
+
+    /* Verde-água (piscinas naturais Maragogi) */
+    --agua-50:  #ecfafb;
+    --agua-100: #d9f5f7;
+    --agua-200: #b3ebef;
+    --agua-300: #8de1e6;
+    --agua-400: #67d6de;
+    --agua-500: #4FB3BF;
+    --agua-600: #3f8f99;
+    --agua-700: #2f6b73;
+    --agua-800: #20484c;
+    --agua-900: #102426;
+    --agua-950: #081214;
+
+    /* Sunset (pôr-do-sol coral) */
+    --sunset-50:  #fff4ec;
+    --sunset-100: #ffe8d9;
+    --sunset-200: #ffd1b3;
+    --sunset-300: #ffba8c;
+    --sunset-400: #ffa366;
+    --sunset-500: #FF8C42;
+    --sunset-600: #cc7035;
+    --sunset-700: #995428;
+    --sunset-800: #66381c;
+    --sunset-900: #331c0e;
+    --sunset-950: #1a0e07;
+
+    /* Vermelho (urgência, alerta) — herdado da brand */
+    --vermelho-50:  #fde7e7;
+    --vermelho-100: #fbcfcf;
+    --vermelho-200: #f79e9f;
+    --vermelho-300: #f36e6f;
+    --vermelho-400: #ef3d3f;
+    --vermelho-500: #D90006;
+    --vermelho-600: #ae0005;
+    --vermelho-700: #820004;
+    --vermelho-800: #570002;
+    --vermelho-900: #2b0001;
+    --vermelho-950: #160001;
+
+    /* Areia / warm gray (neutros, text + bg) */
+    --areia-50:  #fafaf7;
+    --areia-100: #f5f4ed;
+    --areia-200: #ebe9db;
+    --areia-300: #d6d3bf;
+    --areia-400: #a8a48a;
+    --areia-500: #78766c;
+    --areia-600: #57554e;
+    --areia-700: #44413c;
+    --areia-800: #292724;
+    --areia-900: #1c1a17;
+    --areia-950: #0e0d0c;
+
+    /* Espaçamento (4px base) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+
+    /* Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(28, 26, 23, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(28, 26, 23, 0.1), 0 2px 4px -2px rgba(28, 26, 23, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(28, 26, 23, 0.1), 0 4px 6px -4px rgba(28, 26, 23, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(28, 26, 23, 0.15), 0 8px 10px -6px rgba(28, 26, 23, 0.1);
+
+    /* Tipografia */
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--areia-900);
+    background: var(--areia-50);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  header.hero {
+    background: linear-gradient(135deg, var(--mar-600) 0%, var(--mar-800) 100%);
+    color: white;
+    padding: 64px 0 72px;
+    border-bottom: 4px solid var(--sunset-500);
+  }
+  header.hero .label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.85;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  header.hero h1 {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  header.hero p {
+    font-size: 19px;
+    margin-top: 14px;
+    opacity: 0.92;
+    max-width: 720px;
+    line-height: 1.55;
+  }
+
+  /* Sections */
+  section { padding: 64px 0; }
+  section + section { border-top: 1px solid var(--areia-200); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--areia-900);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; height: 44px;
+    background: var(--mar-500);
+    color: white;
+    border-radius: 50%;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  h2 + .subtitle {
+    color: var(--areia-600);
+    margin-bottom: 36px;
+    font-size: 17px;
+    max-width: 740px;
+    line-height: 1.6;
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 36px 0 16px;
+    color: var(--areia-900);
+  }
+
+  /* Paletas */
+  .palette-family { margin-bottom: 28px; }
+  .palette-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .palette-header .name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--areia-900);
+  }
+  .palette-header .role {
+    font-size: 13px;
+    color: var(--areia-600);
+    font-style: italic;
+  }
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch {
+    aspect-ratio: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-size: 10px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  .swatch .tone {
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .swatch .hex {
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+  .swatch.dark { color: rgba(255,255,255,0.95); }
+  .swatch.light { color: var(--areia-900); }
+  @media (max-width: 720px) {
+    .swatches { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  /* Tipografia */
+  .type-spec {
+    background: white;
+    border: 1px solid var(--areia-200);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+  .type-spec .meta {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--areia-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .type-display-72 { font-family: var(--font-display); font-size: 72px; font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
+  .type-display-48 { font-family: var(--font-display); font-size: 48px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
+  .type-display-36 { font-family: var(--font-display); font-size: 36px; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+  .type-h2 { font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.2; }
+  .type-h3 { font-family: var(--font-sans); font-size: 22px; font-weight: 700; line-height: 1.3; }
+  .type-h4 { font-family: var(--font-sans); font-size: 18px; font-weight: 700; line-height: 1.4; }
+  .type-body { font-family: var(--font-sans); font-size: 16px; line-height: 1.6; }
+  .type-small { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--areia-700); }
+  .type-caption { font-family: var(--font-sans); font-size: 12px; line-height: 1.4; color: var(--areia-600); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Espaçamento */
+  .spacing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 720px) { .spacing-grid { grid-template-columns: 1fr; } }
+  .space-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--areia-200);
+  }
+  .space-table th, .space-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--areia-100);
+    font-size: 13px;
+  }
+  .space-table th {
+    background: var(--areia-100);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--areia-600);
+    font-weight: 600;
+  }
+  .space-table tr:last-child td { border-bottom: none; }
+  .space-table .visual {
+    background: var(--mar-500);
+    height: 12px;
+    border-radius: 2px;
+  }
+  .space-table code {
+    background: var(--areia-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--mar-700);
+  }
+
+  /* Radius / Shadows */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .demo-box {
+    background: white;
+    border: 1px solid var(--areia-200);
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .demo-box .label {
+    font-size: 12px;
+    color: var(--areia-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .demo-box .value {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    color: var(--mar-700);
+    margin-top: 4px;
+  }
+  .radius-sm  { border-radius: var(--radius-sm); }
+  .radius-md  { border-radius: var(--radius-md); }
+  .radius-lg  { border-radius: var(--radius-lg); }
+  .radius-xl  { border-radius: var(--radius-xl); }
+  .radius-2xl { border-radius: var(--radius-2xl); }
+
+  .shadow-demo {
+    background: white;
+    aspect-ratio: 4/3;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .sh-sm { box-shadow: var(--shadow-sm); }
+  .sh-md { box-shadow: var(--shadow-md); }
+  .sh-lg { box-shadow: var(--shadow-lg); }
+  .sh-xl { box-shadow: var(--shadow-xl); }
+
+  /* Aplicação - componentes exemplo */
+  .components-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .comp-card {
+    background: white;
+    border: 1px solid var(--areia-200);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+  }
+  .comp-card h4 {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--areia-500);
+    margin-bottom: 16px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 9999px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-primary { background: var(--mar-500); color: white; }
+  .btn-primary:hover { background: var(--mar-600); }
+  .btn-secondary { background: white; color: var(--mar-700); border: 1.5px solid var(--mar-200); }
+  .btn-secondary:hover { background: var(--mar-50); }
+  .btn-sunset { background: var(--sunset-500); color: white; }
+  .btn-sunset:hover { background: var(--sunset-600); }
+  .btn-danger { background: var(--vermelho-500); color: white; }
+  .btn-ghost { background: transparent; color: var(--areia-700); }
+  .btn-ghost:hover { background: var(--areia-100); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tour-card {
+    background: white;
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--areia-200);
+    max-width: 360px;
+  }
+  .tour-card .img {
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, var(--agua-400), var(--mar-600));
+    position: relative;
+  }
+  .tour-card .badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.95);
+    color: var(--mar-700);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tour-card .body { padding: 20px; }
+  .tour-card .body h5 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--areia-900);
+    margin-bottom: 6px;
+  }
+  .tour-card .body .meta {
+    font-size: 14px;
+    color: var(--areia-600);
+    margin-bottom: 16px;
+  }
+  .tour-card .body .price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .tour-card .price {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--mar-700);
+  }
+  .tour-card .price .per {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--areia-600);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 4px;
+  }
+  .pill-mar { background: var(--mar-50); color: var(--mar-700); }
+  .pill-agua { background: var(--agua-50); color: var(--agua-700); }
+  .pill-sunset { background: var(--sunset-50); color: var(--sunset-700); }
+  .pill-danger { background: var(--vermelho-50); color: var(--vermelho-700); }
+
+  .input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    border: 1.5px solid var(--areia-200);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--areia-900);
+    transition: border-color 0.15s;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--mar-500);
+    box-shadow: 0 0 0 3px var(--mar-100);
+  }
+  .input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--areia-800);
+    margin-bottom: 6px;
+  }
+
+  /* Code block */
+  pre.code {
+    background: var(--areia-900);
+    color: #f8f8f2;
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 16px 0;
+  }
+  pre.code .comment { color: #6b7280; }
+  pre.code .key { color: #93c5fd; }
+  pre.code .value { color: #fcd34d; }
+  pre.code .selector { color: #fb923c; }
+
+  /* Callouts */
+  .callout {
+    background: var(--sunset-50);
+    border-left: 4px solid var(--sunset-500);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .callout.info {
+    background: var(--mar-50);
+    border-left-color: var(--mar-500);
+  }
+  .callout strong { color: var(--sunset-800); }
+  .callout.info strong { color: var(--mar-800); }
+
+  /* Hero exemplo */
+  .hero-demo {
+    background: linear-gradient(135deg, var(--mar-700) 0%, var(--mar-900) 70%, var(--agua-800) 100%);
+    border-radius: var(--radius-2xl);
+    padding: 56px 40px;
+    color: white;
+    margin: 24px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-demo::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0; width: 50%;
+    background: radial-gradient(circle at right, var(--sunset-400) 0%, transparent 70%);
+    opacity: 0.3;
+  }
+  .hero-demo .content { position: relative; max-width: 520px; }
+  .hero-demo .eyebrow {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.85;
+    margin-bottom: 12px;
+  }
+  .hero-demo h3 {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+    color: white;
+  }
+  .hero-demo p {
+    font-size: 17px;
+    opacity: 0.92;
+    margin-bottom: 24px;
+    line-height: 1.55;
+  }
+
+  footer {
+    text-align: center;
+    padding: 36px 0;
+    color: var(--areia-600);
+    font-size: 13px;
+    border-top: 1px solid var(--areia-200);
+    background: white;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="label">Fase 2 · Sistema Visual</div>
+    <h1>Paleta, tipografia & tokens</h1>
+    <p>Identidade visual proposta pra Nautitour. 5 famílias de cor inspiradas no mar de Maragogi, par Fraunces + Inter, escala consistente de espaçamento e radius. Tudo conversível pra <code>@theme</code> do Tailwind v4.</p>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2><span class="num">1</span>Paleta</h2>
+    <p class="subtitle">5 famílias × 11 tons (50 a 950). Cada família tem um <strong>papel</strong> claro — quando há dúvida sobre qual cor usar, pergunta "qual o papel?". Brand atual (<code>#096EAB</code> + <code>#D90006</code>) preservada como tom 500 das suas famílias.</p>
+
+    <div class="palette-family">
+      <div class="palette-header">
+        <span class="name">Azul-mar</span>
+        <span class="role">primária · brand · botões e links</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch light" style="background:var(--mar-50)"><span class="tone">50</span><span class="hex">#E6F3FA</span></div>
+        <div class="swatch light" style="background:var(--mar-100)"><span class="tone">100</span><span class="hex">#CCE6F5</span></div>
+        <div class="swatch light" style="background:var(--mar-200)"><span class="tone">200</span><span class="hex">#99CDEB</span></div>
+        <div class="swatch light" style="background:var(--mar-300)"><span class="tone">300</span><span class="hex">#66B4E1</span></div>
+        <div class="swatch dark" style="background:var(--mar-400)"><span class="tone">400</span><span class="hex">#339BD7</span></div>
+        <div class="swatch dark" style="background:var(--mar-500)"><span class="tone">500</span><span class="hex">#096EAB</span></div>
+        <div class="swatch dark" style="background:var(--mar-600)"><span class="tone">600</span><span class="hex">#085C8F</span></div>
+        <div class="swatch dark" style="background:var(--mar-700)"><span class="tone">700</span><span class="hex">#074A73</span></div>
+        <div class="swatch dark" style="background:var(--mar-800)"><span class="tone">800</span><span class="hex">#053857</span></div>
+        <div class="swatch dark" style="background:var(--mar-900)"><span class="tone">900</span><span class="hex">#04263B</span></div>
+        <div class="swatch dark" style="background:var(--mar-950)"><span class="tone">950</span><span class="hex">#02141F</span></div>
+      </div>
+    </div>
+
+    <div class="palette-family">
+      <div class="palette-header">
+        <span class="name">Verde-água</span>
+        <span class="role">secundária · piscinas naturais · destaque aspiracional</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch light" style="background:var(--agua-50)"><span class="tone">50</span><span class="hex">#ECFAFB</span></div>
+        <div class="swatch light" style="background:var(--agua-100)"><span class="tone">100</span><span class="hex">#D9F5F7</span></div>
+        <div class="swatch light" style="background:var(--agua-200)"><span class="tone">200</span><span class="hex">#B3EBEF</span></div>
+        <div class="swatch light" style="background:var(--agua-300)"><span class="tone">300</span><span class="hex">#8DE1E6</span></div>
+        <div class="swatch light" style="background:var(--agua-400)"><span class="tone">400</span><span class="hex">#67D6DE</span></div>
+        <div class="swatch dark" style="background:var(--agua-500)"><span class="tone">500</span><span class="hex">#4FB3BF</span></div>
+        <div class="swatch dark" style="background:var(--agua-600)"><span class="tone">600</span><span class="hex">#3F8F99</span></div>
+        <div class="swatch dark" style="background:var(--agua-700)"><span class="tone">700</span><span class="hex">#2F6B73</span></div>
+        <div class="swatch dark" style="background:var(--agua-800)"><span class="tone">800</span><span class="hex">#20484C</span></div>
+        <div class="swatch dark" style="background:var(--agua-900)"><span class="tone">900</span><span class="hex">#102426</span></div>
+        <div class="swatch dark" style="background:var(--agua-950)"><span class="tone">950</span><span class="hex">#081214</span></div>
+      </div>
+    </div>
+
+    <div class="palette-family">
+      <div class="palette-header">
+        <span class="name">Sunset</span>
+        <span class="role">accent emocional · pôr-do-sol · CTAs especiais</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch light" style="background:var(--sunset-50)"><span class="tone">50</span><span class="hex">#FFF4EC</span></div>
+        <div class="swatch light" style="background:var(--sunset-100)"><span class="tone">100</span><span class="hex">#FFE8D9</span></div>
+        <div class="swatch light" style="background:var(--sunset-200)"><span class="tone">200</span><span class="hex">#FFD1B3</span></div>
+        <div class="swatch light" style="background:var(--sunset-300)"><span class="tone">300</span><span class="hex">#FFBA8C</span></div>
+        <div class="swatch light" style="background:var(--sunset-400)"><span class="tone">400</span><span class="hex">#FFA366</span></div>
+        <div class="swatch dark" style="background:var(--sunset-500)"><span class="tone">500</span><span class="hex">#FF8C42</span></div>
+        <div class="swatch dark" style="background:var(--sunset-600)"><span class="tone">600</span><span class="hex">#CC7035</span></div>
+        <div class="swatch dark" style="background:var(--sunset-700)"><span class="tone">700</span><span class="hex">#995428</span></div>
+        <div class="swatch dark" style="background:var(--sunset-800)"><span class="tone">800</span><span class="hex">#66381C</span></div>
+        <div class="swatch dark" style="background:var(--sunset-900)"><span class="tone">900</span><span class="hex">#331C0E</span></div>
+        <div class="swatch dark" style="background:var(--sunset-950)"><span class="tone">950</span><span class="hex">#1A0E07</span></div>
+      </div>
+    </div>
+
+    <div class="palette-family">
+      <div class="palette-header">
+        <span class="name">Vermelho</span>
+        <span class="role">alerta · urgência · erros</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch light" style="background:var(--vermelho-50)"><span class="tone">50</span><span class="hex">#FDE7E7</span></div>
+        <div class="swatch light" style="background:var(--vermelho-100)"><span class="tone">100</span><span class="hex">#FBCFCF</span></div>
+        <div class="swatch light" style="background:var(--vermelho-200)"><span class="tone">200</span><span class="hex">#F79E9F</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-300)"><span class="tone">300</span><span class="hex">#F36E6F</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-400)"><span class="tone">400</span><span class="hex">#EF3D3F</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-500)"><span class="tone">500</span><span class="hex">#D90006</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-600)"><span class="tone">600</span><span class="hex">#AE0005</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-700)"><span class="tone">700</span><span class="hex">#820004</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-800)"><span class="tone">800</span><span class="hex">#570002</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-900)"><span class="tone">900</span><span class="hex">#2B0001</span></div>
+        <div class="swatch dark" style="background:var(--vermelho-950)"><span class="tone">950</span><span class="hex">#160001</span></div>
+      </div>
+    </div>
+
+    <div class="palette-family">
+      <div class="palette-header">
+        <span class="name">Areia</span>
+        <span class="role">neutros warm · texto, background, bordas</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch light" style="background:var(--areia-50)"><span class="tone">50</span><span class="hex">#FAFAF7</span></div>
+        <div class="swatch light" style="background:var(--areia-100)"><span class="tone">100</span><span class="hex">#F5F4ED</span></div>
+        <div class="swatch light" style="background:var(--areia-200)"><span class="tone">200</span><span class="hex">#EBE9DB</span></div>
+        <div class="swatch light" style="background:var(--areia-300)"><span class="tone">300</span><span class="hex">#D6D3BF</span></div>
+        <div class="swatch light" style="background:var(--areia-400)"><span class="tone">400</span><span class="hex">#A8A48A</span></div>
+        <div class="swatch dark" style="background:var(--areia-500)"><span class="tone">500</span><span class="hex">#78766C</span></div>
+        <div class="swatch dark" style="background:var(--areia-600)"><span class="tone">600</span><span class="hex">#57554E</span></div>
+        <div class="swatch dark" style="background:var(--areia-700)"><span class="tone">700</span><span class="hex">#44413C</span></div>
+        <div class="swatch dark" style="background:var(--areia-800)"><span class="tone">800</span><span class="hex">#292724</span></div>
+        <div class="swatch dark" style="background:var(--areia-900)"><span class="tone">900</span><span class="hex">#1C1A17</span></div>
+        <div class="swatch dark" style="background:var(--areia-950)"><span class="tone">950</span><span class="hex">#0E0D0C</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Por que warm grays (Areia) e não cool grays?</strong> Cinzas frios (Tailwind <code>slate</code> ou <code>zinc</code>) puxam pro tecnológico/corporate. Cinzas warm (<code>stone</code>-like) puxam pro humano/orgânico — combinam com o mood "operador local que conhece o mar". Diferença sutil mas importante.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">2</span>Tipografia</h2>
+    <p class="subtitle">Par <strong>Fraunces</strong> (display serif) + <strong>Inter</strong> (sans body). Fraunces carrega emoção com variações de optical size — perfeita pra headlines de Maragogi. Inter é o padrão ouro de legibilidade em UI. Ambas grátis no Google Fonts.</p>
+
+    <div class="type-spec">
+      <div class="meta">Display 72 · Fraunces 600 · letter-spacing: -0.02em</div>
+      <div class="type-display-72">Maragogi com sua família</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Display 48 · Fraunces 600</div>
+      <div class="type-display-48">Uma manhã inesquecível no mar</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Display 36 · Fraunces 600 · usado em h2 de seção</div>
+      <div class="type-display-36">Reserve seu lugar a bordo</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Heading 2 · Fraunces 600 · 28px</div>
+      <div class="type-h2">Passeio de escuna pelas piscinas naturais</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Heading 3 · Inter 700 · 22px</div>
+      <div class="type-h3">O que está incluso</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Heading 4 · Inter 700 · 18px</div>
+      <div class="type-h4">Equipamento de mergulho</div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Body · Inter 400 · 16px · line-height 1.6</div>
+      <p class="type-body">A escuna sai do porto de Maragogi às 8h da manhã. Em 30 minutos você está chegando às piscinas naturais — o cartão postal do litoral alagoano. Tem máscara, snorkel e colete pra todo mundo. Volta às 13h com tempo de almoçar no centrinho.</p>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Small · Inter 400 · 14px · areia-700</div>
+      <p class="type-small">Reembolso integral até 48h antes do passeio. Após esse prazo, conversa com a gente pelo WhatsApp.</p>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">Caption · Inter 400 · 12px · uppercase · letter-spacing</div>
+      <p class="type-caption">Saídas todos os dias · 9 vagas por barco</p>
+    </div>
+
+    <div class="callout info">
+      <strong>Alternativa "single font"</strong>: se preferir simplificar (menos 1 webfont, ~30KB a menos), usar <strong>Geist Sans</strong> (Vercel) ou <strong>DM Sans</strong> em todos os tamanhos. Perde o charme do serif display mas ganha consistência. Recomendação: começar com Fraunces+Inter, testar conversão, decidir.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">3</span>Espaçamento</h2>
+    <p class="subtitle">Base <strong>4px</strong> (1 unidade = 0.25rem). Tailwind v4 já vem com essa escala. Restringir a esses 8 valores pra evitar a "soup de pixels" (alguém usar 13px, outro 14px, outro 15px).</p>
+
+    <div class="spacing-grid">
+      <table class="space-table">
+        <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>space-1</code></td><td>4px</td><td>gap entre ícone+label</td></tr>
+          <tr><td><code>space-2</code></td><td>8px</td><td>gap pequeno (chips, badges)</td></tr>
+          <tr><td><code>space-3</code></td><td>12px</td><td>padding inputs</td></tr>
+          <tr><td><code>space-4</code></td><td>16px</td><td>padding cards mobile</td></tr>
+          <tr><td><code>space-6</code></td><td>24px</td><td>gap entre cards</td></tr>
+          <tr><td><code>space-8</code></td><td>32px</td><td>padding section vertical mobile</td></tr>
+          <tr><td><code>space-12</code></td><td>48px</td><td>padding section desktop</td></tr>
+          <tr><td><code>space-16</code></td><td>64px</td><td>hero padding desktop</td></tr>
+        </tbody>
+      </table>
+      <table class="space-table">
+        <thead><tr><th>Token</th><th>Largura visual</th></tr></thead>
+        <tbody>
+          <tr><td><code>1</code></td><td><div class="visual" style="width: 4px"></div></td></tr>
+          <tr><td><code>2</code></td><td><div class="visual" style="width: 8px"></div></td></tr>
+          <tr><td><code>3</code></td><td><div class="visual" style="width: 12px"></div></td></tr>
+          <tr><td><code>4</code></td><td><div class="visual" style="width: 16px"></div></td></tr>
+          <tr><td><code>6</code></td><td><div class="visual" style="width: 24px"></div></td></tr>
+          <tr><td><code>8</code></td><td><div class="visual" style="width: 32px"></div></td></tr>
+          <tr><td><code>12</code></td><td><div class="visual" style="width: 48px"></div></td></tr>
+          <tr><td><code>16</code></td><td><div class="visual" style="width: 64px"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">4</span>Border radius</h2>
+    <p class="subtitle">5 valores. Cantos arredondados suavemente — sem ser quadrados (frio) nem totalmente cápsula (brincalhão demais).</p>
+    <div class="demo-grid">
+      <div class="demo-box radius-sm"><span class="label">sm</span><span class="value">4px</span></div>
+      <div class="demo-box radius-md"><span class="label">md</span><span class="value">8px</span></div>
+      <div class="demo-box radius-lg"><span class="label">lg</span><span class="value">12px</span></div>
+      <div class="demo-box radius-xl"><span class="label">xl</span><span class="value">16px</span></div>
+      <div class="demo-box radius-2xl"><span class="label">2xl</span><span class="value">24px</span></div>
+    </div>
+    <p class="type-small" style="margin-top: 12px">Botões → <code>9999px</code> (full pill). Cards → <code>xl</code> ou <code>2xl</code>. Inputs → <code>md</code>. Badges → full.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">5</span>Sombras</h2>
+    <p class="subtitle">Elevação sutil. Base usa <code>rgba(28, 26, 23, ...)</code> (warm dark) pra combinar com a paleta — evita sombras azul-acinzentadas.</p>
+    <div class="demo-grid">
+      <div class="shadow-demo sh-sm"><span class="label">sm</span><span class="value">cards estáticos</span></div>
+      <div class="shadow-demo sh-md"><span class="label">md</span><span class="value">cards interativos</span></div>
+      <div class="shadow-demo sh-lg"><span class="label">lg</span><span class="value">dropdowns</span></div>
+      <div class="shadow-demo sh-xl"><span class="label">xl</span><span class="value">modais</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">6</span>Tokens aplicados</h2>
+    <p class="subtitle">Como tudo se junta. Componentes abaixo usam exclusivamente os tokens definidos acima — nenhum valor "soto".</p>
+
+    <h3>Hero exemplo</h3>
+    <div class="hero-demo">
+      <div class="content">
+        <div class="eyebrow">Passeio · 9h às 13h</div>
+        <h3>Uma manhã com sua família no melhor mar do Brasil</h3>
+        <p>Saída do porto de Maragogi, snorkel nas piscinas naturais, volta no horário do almoço. Tem máscara pra todo mundo.</p>
+        <a href="#" class="btn btn-sunset">Reservar — R$ 60 por pessoa</a>
+      </div>
+    </div>
+
+    <h3>Card de passeio</h3>
+    <div class="tour-card">
+      <div class="img">
+        <span class="badge">9 vagas</span>
+      </div>
+      <div class="body">
+        <h5>Escuna Piscinas Naturais</h5>
+        <div class="meta">9h às 13h · 9 pessoas no barco</div>
+        <div class="price-row">
+          <div class="price">R$ 60 <span class="per">por pessoa</span></div>
+          <a href="#" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">Reservar</a>
+        </div>
+      </div>
+    </div>
+
+    <h3>Botões</h3>
+    <div class="comp-card" style="margin-top: 8px">
+      <h4>Variantes</h4>
+      <div class="btn-row">
+        <button class="btn btn-primary">Reservar agora</button>
+        <button class="btn btn-secondary">Saber mais</button>
+        <button class="btn btn-sunset">Ver pôr-do-sol</button>
+        <button class="btn btn-danger">Cancelar reserva</button>
+        <button class="btn btn-ghost">Voltar</button>
+      </div>
+    </div>
+
+    <h3>Inputs</h3>
+    <div class="comp-card">
+      <h4>Form fields</h4>
+      <div style="margin-bottom: 14px">
+        <label class="input-label" for="dummy-name">Seu nome</label>
+        <input class="input" id="dummy-name" placeholder="Como devemos te chamar?">
+      </div>
+      <div style="margin-bottom: 14px">
+        <label class="input-label" for="dummy-email">E-mail</label>
+        <input class="input" id="dummy-email" placeholder="seu@email.com" type="email">
+      </div>
+    </div>
+
+    <h3>Pills / badges</h3>
+    <div class="comp-card">
+      <h4>Status &amp; categorias</h4>
+      <div class="btn-row">
+        <span class="pill pill-mar">9 vagas disponíveis</span>
+        <span class="pill pill-agua">Águas cristalinas</span>
+        <span class="pill pill-sunset">Pôr-do-sol</span>
+        <span class="pill pill-danger">Últimas 2 vagas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">7</span>Tailwind v4 <code style="font-size: 0.8em">@theme</code></h2>
+    <p class="subtitle">Snippet pronto pra colar em <code>src/app/globals.css</code>. Tailwind v4 é CSS-first — não precisa <code>tailwind.config.ts</code>.</p>
+
+<pre class="code"><span class="comment">/* src/app/globals.css */</span>
+@import "tailwindcss";
+
+<span class="selector">@theme</span> {
+  <span class="comment">/* === Tipografia === */</span>
+  <span class="key">--font-display</span>: "Fraunces", Georgia, serif;
+  <span class="key">--font-sans</span>: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  <span class="comment">/* === Cores brand === */</span>
+  <span class="comment">/* Azul-mar (primary) */</span>
+  <span class="key">--color-mar-50</span>:  #E6F3FA;
+  <span class="key">--color-mar-100</span>: #CCE6F5;
+  <span class="key">--color-mar-200</span>: #99CDEB;
+  <span class="key">--color-mar-300</span>: #66B4E1;
+  <span class="key">--color-mar-400</span>: #339BD7;
+  <span class="key">--color-mar-500</span>: #096EAB;  <span class="comment">/* brand legacy */</span>
+  <span class="key">--color-mar-600</span>: #085C8F;
+  <span class="key">--color-mar-700</span>: #074A73;
+  <span class="key">--color-mar-800</span>: #053857;
+  <span class="key">--color-mar-900</span>: #04263B;
+  <span class="key">--color-mar-950</span>: #02141F;
+
+  <span class="comment">/* Verde-água */</span>
+  <span class="key">--color-agua-50</span>:  #ECFAFB;
+  <span class="key">--color-agua-500</span>: #4FB3BF;
+  <span class="key">--color-agua-700</span>: #2F6B73;
+  <span class="comment">/* ... resto da escala */</span>
+
+  <span class="comment">/* Sunset */</span>
+  <span class="key">--color-sunset-50</span>:  #FFF4EC;
+  <span class="key">--color-sunset-500</span>: #FF8C42;
+  <span class="key">--color-sunset-700</span>: #995428;
+
+  <span class="comment">/* Vermelho (legacy brand) */</span>
+  <span class="key">--color-vermelho-500</span>: #D90006;
+
+  <span class="comment">/* Areia (warm gray) */</span>
+  <span class="key">--color-areia-50</span>:  #FAFAF7;
+  <span class="key">--color-areia-900</span>: #1C1A17;
+
+  <span class="comment">/* === Border radius === */</span>
+  <span class="key">--radius-sm</span>:  4px;
+  <span class="key">--radius-md</span>:  8px;
+  <span class="key">--radius-lg</span>:  12px;
+  <span class="key">--radius-xl</span>:  16px;
+  <span class="key">--radius-2xl</span>: 24px;
+
+  <span class="comment">/* === Sombras === */</span>
+  <span class="key">--shadow-sm</span>: 0 1px 2px 0 rgb(28 26 23 / 0.05);
+  <span class="key">--shadow-md</span>: 0 4px 6px -1px rgb(28 26 23 / 0.1),
+                0 2px 4px -2px rgb(28 26 23 / 0.1);
+  <span class="key">--shadow-lg</span>: 0 10px 15px -3px rgb(28 26 23 / 0.1);
+  <span class="key">--shadow-xl</span>: 0 20px 25px -5px rgb(28 26 23 / 0.15);
+}
+</pre>
+
+    <h3>Como usar nos componentes</h3>
+<pre class="code"><span class="comment">// Antes (cor hardcoded inline):</span>
+&lt;button <span class="key">style</span>={{ backgroundColor: <span class="value">'rgb(9, 110, 171)'</span> }}&gt;
+  Reservar
+&lt;/button&gt;
+
+<span class="comment">// Depois (token):</span>
+&lt;button <span class="key">className</span>=<span class="value">"bg-mar-500 hover:bg-mar-600 text-white"</span>&gt;
+  Reservar
+&lt;/button&gt;
+
+<span class="comment">// Headline com Fraunces:</span>
+&lt;h1 <span class="key">className</span>=<span class="value">"font-display text-5xl font-semibold tracking-tight"</span>&gt;
+  Maragogi com sua família
+&lt;/h1&gt;
+</pre>
+
+    <h3>Adicionar Fraunces + Inter</h3>
+<pre class="code"><span class="comment">// src/app/layout.tsx</span>
+<span class="key">import</span> { Inter, Fraunces } <span class="key">from</span> <span class="value">"next/font/google"</span>;
+
+<span class="key">const</span> inter = Inter({
+  subsets: [<span class="value">"latin"</span>],
+  variable: <span class="value">"--font-sans"</span>,
+});
+
+<span class="key">const</span> fraunces = Fraunces({
+  subsets: [<span class="value">"latin"</span>],
+  variable: <span class="value">"--font-display"</span>,
+  weight: [<span class="value">"400"</span>, <span class="value">"500"</span>, <span class="value">"600"</span>, <span class="value">"700"</span>],
+});
+
+<span class="key">export default function</span> RootLayout({ children }) {
+  <span class="key">return</span> (
+    &lt;html lang=<span class="value">"pt-BR"</span> className={`${inter.variable} ${fraunces.variable}`}&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+</pre>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2><span class="num">8</span>Próximos passos</h2>
+    <p class="subtitle">Fase 2 entrega tokens, próximas fases consomem.</p>
+
+    <table class="space-table">
+      <thead><tr><th>Entregável</th><th>Onde</th><th>Quem</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>PR aplicando <code>@theme</code> em <code>globals.css</code> + Inter/Fraunces no <code>layout.tsx</code></td>
+          <td>Próximo commit</td>
+          <td>Eu</td>
+        </tr>
+        <tr>
+          <td>Migrar componentes existentes (Header, Footer, Button, Form) pra usar tokens</td>
+          <td>Fase 3</td>
+          <td>Eu (1 PR por área)</td>
+        </tr>
+        <tr>
+          <td>Coletar 10-20 prints em <code>design/inspirations/</code> alinhados a esta paleta</td>
+          <td>Esta semana</td>
+          <td>Você</td>
+        </tr>
+        <tr>
+          <td>Validar paleta em 1 página real (ex: <code>/passeio-escuna</code>) antes de generalizar</td>
+          <td>Fase 3 - kick-off</td>
+          <td>Eu (PR de demonstração)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <strong>Decisão a tomar antes da Fase 3:</strong> Fraunces+Inter como par, ou Geist/DM Sans single font? Recomendação: <strong>par Fraunces+Inter</strong>. Custo: ~50KB extras de webfont. Benefício: identidade tipográfica diferenciada, alma editorial. Reversível depois.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    Fase 2 · Sistema Visual · Nautitour · maio/2026
+  </div>
+</footer>
+
+</body>
+</html>
