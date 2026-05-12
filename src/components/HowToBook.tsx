@@ -1,4 +1,5 @@
 import { Compass, CreditCard, Sailboat } from 'lucide-react';
+import Container from './Container';
 
 type Step = {
   num: string;
@@ -33,20 +34,20 @@ const steps: Step[] = [
 
 export default function HowToBook() {
   return (
-    <section className="bg-[var(--color-charcoal-50)] py-20 sm:py-24 md:py-32 px-5 sm:px-6 md:px-10 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12 md:mb-16 lg:mb-20 max-w-2xl mx-auto">
-          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
+    <section className="bg-[var(--color-charcoal-50)] py-16 sm:py-20 md:py-28">
+      <Container>
+        <div className="text-center mb-12 md:mb-16 max-w-xl mx-auto">
+          <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)]">
             Como funciona
           </span>
           <h2
-            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-4"
-            style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-3 sm:mb-4"
+            style={{ fontSize: 'clamp(1.75rem, 5.5vw, 3.5rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
           >
             Reservar é fácil e rápido.
           </h2>
-          <p className="text-[var(--color-charcoal-500)] text-base md:text-lg leading-relaxed">
-            3 passos pra sair do clique pro embarque. Sem complicação, sem ligações intermináveis.
+          <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base md:text-lg leading-relaxed">
+            3 passos pra sair do clique pro embarque. Sem complicação.
           </p>
         </div>
 
@@ -54,26 +55,29 @@ export default function HowToBook() {
           {steps.map((step) => (
             <article
               key={step.num}
-              className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl md:rounded-3xl p-7 sm:p-8 md:p-10"
+              className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 sm:p-7 md:p-8"
             >
-              <div className="flex items-center gap-5 mb-7">
-                <span className="font-display text-6xl font-semibold text-[var(--color-red-600)] leading-none">
+              <div className="flex items-center gap-4 mb-5">
+                <span
+                  className="font-display font-semibold text-[var(--color-red-600)] leading-none"
+                  style={{ fontSize: 'clamp(2.25rem, 6vw, 3.5rem)' }}
+                >
                   {step.num}
                 </span>
-                <span className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)]">
-                  <step.Icon size={26} />
+                <span className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)]">
+                  <step.Icon size={22} />
                 </span>
               </div>
-              <h3 className="font-sans text-xl md:text-2xl font-bold text-[var(--color-charcoal-900)] mb-3">
+              <h3 className="font-sans text-lg sm:text-xl font-bold text-[var(--color-charcoal-900)] mb-2">
                 {step.title}
               </h3>
-              <p className="text-[var(--color-charcoal-500)] text-base leading-relaxed">
+              <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base leading-relaxed">
                 {step.description}
               </p>
             </article>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

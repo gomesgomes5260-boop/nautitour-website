@@ -89,15 +89,8 @@
   --color-bg-red: #C00010;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html {
   scroll-behavior: smooth;
-  /* Rede de segurança contra overflow horizontal global. */
   overflow-x: hidden;
 }
 
@@ -107,9 +100,7 @@ body {
   background: var(--color-bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Garante que nada vaza horizontalmente da viewport mobile. */
   overflow-x: hidden;
-  max-width: 100vw;
 }
 
 h1, h2, h3, h4, h5, h6 {
