@@ -1,20 +1,13 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Star, Clock, Users, Check } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Container from '@/components/Container';
+import ScheduleListCard from '@/components/ScheduleListCard';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
-
-const DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
-  weekday: 'short',
-  day: '2-digit',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'America/Sao_Paulo',
-});
 
 const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -50,125 +43,188 @@ export default async function PasseioEscunaPage() {
 
   if (schedulesError) throw schedulesError;
 
-  const highlights = Array.isArray(tour.highlights)
-    ? (tour.highlights as string[])
-    : [];
+  const highlights = Array.isArray(tour.highlights) ? (tour.highlights as string[]) : [];
 
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="px-[60px] py-12 max-w-7xl mx-auto">
-          <h1 className="text-[41px] font-normal mb-4" style={{ color: 'rgb(219, 56, 44)' }}>
-            {tour.name}
-          </h1>
-          {tour.description && (
-            <p className="text-lg text-gray-700 mb-8 max-w-3xl">{tour.description}</p>
-          )}
+      <main className="bg-[var(--color-charcoal-50)]">
+        {/* === HERO === */}
+        <section className="relative w-full overflow-hidden">
+          <Image
+            src={tour.cover_image_url ?? '/images/photos/escuna/escuna-pier-01.jpg'}
+            alt={tour.name}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(105deg, rgba(31,31,31,0.78) 0%, rgba(31,31,31,0.5) 50%, rgba(31,31,31,0.15) 100%)',
+            }}
+          />
+          <Container className="relative py-16 sm:py-20 md:py-24">
+            <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-4">
+              Passeio em grupo · Búzios
+            </span>
+            <h1
+              className="font-display text-white font-semibold tracking-tight max-w-3xl"
+              style={{
+                fontSize: 'clamp(1.875rem, 6vw, 4rem)',
+                lineHeight: '1.08',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {tour.name}
+            </h1>
+            {tour.description && (
+              <p className="text-white/85 text-sm sm:text-base md:text-lg leading-relaxed mt-4 max-w-2xl">
+                {tour.description}
+              </p>
+            )}
+          </Container>
+        </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <div className="relative w-full h-[400px] rounded-lg overflow-hidden mb-6">
-                <Image
-                  src={tour.cover_image_url ?? '/images/photos/escuna/escuna-pier-01.jpg'}
-                  alt={tour.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              {highlights.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(9, 110, 171)' }}>
-                    Destaques
+        {/* === MAIN — 2 cols (info esquerda + card sticky direita) === */}
+        <section className="py-12 sm:py-16 md:py-20">
+          <Container>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              {/* === LEFT: tour info === */}
+              <div className="lg:col-span-7">
+                {highlights.length > 0 && (
+                  <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8 mb-6">
+                    <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)]">
+                      O que está incluso
+                    </span>
+                    <h2
+                      className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-2 mb-5"
+                      style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', lineHeight: '1.15' }}
+                    >
+                      Destaques do roteiro.
+                    </h2>
+                    <ul className="space-y-3">
+                      {highlights.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-start gap-3 text-sm sm:text-base text-[var(--color-charcoal-700)]"
+                        >
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mt-0.5 shrink-0">
+                            <Check size={14} />
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
+                  <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)]">
+                    Detalhes
+                  </span>
+                  <h2
+                    className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-2 mb-5"
+                    style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', lineHeight: '1.15' }}
+                  >
+                    Tudo claro, sem letra miúda.
                   </h2>
-                  <ul className="space-y-2">
-                    {highlights.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-gray-700">
-                        <span style={{ color: 'rgb(219, 56, 44)' }}>•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                    {tour.duration_minutes && (
+                      <DetailItem
+                        Icon={Clock}
+                        label="Duração"
+                        value={`${Math.round(tour.duration_minutes / 60)}h de passeio`}
+                      />
+                    )}
+                    {tour.max_capacity && (
+                      <DetailItem
+                        Icon={Users}
+                        label="Grupo"
+                        value={`Até ${tour.max_capacity} pessoas a bordo`}
+                      />
+                    )}
+                    <DetailItem
+                      Icon={Star}
+                      label="Avaliação"
+                      value="4.9 · 280+ passageiros"
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-
-            <div>
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <p className="text-sm text-gray-600 mb-1">A partir de</p>
-                <p className="text-3xl font-bold mb-4" style={{ color: 'rgb(219, 56, 44)' }}>
-                  {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
-                  <span className="text-base font-normal text-gray-600"> / pessoa</span>
-                </p>
-                {tour.duration_minutes && (
-                  <p className="text-sm text-gray-600">
-                    Duração: {Math.round(tour.duration_minutes / 60)}h
-                  </p>
-                )}
-                {tour.max_capacity && (
-                  <p className="text-sm text-gray-600">
-                    Capacidade: até {tour.max_capacity} pessoas
-                  </p>
-                )}
               </div>
 
-              <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(9, 110, 171)' }}>
-                Próximas saídas
-              </h2>
-              {schedules && schedules.length > 0 ? (
-                <ul className="space-y-3">
-                  {schedules.map((schedule) => {
-                    const seatsLeft = schedule.capacity - schedule.seats_taken;
-                    const isSoldOut = schedule.status === 'sold_out' || seatsLeft <= 0;
-                    const price =
-                      formatPrice(schedule.price_cents) ?? formatPrice(tour.base_price_cents);
-
-                    return (
-                      <li
-                        key={schedule.id}
-                        className="flex items-center justify-between border border-gray-200 rounded-lg p-4"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800 capitalize">
-                            {DATE_FORMATTER.format(new Date(schedule.departure_at))}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {isSoldOut ? 'Esgotado' : `${seatsLeft} vagas`}
-                            {price && !isSoldOut && ` • ${price}`}
-                          </p>
-                        </div>
-                        {isSoldOut ? (
-                          <button
-                            disabled
-                            className="px-6 py-2 text-white text-sm font-medium rounded-full opacity-50 cursor-not-allowed"
-                            style={{ backgroundColor: 'rgb(9, 110, 171)' }}
-                          >
-                            Esgotado
-                          </button>
-                        ) : (
-                          <Link
-                            href={`/checkout/${schedule.id}`}
-                            className="px-6 py-2 text-white text-sm font-medium rounded-full"
-                            style={{ backgroundColor: 'rgb(9, 110, 171)' }}
-                          >
-                            Reservar
-                          </Link>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-gray-600">
-                  Nenhuma saída disponível no momento. Entre em contato pelo WhatsApp.
-                </p>
-              )}
+              {/* === RIGHT: booking sticky card === */}
+              <aside className="lg:col-span-5 lg:sticky lg:top-28 self-start">
+                <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white overflow-hidden shadow-[var(--shadow-2)]">
+                  <div className="p-6 sm:p-7 border-b border-[var(--color-charcoal-100)]">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Star
+                        size={14}
+                        className="fill-[var(--color-red-600)] text-[var(--color-red-600)]"
+                      />
+                      <span className="font-sans font-bold text-sm text-[var(--color-charcoal-900)]">
+                        4.9
+                      </span>
+                      <span className="text-xs text-[var(--color-charcoal-500)]">
+                        · 280+ passageiros
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                      A partir de
+                    </p>
+                    <p className="font-sans text-3xl sm:text-4xl font-black text-[var(--color-red-600)] leading-tight">
+                      {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
+                      <span className="text-sm font-normal text-[var(--color-charcoal-500)]">
+                        {' '}/ pessoa
+                      </span>
+                    </p>
+                  </div>
+                  <div className="p-6 sm:p-7">
+                    <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-charcoal-700)] mb-4">
+                      Próximas saídas
+                    </h3>
+                    <ScheduleListCard
+                      schedules={schedules ?? []}
+                      fallbackPriceCents={tour.base_price_cents ?? null}
+                      pricingMode="per_passenger"
+                      soldOutLabel="Esgotado"
+                    />
+                  </div>
+                </div>
+              </aside>
             </div>
-          </div>
+          </Container>
         </section>
       </main>
       <Footer />
     </>
+  );
+}
+
+function DetailItem({
+  Icon,
+  label,
+  value,
+}: {
+  Icon: typeof Clock;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] shrink-0">
+        <Icon size={18} />
+      </span>
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-charcoal-500)]">
+          {label}
+        </p>
+        <p className="text-sm sm:text-base font-semibold text-[var(--color-charcoal-900)] leading-tight mt-0.5">
+          {value}
+        </p>
+      </div>
+    </div>
   );
 }
