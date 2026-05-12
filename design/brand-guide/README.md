@@ -59,4 +59,4 @@ brand-guide/
 
 ## Preview renderizado
 
-`design/research/03-brand-guide-applied.html` ou (após deploy) `https://nautitour-website.vercel.app/_design/03-brand-guide-applied.html`
+`design/research/03-brand-guide-applied.html` ou (após deploy) `https://nautitour-website.vercel.app/design-docs/03-brand-guide-applied.html`
