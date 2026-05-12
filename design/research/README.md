@@ -8,6 +8,10 @@ Documentos HTML gerados durante o trabalho de UI/UX. Cada arquivo é standalone 
 |---|---|---|
 | `00-status.html` | Status geral do projeto + roadmap UI/UX | 12/maio/2026 |
 | `01-fase1-personas.html` | Fase 1: 3 personas, customer journey, brand voice, 5 princípios | 12/maio/2026 |
+| `02-fase2-sistema-visual.html` | Fase 2 (proposta inicial — **superseded**): paleta tropical | 12/maio/2026 |
+| `03-brand-guide-applied.html` | Fase 2 (oficial): tokens aplicados do brand guide do cliente | 12/maio/2026 |
+
+> ⚠️ `02-fase2-sistema-visual.html` é a proposta inicial que fiz antes do upload do brand guide. **Não usar** — paleta tropical não corresponde à identidade real (charcoal + red). Mantido como histórico. A versão oficial é `03-brand-guide-applied.html`.
 
 ## Próximos esperados
 
