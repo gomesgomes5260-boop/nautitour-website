@@ -1,9 +1,11 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { cookieNameFor, signBookingCode } from '@/lib/booking-session';
+import { verifyTurnstile } from '@/lib/turnstile';
+import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type CreateBookingInput = {
   scheduleId: string;
@@ -17,6 +19,7 @@ export type CreateBookingInput = {
     document?: string;
     is_child?: boolean;
   }>;
+  turnstileToken: string | null;
 };
 
 export type CreateBookingResult =
@@ -26,6 +29,24 @@ export type CreateBookingResult =
 export async function createBookingAction(
   input: CreateBookingInput
 ): Promise<CreateBookingResult> {
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+
+  // Captcha (Turnstile) — no-op em dev sem env
+  const captcha = await verifyTurnstile(input.turnstileToken, ip);
+  if (!captcha.ok) {
+    return { ok: false, error: captcha.error };
+  }
+
+  // Rate limit IP — no-op em dev sem env
+  const limit = await bookingLimiter.limit(ip);
+  if (!limit.success) {
+    return {
+      ok: false,
+      error: 'Muitas tentativas de reserva. Tente novamente em alguns minutos.',
+    };
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc('create_booking_pending', {

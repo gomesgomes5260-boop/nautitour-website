@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useCallback } from 'react';
 import { createBookingAction } from './actions';
+import TurnstileWidget from '@/components/TurnstileWidget';
 
 type Passenger = { full_name: string; document: string; is_child: boolean };
 
@@ -39,6 +40,8 @@ export default function CheckoutForm({
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const handleTurnstileToken = useCallback((t: string | null) => setTurnstileToken(t), []);
 
   const total =
     pricingMode === 'per_slot' ? unitPriceCents : unitPriceCents * passengers.length;
@@ -59,6 +62,10 @@ export default function CheckoutForm({
       setError('Informe o nome de cada passageiro.');
       return;
     }
+    if (!turnstileToken) {
+      setError('Aguarde a verificação anti-spam carregar.');
+      return;
+    }
 
     startTransition(async () => {
       const result = await createBookingAction({
@@ -73,6 +80,7 @@ export default function CheckoutForm({
           document: p.document || undefined,
           is_child: p.is_child,
         })),
+        turnstileToken,
       });
       // On success, server action redirects (this branch only runs on error)
       if (result && !result.ok) {
@@ -232,6 +240,8 @@ export default function CheckoutForm({
         </div>
       </section>
 
+      <TurnstileWidget onToken={handleTurnstileToken} action="checkout" />
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 text-sm">
           {error}
@@ -240,7 +250,7 @@ export default function CheckoutForm({
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || !turnstileToken}
         className="w-full px-6 py-4 text-white text-base font-semibold rounded-full disabled:opacity-50"
         style={{ backgroundColor: 'rgb(9, 110, 171)' }}
       >

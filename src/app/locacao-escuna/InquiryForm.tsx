@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import { createInquiryAction } from './actions';
+import TurnstileWidget from '@/components/TurnstileWidget';
 
 const MIN_HOURS = 3;
 const MAX_PASSENGERS = 120;
@@ -33,6 +34,8 @@ export default function InquiryForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ url: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const handleTurnstileToken = useCallback((t: string | null) => setTurnstileToken(t), []);
 
   const durationHours = diffHours(startTime, endTime);
 
@@ -65,6 +68,10 @@ export default function InquiryForm() {
       setError(`Quantidade de pessoas deve ser entre 1 e ${MAX_PASSENGERS}.`);
       return;
     }
+    if (!turnstileToken) {
+      setError('Aguarde a verificação anti-spam carregar.');
+      return;
+    }
 
     startTransition(async () => {
       const result = await createInquiryAction({
@@ -77,6 +84,7 @@ export default function InquiryForm() {
         passengerCount,
         interestedInOpenBar,
         message: message || undefined,
+        turnstileToken,
       });
       if (!result.ok) {
         setError(result.error);
@@ -225,6 +233,8 @@ export default function InquiryForm() {
         />
       </Field>
 
+      <TurnstileWidget onToken={handleTurnstileToken} action="inquiry" />
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 text-sm">
           {error}
@@ -233,7 +243,7 @@ export default function InquiryForm() {
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || !turnstileToken}
         className="w-full px-6 py-4 text-white text-base font-semibold rounded-full disabled:opacity-50"
         style={{ backgroundColor: 'rgb(9, 110, 171)' }}
       >

@@ -1,11 +1,12 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { canPay } from '@/lib/pagarme/config';
 import { createCreditCardOrder, createPixOrder } from '@/lib/pagarme/client';
 import { cookieNameFor, verifyBookingCode } from '@/lib/booking-session';
+import { paymentLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type CreatePixResult =
   | {
@@ -74,6 +75,15 @@ async function authorizeBooking(
 export async function createPixForBookingAction(
   bookingCode: string
 ): Promise<CreatePixResult> {
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+  const limit = await paymentLimiter.limit(ip);
+  if (!limit.success) {
+    return {
+      ok: false,
+      error: 'Muitas tentativas de pagamento. Aguarde alguns minutos.',
+    };
+  }
   const admin = createAdminClient();
 
   const { data: booking, error: bookingError } = await admin
@@ -174,6 +184,15 @@ export async function createCardForBookingAction(input: {
   cardHolderName: string;
   installments?: number;
 }): Promise<CreateCardResult> {
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+  const limit = await paymentLimiter.limit(ip);
+  if (!limit.success) {
+    return {
+      ok: false,
+      error: 'Muitas tentativas de pagamento. Aguarde alguns minutos.',
+    };
+  }
   const admin = createAdminClient();
 
   const { data: booking, error: bookingError } = await admin
