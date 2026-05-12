@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ShoppingCart, Mail, Phone } from 'lucide-react';
-import Wordmark from './Wordmark';
+import Logo from './Logo';
 
 type Props = {
   user: { email: string | null; name: string | null } | null;
@@ -57,8 +57,8 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
       </div>
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center justify-between h-20 px-12 border-b border-[var(--color-charcoal-100)]">
-        <Wordmark size="lg" showTagline />
+      <nav className="hidden md:flex items-center justify-between h-24 px-12 border-b border-[var(--color-charcoal-100)]">
+        <Logo size="lg" priority />
 
         <div className="flex items-center gap-8">
           {navLinks.map((link) => {
@@ -137,8 +137,8 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
       </nav>
 
       {/* Mobile nav */}
-      <div className="md:hidden flex items-center justify-between h-16 px-5 border-b border-[var(--color-charcoal-100)]">
-        <Wordmark size="md" />
+      <div className="md:hidden flex items-center justify-between h-20 px-5 border-b border-[var(--color-charcoal-100)]">
+        <Logo size="md" priority />
         <div className="flex items-center gap-3">
           <button
             aria-label="Carrinho"
