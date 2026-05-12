@@ -1,62 +1,72 @@
-'use client';
-
 import Image from 'next/image';
+import { ShieldCheck, Wine, Globe2 } from 'lucide-react';
 
-interface FeatureCard {
-  icon: string;
+type Feature = {
+  Icon: typeof ShieldCheck;
   title: string;
   description: string;
-}
+};
 
-const features: FeatureCard[] = [
+const features: Feature[] = [
   {
-    icon: '/images/icons/tripulacao.svg',
-    title: 'Seguran\u00e7a Certificada e Tripula\u00e7\u00e3o Treinada',
-    description: 'Sua paz de esp\u00edrito \u00e9 nossa prioridade. Nossas embarca\u00e7\u00f5es seguem rigorosamente as normas da Marinha, com coletes para todos e marinheiros experientes prontos para garantir um passeio 100% seguro.',
+    Icon: ShieldCheck,
+    title: 'Segurança certificada',
+    description:
+      'Embarcações seguindo as normas da Marinha. Coletes para todos e marinheiros experientes garantindo um passeio 100% seguro.',
   },
   {
-    icon: '/images/icons/drinks.svg',
-    title: 'Bar a Bordo com Drinks Tropicais',
-    description: 'Relaxe enquanto preparamos as melhores caipirinhas e petiscos frescos na hora. Oferecemos um servi\u00e7o de bar completo (opcional) para que voc\u00ea s\u00f3 se preocupe em brindar \u00e0 vida com a vista perfeita.',
+    Icon: Wine,
+    title: 'Bar a bordo',
+    description:
+      'Caipirinhas, petiscos frescos e drinks tropicais (opcional). Você só se preocupa em brindar à vista perfeita.',
   },
   {
-    icon: '/images/icons/bilingue.svg',
-    title: 'Guias Bil\u00edngues e Hist\u00f3rias Locais',
-    description: 'Recebemos turistas do mundo todo com a mesma hospitalidade calorosa. Nossa equipe fala Portugu\u00eas e Espanhol, garantindo que ningu\u00e9m perca os detalhes, curiosidades e a divers\u00e3o do roteiro.',
+    Icon: Globe2,
+    title: 'Guias bilíngues',
+    description:
+      'Atendemos turistas do mundo todo com hospitalidade calorosa. Português e Espanhol pra ninguém perder a história local.',
   },
 ];
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-white px-[60px] py-16">
-      <div className="mx-auto max-w-7xl">
-        <h2 className="mb-4 font-['Plus Jakarta Sans'] text-[41px] font-normal" style={{ color: 'rgb(219, 56, 44)' }}>
-          Por que escolher a Nautitour Passeios?
-        </h2>
-        <p className="mb-12 text-gray-700 leading-relaxed">
-          Seguran\u00e7a, divers\u00e3o e estrutura completa para voc\u00ea relaxar e transformar seu passeio na melhor mem\u00f3ria da sua viagem.
-        </p>
-        <div className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {features.map((feature, index) => (
-            <div key={index} className="flex flex-col items-center text-center">
-              <div className="mb-6 flex h-20 w-20 items-center justify-center">
-                <Image src={feature.icon} alt={feature.title} width={80} height={80} priority />
-              </div>
-              <h3 className="mb-4 text-lg font-bold text-gray-800">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+    <section className="bg-white py-16 md:py-24 px-5 md:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-12 md:mb-16 max-w-2xl">
+          <span className="text-xs font-bold tracking-[0.22em] uppercase text-[var(--color-red-600)]">
+            Por que a Nautitour
+          </span>
+          <h2 className="font-display text-[var(--color-charcoal-900)] text-4xl md:text-5xl font-semibold tracking-tight mt-3 mb-4">
+            Estrutura completa pra você relaxar.
+          </h2>
+          <p className="text-[var(--color-charcoal-500)] text-base md:text-lg">
+            Segurança, diversão e atendimento bom de verdade. O passeio vira a melhor memória da viagem.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-16 md:mb-20">
+          {features.map((feature) => (
+            <div key={feature.title} className="flex flex-col">
+              <span className="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] mb-5">
+                <feature.Icon size={26} />
+              </span>
+              <h3 className="font-sans text-xl font-bold text-[var(--color-charcoal-900)] mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-[var(--color-charcoal-500)] text-sm leading-relaxed">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>
-        <h3 className="mb-8 text-center text-2xl font-bold text-gray-800">O que nossos clientes dizem:</h3>
-        <div className="mt-12 border-t border-gray-200 pt-12">
-          <p className="mb-8 text-center text-gray-700 font-semibold">Somos certificados pelos principais \u00f3rg\u00e3os reguladores.</p>
-          <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
-            <div className="flex items-center justify-center">
-              <Image src="/images/cert-buzios.png" alt="Certifica\u00e7\u00e3o B\u00fazios" width={150} height={150} />
-            </div>
-            <div className="flex items-center justify-center">
-              <Image src="/images/cert-cadastur.png" alt="Certifica\u00e7\u00e3o CADASTUR" width={150} height={150} />
-            </div>
+
+        <div className="border-t border-[var(--color-charcoal-100)] pt-12 md:pt-16">
+          <p className="text-center text-[var(--color-charcoal-700)] text-sm font-semibold uppercase tracking-[0.18em] mb-8">
+            Certificados pelos principais órgãos reguladores
+          </p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16">
+            <Image src="/images/cert-buzios.png" alt="Certificação Búzios" width={120} height={120} />
+            <Image src="/images/cert-cadastur.png" alt="Certificação CADASTUR" width={120} height={120} />
           </div>
         </div>
       </div>
