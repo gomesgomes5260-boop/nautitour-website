@@ -4,7 +4,7 @@ import { Star, Clock, Users, Check, MessageCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
-import ScheduleListCard from '@/components/ScheduleListCard';
+import DateScheduleSelector from '@/components/DateScheduleSelector';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -180,9 +180,9 @@ export default async function PasseioLanchaPage() {
                   </div>
                   <div className="p-6 sm:p-7">
                     <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-charcoal-700)] mb-4">
-                      Horários disponíveis
+                      Escolha sua data
                     </h3>
-                    <ScheduleListCard
+                    <DateScheduleSelector
                       schedules={schedules ?? []}
                       fallbackPriceCents={tour.base_price_cents ?? null}
                       pricingMode="per_slot"
