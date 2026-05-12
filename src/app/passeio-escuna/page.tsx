@@ -39,7 +39,7 @@ export default async function PasseioEscunaPage() {
     .gte('departure_at', new Date().toISOString())
     .neq('status', 'cancelled')
     .order('departure_at', { ascending: true })
-    .limit(30);
+    .limit(200);
 
   if (schedulesError) throw schedulesError;
 
