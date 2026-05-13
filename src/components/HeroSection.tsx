@@ -1,123 +1,66 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronRight, Star, Clock, Users } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Container from './Container';
 
 export default function HeroSection() {
   return (
     <>
       {/* === HERO === */}
-      <section className="relative w-full overflow-hidden">
+      <section className="relative w-full overflow-hidden min-h-[78vh] md:min-h-[86vh] flex items-end">
         <Image
           src="/images/photos/aerea/drone-tartaruga-01.jpg"
-          alt="Passeio de Escuna em Búzios"
+          alt="Búzios visto do alto"
           fill
           className="object-cover"
           priority
           sizes="100vw"
         />
+        {/* Overlay mais sutil — destaque pra foto, só escurece o bottom pra legibilidade */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(110deg, rgba(31,31,31,0.82) 0%, rgba(31,31,31,0.6) 40%, rgba(31,31,31,0.25) 75%, rgba(31,31,31,0.1) 100%)',
+              'linear-gradient(to bottom, rgba(31,31,31,0.15) 0%, rgba(31,31,31,0) 40%, rgba(31,31,31,0.4) 75%, rgba(31,31,31,0.75) 100%)',
           }}
         />
 
-        <Container className="relative py-20 sm:py-24 md:py-28 lg:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-12 lg:gap-16 items-center">
-            <div className="lg:col-span-7">
-              <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-5">
-                Búzios · Região dos Lagos
-              </span>
-              <h1
-                className="font-display text-white font-semibold tracking-tight mb-5 sm:mb-7"
-                style={{
-                  fontSize: 'clamp(1.875rem, 7vw, 5rem)',
-                  lineHeight: '1.08',
-                  letterSpacing: '-0.02em',
-                }}
+        <Container className="relative py-16 sm:py-20 md:py-24 lg:py-28">
+          <div className="max-w-3xl">
+            <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-5">
+              Búzios · Região dos Lagos
+            </span>
+            <h1
+              className="font-display text-white font-semibold tracking-tight mb-5 sm:mb-7"
+              style={{
+                fontSize: 'clamp(2rem, 7.5vw, 5.5rem)',
+                lineHeight: '1.05',
+                letterSpacing: '-0.025em',
+                textShadow: '0 2px 24px rgba(0,0,0,0.3)',
+              }}
+            >
+              A vista é nossa.
+              <br />
+              <span className="italic font-medium text-white/90">A história, sua.</span>
+            </h1>
+            <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed mb-8 max-w-xl">
+              Passeios de escuna e lancha pelas 12 praias mais bonitas e 3 ilhas paradisíacas. Embarque tranquilo e curta.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/passeio-escuna"
+                className="inline-flex items-center justify-center gap-2 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors shadow-lg shadow-black/20"
               >
-                A vista é nossa.
-                <br />
-                <span className="italic font-medium text-white/90">A história, sua.</span>
-              </h1>
-              <p className="text-white/85 text-sm sm:text-base md:text-lg leading-relaxed mb-8 max-w-xl">
-                Passeios de escuna e lancha pelas 12 praias mais bonitas e 3 ilhas paradisíacas. Embarque tranquilo e curta.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/passeio-escuna"
-                  className="inline-flex items-center justify-center gap-2 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-sm md:text-base px-6 py-3.5 rounded-full transition-colors"
-                >
-                  Reservar agora
-                  <ChevronRight size={16} />
-                </Link>
-                <Link
-                  href="#tours"
-                  className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 font-bold text-sm md:text-base px-6 py-3.5 rounded-full transition-colors"
-                >
-                  Ver passeios
-                </Link>
-              </div>
+                Reservar agora
+                <ChevronRight size={16} />
+              </Link>
+              <Link
+                href="#tours"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors"
+              >
+                Ver passeios
+              </Link>
             </div>
-
-            {/* Card flutuante */}
-            <aside className="lg:col-span-5 w-full lg:max-w-sm lg:ml-auto">
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] overflow-hidden border border-white/20">
-                <div className="relative aspect-[16/9]">
-                  <Image
-                    src="/images/photos/misc/cruzeiro-vista-01.jpg"
-                    alt="Próxima saída"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 90vw, 380px"
-                  />
-                  <span className="absolute top-3 left-3 bg-[var(--color-red-600)] text-white text-[10px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full">
-                    Próxima saída
-                  </span>
-                </div>
-                <div className="p-5 sm:p-6">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Star size={13} className="fill-[var(--color-red-600)] text-[var(--color-red-600)]" />
-                    <span className="font-sans font-bold text-xs sm:text-sm text-[var(--color-charcoal-900)]">4.9</span>
-                    <span className="font-sans text-xs text-[var(--color-charcoal-500)]">· 280+ passageiros</span>
-                  </div>
-                  <h3
-                    className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight mb-3"
-                    style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', lineHeight: '1.15' }}
-                  >
-                    Escuna · 12 praias
-                  </h3>
-                  <div className="flex flex-col gap-1.5 mb-5 text-xs sm:text-sm text-[var(--color-charcoal-500)]">
-                    <span className="inline-flex items-center gap-2">
-                      <Clock size={13} /> 10h às 16h · 6h de passeio
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <Users size={13} /> Até 30 pessoas a bordo
-                    </span>
-                  </div>
-                  <div className="flex items-end justify-between gap-3 pt-4 border-t border-[var(--color-charcoal-100)]">
-                    <div>
-                      <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)]">
-                        A partir de
-                      </p>
-                      <p className="font-sans text-xl sm:text-2xl font-black text-[var(--color-red-600)] leading-tight">
-                        R$60
-                        <span className="text-xs font-normal text-[var(--color-charcoal-500)]"> /pessoa</span>
-                      </p>
-                    </div>
-                    <Link
-                      href="/passeio-escuna"
-                      className="inline-flex items-center gap-1 bg-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-900)] text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-full transition-colors whitespace-nowrap"
-                    >
-                      Reservar
-                      <ChevronRight size={14} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </aside>
           </div>
         </Container>
       </section>
