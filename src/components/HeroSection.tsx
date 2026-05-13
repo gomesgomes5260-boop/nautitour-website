@@ -93,7 +93,7 @@ export default function HeroSection() {
             <TourCard
               href="/passeio-escuna"
               title="Passeio de Escuna em Búzios"
-              meta="10h–16h · 6h · 12 praias, 3 ilhas"
+              meta="2h30 de passeio · 12 praias, 3 ilhas"
               priceFrom="R$60"
               pricePer="/ pessoa"
               priceStrike="R$70,00"
