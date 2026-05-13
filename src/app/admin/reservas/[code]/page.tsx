@@ -127,6 +127,14 @@ export default async function AdminBookingDetailPage({
   const events = eventsRaw ?? [];
 
   const hasPaidPayment = b.payments.some((p) => p.status === 'paid');
+  const lastPaidPayment = [...b.payments]
+    .filter((p) => p.status === 'paid')
+    .sort((a, c) => {
+      const ka = a.paid_at ?? a.created_at;
+      const kc = c.paid_at ?? c.created_at;
+      return kc.localeCompare(ka);
+    })[0];
+  const totalPaidCents = lastPaidPayment?.amount_cents ?? 0;
   const isCancellable = !['cancelled', 'refunded', 'completed'].includes(b.status);
   const canRefund =
     hasPaidPayment && b.status !== 'refunded';
@@ -311,7 +319,10 @@ export default async function AdminBookingDetailPage({
                 />
               )}
               {canRefund && (
-                <RefundButton bookingCode={b.booking_code} />
+                <RefundButton
+                  bookingCode={b.booking_code}
+                  totalPaidCents={totalPaidCents}
+                />
               )}
               {!isCancellable && !canRefund && !canResendEmail && (
                 <p className="text-sm text-gray-500">

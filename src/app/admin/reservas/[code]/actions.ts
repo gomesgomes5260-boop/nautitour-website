@@ -51,7 +51,8 @@ export async function cancelBookingAction(
 }
 
 export async function attemptRefundAction(
-  bookingCode: string
+  bookingCode: string,
+  amountCents?: number
 ): Promise<
   | { ok: true; refundedAt: string }
   | { ok: false; error: string }
@@ -79,8 +80,23 @@ export async function attemptRefundAction(
     return { ok: false, error: 'Não há pagamento pago elegível pra reembolso.' };
   }
 
-  // Chama Pagar.me
-  const result = await refundCharge(payment.pagarme_charge_id);
+  if (amountCents !== undefined) {
+    if (!Number.isInteger(amountCents) || amountCents <= 0) {
+      return { ok: false, error: 'Valor de reembolso inválido.' };
+    }
+    if (amountCents > payment.amount_cents) {
+      const total = (payment.amount_cents / 100)
+        .toFixed(2)
+        .replace('.', ',');
+      return {
+        ok: false,
+        error: `Valor excede o total pago de R$ ${total}.`,
+      };
+    }
+  }
+
+  // Chama Pagar.me (amountCents undefined = refund total)
+  const result = await refundCharge(payment.pagarme_charge_id, amountCents);
 
   // Loga o resultado via RPC (com auth.uid())
   const { error: rpcErr } = await supabase.rpc('admin_mark_refund_attempt', {
