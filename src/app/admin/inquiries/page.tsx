@@ -6,11 +6,27 @@ export const dynamic = 'force-dynamic';
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status'];
 
-const STATUS_LABEL: Record<InquiryStatus, { label: string; cls: string }> = {
-  new: { label: 'Novo', cls: 'bg-amber-100 text-amber-800' },
-  contacted: { label: 'Contactado', cls: 'bg-blue-100 text-blue-800' },
-  won: { label: 'Ganho', cls: 'bg-green-100 text-green-800' },
-  lost: { label: 'Perdido', cls: 'bg-gray-100 text-gray-700' },
+const STATUS_LABEL: Record<InquiryStatus, { label: string; cls: string; dot: string }> = {
+  new: {
+    label: 'Novo',
+    cls: 'bg-amber-50 text-amber-800',
+    dot: 'bg-amber-500',
+  },
+  contacted: {
+    label: 'Contactado',
+    cls: 'bg-sky-50 text-sky-700',
+    dot: 'bg-sky-500',
+  },
+  won: {
+    label: 'Ganho',
+    cls: 'bg-emerald-50 text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  lost: {
+    label: 'Perdido',
+    cls: 'bg-[var(--color-charcoal-100)] text-[var(--color-charcoal-700)]',
+    dot: 'bg-[var(--color-charcoal-400)]',
+  },
 };
 
 const DATETIME = new Intl.DateTimeFormat('pt-BR', {
@@ -112,7 +128,12 @@ export default async function AdminInquiriesPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Inquiries de locação</h1>
+      <h1
+        className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight mb-6"
+        style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
+      >
+        Inquiries de locação
+      </h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {FILTERS.map((f) => {
@@ -121,41 +142,53 @@ export default async function AdminInquiriesPage({
             <Link
               key={f.value}
               href={f.value ? `/admin/inquiries?status=${f.value}` : '/admin/inquiries'}
-              className={`px-3 py-1.5 rounded-full text-sm border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 active
-                  ? 'bg-[rgb(9,110,171)] text-white border-[rgb(9,110,171)]'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  ? 'bg-[var(--color-red-50)] border-[var(--color-red-600)] text-[var(--color-red-600)]'
+                  : 'bg-white text-[var(--color-charcoal-700)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-300)] hover:bg-[var(--color-charcoal-50)]'
               }`}
             >
-              {f.label} <span className="opacity-70">· {f.count}</span>
+              {f.label}
+              <span
+                className={`text-xs font-semibold tabular-nums ${
+                  active
+                    ? 'text-[var(--color-red-700)]'
+                    : 'text-[var(--color-charcoal-500)]'
+                }`}
+              >
+                {f.count}
+              </span>
             </Link>
           );
         })}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded p-3 mb-4 text-sm">
+        <div className="bg-[var(--color-red-50)] border border-[var(--color-red-100)] text-[var(--color-red-900)] rounded-xl p-3 mb-4 text-sm">
           Erro: {error.message}
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
+      <div className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase text-gray-600">
+          <thead className="bg-[var(--color-charcoal-50)] text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)]">
             <tr>
-              <th className="px-4 py-2">Recebido</th>
-              <th className="px-4 py-2">Cliente</th>
-              <th className="px-4 py-2 hidden md:table-cell">Contato</th>
-              <th className="px-4 py-2">Data desejada</th>
-              <th className="px-4 py-2 text-center">Pax</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2"></th>
+              <th className="px-4 py-3">Recebido</th>
+              <th className="px-4 py-3">Cliente</th>
+              <th className="px-4 py-3 hidden md:table-cell">Contato</th>
+              <th className="px-4 py-3">Data desejada</th>
+              <th className="px-4 py-3 text-center">Pax</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td
+                  colSpan={7}
+                  className="px-4 py-10 text-center text-[var(--color-charcoal-500)]"
+                >
                   Nenhum inquiry neste filtro.
                 </td>
               </tr>
@@ -164,36 +197,44 @@ export default async function AdminInquiriesPage({
               const cust = Array.isArray(i.customer) ? i.customer[0] : i.customer;
               const st = STATUS_LABEL[i.status];
               return (
-                <tr key={i.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-2 text-gray-600 text-xs">
+                <tr
+                  key={i.id}
+                  className="border-t border-[var(--color-charcoal-100)] hover:bg-[var(--color-charcoal-50)]/60"
+                >
+                  <td className="px-4 py-3 text-[var(--color-charcoal-500)] text-xs">
                     {DATETIME.format(new Date(i.created_at))}
                   </td>
-                  <td className="px-4 py-2">{cust?.full_name ?? '—'}</td>
-                  <td className="px-4 py-2 hidden md:table-cell text-gray-700 text-xs">
+                  <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
+                    {cust?.full_name ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-700)] text-xs">
                     {cust?.phone ?? cust?.email ?? '—'}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
                     {i.requested_date
                       ? DATE_ONLY.format(new Date(`${i.requested_date}T12:00:00`))
                       : '—'}
                     {i.start_time && i.end_time ? (
-                      <span className="ml-2 text-xs text-gray-500 font-mono">
+                      <span className="ml-2 text-xs text-[var(--color-charcoal-500)] font-mono">
                         {i.start_time.slice(0, 5)}–{i.end_time.slice(0, 5)}
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-4 py-2 text-center">
+                  <td className="px-4 py-3 text-center text-[var(--color-charcoal-900)] tabular-nums">
                     {i.passenger_count ?? '—'}
                   </td>
-                  <td className="px-4 py-2">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${st.cls}`}>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${st.cls}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden />
                       {st.label}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-right">
+                  <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/inquiries/${i.id}`}
-                      className="text-[rgb(9,110,171)] hover:underline text-xs"
+                      className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline text-xs font-medium"
                     >
                       Abrir
                     </Link>
@@ -204,7 +245,9 @@ export default async function AdminInquiriesPage({
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-500 mt-2">Até 500 últimos inquiries.</p>
+      <p className="text-xs text-[var(--color-charcoal-500)] mt-3">
+        Até 500 últimos inquiries.
+      </p>
     </div>
   );
 }
