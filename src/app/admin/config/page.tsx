@@ -5,10 +5,12 @@ import { isOwnerUser } from '@/lib/admin';
 import RegenerateButton from './RegenerateButton';
 import AdminsTable, { type AdminRow } from './AdminsTable';
 import TourPricingForm, { type TourRow } from './TourPricingForm';
+import TemplatesEditor, {
+  type TemplateRow,
+  type TourOption,
+} from './TemplatesEditor';
 
 export const dynamic = 'force-dynamic';
-
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const DATE = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo',
@@ -37,7 +39,7 @@ export default async function AdminConfigPage() {
   ] = await Promise.all([
       admin
         .from('schedule_templates')
-        .select(`id, weekday, departure_time, capacity, active, tour:tours ( name, slug, tour_type )`)
+        .select(`id, tour_id, weekday, departure_time, capacity, price_cents, active, tour:tours ( name, slug, tour_type )`)
         .order('weekday', { ascending: true })
         .order('departure_time', { ascending: true }),
       admin
@@ -86,14 +88,39 @@ export default async function AdminConfigPage() {
 
   type Tpl = {
     id: string;
+    tour_id: string;
     weekday: number;
     departure_time: string;
     capacity: number;
+    price_cents: number | null;
     active: boolean;
     tour: { name: string; slug: string; tour_type: string } | { name: string; slug: string; tour_type: string }[] | null;
   };
 
   const rows = (templates ?? []) as unknown as Tpl[];
+
+  const templateRows: TemplateRow[] = rows.map((r) => {
+    const t = Array.isArray(r.tour) ? r.tour[0] : r.tour;
+    return {
+      id: r.id,
+      tour_id: r.tour_id,
+      tour_name: t?.name ?? '—',
+      tour_type: t?.tour_type ?? '—',
+      weekday: r.weekday,
+      departure_time: r.departure_time,
+      capacity: r.capacity,
+      price_cents: r.price_cents,
+      active: r.active,
+    };
+  });
+
+  const tourOptions: TourOption[] = (toursRaw ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    slug: t.slug,
+    tour_type: t.tour_type,
+    base_price_cents: t.base_price_cents,
+  }));
 
   return (
     <div className="space-y-8">
@@ -127,53 +154,12 @@ export default async function AdminConfigPage() {
       </section>
 
       <section className="bg-white border border-gray-200 rounded-md p-6">
-        <h2 className="text-lg font-semibold mb-4">Templates de horário</h2>
+        <h2 className="text-lg font-semibold mb-2">Templates de horário</h2>
         <p className="text-sm text-gray-600 mb-4">
-          O cron gera saídas para cada combinação abaixo. Editar templates (capacidade, horário) será
-          adicionado em uma próxima entrega — por enquanto a alteração é via SQL.
+          O cron gera saídas para cada combinação abaixo. Edite capacidade, horário,
+          preço ou desative aqui — o próximo job pega as mudanças.
         </p>
-        <div className="overflow-hidden border border-gray-200 rounded">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-600">
-              <tr>
-                <th className="px-3 py-2">Tour</th>
-                <th className="px-3 py-2">Tipo</th>
-                <th className="px-3 py-2">Dia da semana</th>
-                <th className="px-3 py-2">Horário</th>
-                <th className="px-3 py-2 text-right">Capacidade</th>
-                <th className="px-3 py-2 text-center">Ativo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-gray-500">
-                    Nenhum template configurado.
-                  </td>
-                </tr>
-              )}
-              {rows.map((t) => {
-                const tour = Array.isArray(t.tour) ? t.tour[0] : t.tour;
-                return (
-                  <tr key={t.id} className="border-t border-gray-100">
-                    <td className="px-3 py-2">{tour?.name ?? '—'}</td>
-                    <td className="px-3 py-2 text-gray-600 capitalize">
-                      {tour?.tour_type ?? '—'}
-                    </td>
-                    <td className="px-3 py-2">{WEEKDAYS[t.weekday]}</td>
-                    <td className="px-3 py-2 font-mono">
-                      {t.departure_time.slice(0, 5)}
-                    </td>
-                    <td className="px-3 py-2 text-right">{t.capacity}</td>
-                    <td className="px-3 py-2 text-center">
-                      {t.active ? '✓' : '—'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <TemplatesEditor templates={templateRows} tours={tourOptions} />
       </section>
 
       <section className="bg-white border border-gray-200 rounded-md p-6">

@@ -609,6 +609,31 @@ export type Database = {
           payment_link_token: string
         }[]
       }
+      admin_create_schedule_template: {
+        Args: {
+          p_tour_id: string
+          p_weekday: number
+          p_departure_time: string
+          p_capacity: number
+          p_price_cents?: number
+        }
+        Returns: string
+      }
+      admin_create_tour_schedule: {
+        Args: {
+          p_tour_id: string
+          p_departure_at: string
+          p_capacity: number
+          p_price_cents?: number
+          p_pier_slug?: string
+          p_status?: string
+        }
+        Returns: string
+      }
+      admin_delete_schedule_template: {
+        Args: { p_template_id: string }
+        Returns: undefined
+      }
       admin_mark_refund_attempt: {
         Args: {
           p_booking_id: string
@@ -628,6 +653,17 @@ export type Database = {
           p_admin_notes?: string
           p_inquiry_id: string
           p_status?: Database["public"]["Enums"]["inquiry_status"]
+        }
+        Returns: undefined
+      }
+      admin_update_schedule_template: {
+        Args: {
+          p_template_id: string
+          p_weekday?: number
+          p_departure_time?: string
+          p_capacity?: number
+          p_price_cents?: number
+          p_active?: boolean
         }
         Returns: undefined
       }
