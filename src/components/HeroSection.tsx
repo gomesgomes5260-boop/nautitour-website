@@ -7,7 +7,7 @@ export default function HeroSection() {
   return (
     <>
       {/* === HERO === */}
-      <section className="relative w-full overflow-hidden min-h-[78vh] md:min-h-[86vh] flex items-end">
+      <section className="relative w-full overflow-hidden min-h-[82vh] md:min-h-[90vh] flex flex-col">
         <Image
           src="/images/photos/aerea/drone-tartaruga-01.jpg"
           alt="Búzios visto do alto"
@@ -16,51 +16,57 @@ export default function HeroSection() {
           priority
           sizes="100vw"
         />
-        {/* Overlay mais sutil — destaque pra foto, só escurece o bottom pra legibilidade */}
+        {/* Overlay sutil — só escurece os extremos pra legibilidade, deixa o meio limpo */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(to bottom, rgba(31,31,31,0.15) 0%, rgba(31,31,31,0) 40%, rgba(31,31,31,0.4) 75%, rgba(31,31,31,0.75) 100%)',
+              'linear-gradient(to bottom, rgba(31,31,31,0.55) 0%, rgba(31,31,31,0.1) 25%, rgba(31,31,31,0) 55%, rgba(31,31,31,0.35) 85%, rgba(31,31,31,0.7) 100%)',
           }}
         />
 
-        <Container className="relative py-16 sm:py-20 md:py-24 lg:py-28">
+        <Container className="relative flex-1 flex flex-col py-8 sm:py-10 md:py-14">
+          {/* === Texto no topo === */}
           <div className="max-w-3xl">
-            <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-5">
+            <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-4 sm:mb-5">
               Búzios · Região dos Lagos
             </span>
             <h1
-              className="font-display text-white font-semibold tracking-tight mb-5 sm:mb-7"
+              className="font-display text-white font-semibold tracking-tight mb-4 sm:mb-6"
               style={{
                 fontSize: 'clamp(2rem, 7.5vw, 5.5rem)',
                 lineHeight: '1.05',
                 letterSpacing: '-0.025em',
-                textShadow: '0 2px 24px rgba(0,0,0,0.3)',
+                textShadow: '0 2px 24px rgba(0,0,0,0.35)',
               }}
             >
               A vista é nossa.
               <br />
               <span className="italic font-medium text-white/90">A história, sua.</span>
             </h1>
-            <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed mb-8 max-w-xl">
+            <p
+              className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed max-w-xl"
+              style={{ textShadow: '0 1px 12px rgba(0,0,0,0.35)' }}
+            >
               Passeios de escuna e lancha pelas 12 praias mais bonitas e 3 ilhas paradisíacas. Embarque tranquilo e curta.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/passeio-escuna"
-                className="inline-flex items-center justify-center gap-2 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors shadow-lg shadow-black/20"
-              >
-                Reservar agora
-                <ChevronRight size={16} />
-              </Link>
-              <Link
-                href="#tours"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors"
-              >
-                Ver passeios
-              </Link>
-            </div>
+          </div>
+
+          {/* === Botões no rodapé === */}
+          <div className="mt-auto pt-12 flex flex-col sm:flex-row gap-3 max-w-3xl">
+            <Link
+              href="/passeio-escuna"
+              className="inline-flex items-center justify-center gap-2 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors shadow-lg shadow-black/20"
+            >
+              Reservar agora
+              <ChevronRight size={16} />
+            </Link>
+            <Link
+              href="#tours"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 font-bold text-sm md:text-base px-7 py-4 rounded-full transition-colors"
+            >
+              Ver passeios
+            </Link>
           </div>
         </Container>
       </section>
