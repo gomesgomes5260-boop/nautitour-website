@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
 import { createClient } from '@/lib/supabase/server';
+import { formatDuration } from '@/lib/format-duration';
 
 export const dynamic = 'force-dynamic';
 
@@ -136,7 +137,7 @@ export default async function PasseioEscunaPage() {
                       <DetailItem
                         Icon={Clock}
                         label="Duração"
-                        value={`${Math.round(tour.duration_minutes / 60)}h de passeio`}
+                        value={`${formatDuration(tour.duration_minutes)} de passeio`}
                       />
                     )}
                     {tour.max_capacity && (
