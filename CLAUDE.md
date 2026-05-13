@@ -1,0 +1,198 @@
+# CLAUDE.md — Guia rápido pro próximo chat
+
+Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. Última atualização: **13/maio/2026**.
+
+## TL;DR
+
+- Site de reservas de **passeios de barco em Armação dos Búzios** vendendo em produção
+- **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres) + Pagar.me v5 + Resend
+- **Modo Pagar.me `live`** desde 11/maio. Bookings reais com PIX e cartão funcionando.
+- **Brand visual**: charcoal (`#404040`) + red (`#C00010`), Fraunces serif + Montserrat sans + JetBrains Mono. Logo PNG em `public/brand/`.
+- **Schedule da escuna**: sáb/dom 09:30+12:00, seg-sex 11:30, capacidade 120, 2h30 de duração
+- **Píeres de embarque**: 3 opções, Rua das Pedras default sem taxa, Porto Veleiro e Pescador R$ 10/pax presencial
+
+## ⚠️ Erros que cometi e não devem repetir
+
+1. **Cidade é Armação dos Búzios**, não Maragogi nem Arraial do Cabo. Já corrigi no front + e-mail mas se ver alguma string solta, troca.
+2. **`public/_design/`** (com underscore) é **403 no Vercel** porque prefixo `_` é reservado. Use `public/design-docs/` se precisar hostear HTMLs.
+3. **Lucide-react v1.8.0** (antiga) — sem ícones de marca (Facebook/Instagram/YouTube). Usar SVG inline pra essas. Upgrade pendente.
+4. **Tailwind v4 + reset global** (`* { margin: 0; padding: 0 }`) brigam com classes. Já removi do `globals.css`. Tailwind preflight resolve.
+5. **Timezone**: Búzios é **UTC-3 sem DST** (desde 2019). Helpers em `src/components/DateScheduleSelector.tsx` (`brtMidnight`, `dayKey`) usam isso.
+
+## 🎯 Como navegar o repo
+
+```
+nautitour-website/
+├── src/
+│   ├── app/                      # Next.js App Router
+│   │   ├── admin/                # Painel (sidebar dark, gate via isAdminUser)
+│   │   │   ├── overview/         # Dashboard com KPIs + saídas hoje + receita 14d + atividade
+│   │   │   ├── reservas/         # CRUD reservas + export CSV
+│   │   │   ├── manifesto/        # Calendário mensal + detalhe por saída (edit/delete/pier)
+│   │   │   ├── inquiries/        # Leads de lancha privativa
+│   │   │   ├── clientes/         # CRM-light
+│   │   │   ├── financeiro/       # Receita / refunds
+│   │   │   └── config/           # Templates + admins + pricing
+│   │   ├── checkout/[scheduleId]/
+│   │   ├── reserva/[code]/       # Página pós-booking
+│   │   ├── passeio-escuna/       # Calendário interativo
+│   │   ├── passeio-lancha/       # Idem + inquiry WhatsApp
+│   │   ├── locacao-escuna/       # Form de lead
+│   │   ├── login | signup | esqueci-senha | minha-conta | minhas-reservas
+│   │   └── api/
+│   │       ├── webhooks/pagarme/ # Webhook de pagamento
+│   │       ├── auth/signout/
+│   │       └── monitoring/       # Sentry tunnel (CSP-friendly)
+│   ├── components/
+│   │   ├── HeaderClient.tsx      # Top bar red + nav charcoal
+│   │   ├── Footer.tsx            # Bg charcoal-900, logo white
+│   │   ├── Logo.tsx              # next/image do PNG
+│   │   ├── Container.tsx         # Wrapper padding consistente
+│   │   ├── HeroSection.tsx       # Home hero full-bleed
+│   │   ├── DateScheduleSelector.tsx  # Calendário mensal pra escolha de data
+│   │   ├── AdminSidebar.tsx      # Sidebar dark do admin
+│   │   └── ... (TurnstileWidget, CheckoutForm, RefundButton, etc)
+│   └── lib/
+│       ├── supabase/{server,admin,client}.ts
+│       ├── supabase/database.types.ts  # gerado via MCP
+│       ├── pagarme/{client,config,tokenize}.ts
+│       ├── email.ts + email-flow.ts
+│       ├── email-templates/
+│       │   ├── booking-confirmation.ts
+│       │   └── schedule-changed.ts
+│       ├── piers.ts              # helpers de formatação de taxa
+│       ├── format-duration.ts    # "150 → 2h30"
+│       ├── rate-limit.ts         # Upstash
+│       ├── turnstile.ts          # Cloudflare
+│       ├── sentry-scrub.ts       # PII scrub
+│       └── admin.ts              # isAdminUser / isOwnerUser
+├── public/
+│   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
+│   ├── design-docs/              # HTMLs de pesquisa hostados em /design-docs/*
+│   └── images/photos/            # escuna/, ilhas/, aerea/, misc/
+├── design/                       # Material interno (não vai pra produção)
+│   ├── brand-guide/              # PNGs oficiais do cliente
+│   ├── inspirations/             # Prints de referência
+│   ├── icons/coolicons/SVG/      # 442 SVGs de ícones
+│   └── research/                 # HTMLs gerados durante UI/UX
+├── db/migrations/                # SQL files (rastreamento, aplicação via MCP)
+│   ├── 017_escuna_schedule_factory.sql
+│   ├── 018_embarkation_piers.sql
+│   ├── 019_schedule_edit_delete_rpcs.sql
+│   └── 020_templates_crud_and_create_schedule.sql
+├── scripts/
+│   └── extract-logo-variants.mjs # Chroma key pra extrair logo do brand guide
+└── STATUS.md                     # Estado atual + histórico de tiers
+```
+
+## 🔑 Decisões técnicas chave
+
+### Banco (Supabase project `uydvnjcqrfjacwburvuo` = Nutitour)
+- **RLS habilitado** em todas tabelas. Public reads: `tours`, `tour_schedules`, `embarkation_piers`
+- **Soft-hold**: `bookings.expires_at` + `pg_cron` cancela pending_payment expirado
+- **Schedule factory**: `ensure_escuna_schedules(N)` roda 06:00 UTC, mantém 90 dias à frente
+- **Idempotência email**: RPC `confirm_booking_payment_v2` retorna boolean — só envia e-mail se foi a primeira confirmação
+- **Pier default**: trigger `tg_set_default_embarkation_pier` preenche `rua-pedras` se NULL
+- **Booking events**: log de tudo (`payment_paid`, `pier_changed`, `schedule_changed`, etc) em `booking_events.kind`
+- **Admin gate**: tabela `admins` + helper `is_admin(uuid)`. Trigger auto-promove `gomesgomes5260@gmail.com` a owner
+
+### Frontend
+- **Tailwind v4 CSS-first** — tokens em `src/app/globals.css` via `@theme` block
+- **Fontes via next/font/google** em `src/app/layout.tsx` (Fraunces + Montserrat + JetBrains Mono + legacy aliases)
+- **Server Components** padrão; client components só onde precisa interatividade (modals, forms, calendar)
+- **`Container` component** garante padding consistente (`px-6 sm:px-8 md:px-10 lg:px-12`) — use sempre
+- **Tipografia fluida** via `clamp(min, vw, max)` inline `style` — evita pulos no breakpoint
+
+### Server actions / RPCs
+- **Auth gate em toda action admin**: `requireAdmin()` ou `isAdminUser(user.id)`
+- **`'use server'` actions** chamam RPCs Supabase (não SQL direto) — RPC tem guard de admin redundante
+- **Captcha + rate limit** em actions de criação (`createBookingAction`, `createInquiryAction`, auth/payment)
+
+### Pagar.me
+- **Modo `live`** em produção. `PAGARME_ALLOWED_EMAILS` setado mas ignorado em live (era pra allowlist em dev)
+- **Idempotency key** com hash do `card_token` evita duplicação em retentativas
+- **PIX `expiresInSeconds: 600`** alinhado ao soft-hold de 10min
+- **Webhook** valida basic auth + chama `confirm_booking_payment_v2`
+
+### Email (Resend)
+- **Sender atual**: `Nautitour <onboarding@resend.dev>` (free tier — só entrega pra emails da conta Resend)
+- **Pendente** trocar pra domínio próprio (PR-Final, aguarda DNS)
+- **Templates**: `booking-confirmation.ts` (compra), `schedule-changed.ts` (admin muda data/hora)
+
+## 🛠️ Como rodar
+
+```bash
+npm install
+npm run dev          # localhost:3000
+npm run build        # checa types + bundles
+```
+
+Env vars críticas (`.env.local`):
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+PAGARME_API_KEY=
+PAGARME_MODE=live
+NEXT_PUBLIC_PAGARME_PUBLIC_KEY=
+PAGARME_WEBHOOK_USER=
+PAGARME_WEBHOOK_PASSWORD=
+RESEND_API_KEY=
+RESEND_SENDER='Nautitour <onboarding@resend.dev>'
+NEXT_PUBLIC_SITE_URL=https://nautitour-website.vercel.app
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+NEXT_PUBLIC_SENTRY_DSN=
+SENTRY_DSN=
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+```
+
+Todas no-op se ausentes (Turnstile, Upstash, Sentry) — dev local funciona sem.
+
+## 🚦 Workflow de PRs
+
+1. **Branch nova partindo de main**: `git checkout -B claude/<descritivo>`
+2. **Migrations via MCP** Supabase (`apply_migration`) + **SQL no `db/migrations/`** pra rastreio histórico (não é executável — só doc)
+3. **Types regenerados** via MCP após migration (`generate_typescript_types`) — `src/lib/supabase/database.types.ts`
+4. **`npm run build`** antes de commit. Build limpo é obrigatório.
+5. **Commit** com mensagem multilinha estilo "categoria: descrição curta" + body explicando contexto
+6. **Push** + **abrir PR** via MCP GitHub. NÃO mergear sem confirmação do user.
+
+## 🧪 Test plan padrão
+
+- Sem env vars opcionais (Turnstile/Upstash/Sentry): tudo no-op silencioso
+- `npm run build` passa
+- Após merge: smoke test em `nautitour-website.vercel.app`
+- Pagamento real R$ 1 em `tour-de-teste` quando tocar em fluxo de payment
+
+## 📚 Docs principais
+
+- **`STATUS.md`** — Estado atual + roadmap + histórico de tiers
+- **`admin-dashboard.md`** — Spec do painel admin (parcialmente implementado)
+- **`docs/design-system/README.md`** — Design system docs
+- **`design/brand-guide/README.md`** — Brand guide oficial (canônico)
+- **`design/research/`** — HTMLs de pesquisa UI/UX (também hostados em `/design-docs/`)
+- **`db/migrations/README.md`** — Convenção de migrations
+
+## 🎯 Próximos passos (em ordem de prioridade sugerida)
+
+1. **PR-S** (CSP report-only + Origin check signout + HSTS preload) — fecha pentest D6/D11/D12
+2. **PR-T** (Refund parcial UI) — `pagarme/client.ts:refundCharge` já aceita `amountCents`
+3. **PR-U** (Paginação `/admin/clientes`)
+4. **Rebrand das páginas internas remanescentes** — checkout, reserva, login, signup, admin/reservas, admin/financeiro, etc
+5. **PR-Final** (swap apex + Resend verificado + lead recapture) — aguarda DNS mpjunior
+
+## 🆘 Onde achar contexto histórico
+
+- **STATUS.md** seção "Estado atual" pra resumo executivo
+- **STATUS.md** abaixo do separator pra log cronológico desde go-live
+- **Git log**: `git log --oneline -50` lista PRs recentes
+- **PRs no GitHub**: títulos descritivos sempre explicam o que foi feito
+
+---
+
+**Nota pro próximo Claude**: o user prefere PRs pequenas (1 área por PR), commits descritivos, e que eu confirme antes de tomar ações destrutivas (delete, push --force, etc). Use o GitHub MCP pra abrir PRs sempre. Quando o GitHub MCP estiver desconectado, instrua o user a abrir manualmente via URL.
