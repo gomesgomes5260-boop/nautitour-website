@@ -171,19 +171,19 @@ export default function DateScheduleSelector({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* === Calendário === */}
       <div>
         {/* Header mês */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <button
             type="button"
             onClick={() => canPrev && shiftMonth(-1)}
             disabled={!canPrev}
             aria-label="Mês anterior"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
           <span className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] capitalize">
             {monthLabel}
@@ -193,18 +193,18 @@ export default function DateScheduleSelector({
             onClick={() => canNext && shiftMonth(1)}
             disabled={!canNext}
             aria-label="Próximo mês"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         </div>
 
         {/* Weekdays */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-7 gap-0.5 mb-1">
           {WEEKDAYS.map((d) => (
             <div
               key={d}
-              className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] text-center py-1"
+              className="text-[9px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] text-center"
             >
               {d}
             </div>
@@ -212,7 +212,7 @@ export default function DateScheduleSelector({
         </div>
 
         {/* Days grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
           {days.map((cell, i) => {
             if (cell == null) return <div key={i} />;
             const dayList = byDay.get(cell.key) ?? [];
@@ -225,7 +225,7 @@ export default function DateScheduleSelector({
             const isPast = cell.key < todayKey;
 
             let className =
-              'relative aspect-square flex items-center justify-center text-sm font-semibold rounded-lg transition-colors';
+              'relative h-9 flex items-center justify-center text-[13px] font-semibold rounded-md transition-colors';
 
             if (isSelected) {
               className += ' bg-[var(--color-red-600)] text-white shadow-[var(--shadow-1)]';
@@ -261,13 +261,13 @@ export default function DateScheduleSelector({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 mt-3 text-[10px] text-[var(--color-charcoal-500)]">
+        <div className="flex items-center gap-3 mt-2 text-[10px] text-[var(--color-charcoal-500)]">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-[var(--color-red-50)] border border-[var(--color-red-100)]" />
+            <span className="w-2.5 h-2.5 rounded bg-[var(--color-red-50)] border border-[var(--color-red-100)]" />
             Disponível
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-[var(--color-red-600)]" />
+            <span className="w-2.5 h-2.5 rounded bg-[var(--color-red-600)]" />
             Selecionado
           </span>
         </div>
@@ -275,14 +275,14 @@ export default function DateScheduleSelector({
 
       {/* === Horários do dia selecionado === */}
       {selectedKey ? (
-        <div className="rounded-2xl bg-[var(--color-charcoal-50)] p-4 sm:p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-charcoal-500)] mb-1">
+        <div className="rounded-xl bg-[var(--color-charcoal-50)] p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--color-charcoal-500)]">
             Horários disponíveis
           </p>
-          <p className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] capitalize mb-4">
+          <p className="font-display text-base font-semibold text-[var(--color-charcoal-900)] capitalize mb-3">
             {selectedDateLabel}
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-1.5">
             {selectedSchedules.map((s) => {
               const seatsLeft = s.capacity - s.seats_taken;
               const isSoldOut = s.status === 'sold_out' || seatsLeft <= 0;
@@ -302,15 +302,15 @@ export default function DateScheduleSelector({
               return (
                 <li
                   key={s.id}
-                  className={`flex items-center gap-3 bg-white rounded-xl p-3 sm:p-4 border ${
+                  className={`flex items-center gap-3 bg-white rounded-lg px-3 py-2.5 border ${
                     isSoldOut ? 'border-[var(--color-charcoal-100)] opacity-60' : 'border-[var(--color-charcoal-100)]'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-sans text-base sm:text-lg font-bold text-[var(--color-charcoal-900)] leading-tight">
+                    <p className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] leading-tight">
                       Saída {time}
                     </p>
-                    <p className={`text-xs sm:text-sm font-semibold mt-0.5 ${statusColor}`}>
+                    <p className={`text-xs font-semibold mt-0.5 ${statusColor}`}>
                       {status}
                       {price && !isSoldOut && (
                         <span className="font-normal text-[var(--color-charcoal-500)]"> · {price}</span>
@@ -318,16 +318,16 @@ export default function DateScheduleSelector({
                     </p>
                   </div>
                   {isSoldOut ? (
-                    <span className="font-sans text-xs font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] px-3 py-2 shrink-0">
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] px-2 py-1.5 shrink-0">
                       {soldOutLabel}
                     </span>
                   ) : (
                     <Link
                       href={`/checkout/${s.id}`}
-                      className="inline-flex items-center gap-1 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-full transition-colors shrink-0"
+                      className="inline-flex items-center gap-1 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-xs px-3 py-2 rounded-full transition-colors shrink-0"
                     >
                       Reservar
-                      <ChevronRight size={14} />
+                      <ChevronRight size={12} />
                     </Link>
                   )}
                 </li>
@@ -336,7 +336,7 @@ export default function DateScheduleSelector({
           </ul>
         </div>
       ) : (
-        <div className="rounded-2xl bg-[var(--color-charcoal-50)] p-5 text-center">
+        <div className="rounded-xl bg-[var(--color-charcoal-50)] p-4 text-center">
           <p className="text-sm text-[var(--color-charcoal-500)]">
             Selecione uma data no calendário pra ver os horários.
           </p>
