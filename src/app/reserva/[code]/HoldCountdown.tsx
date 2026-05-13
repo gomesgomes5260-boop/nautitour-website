@@ -33,14 +33,17 @@ export default function HoldCountdown({ expiresAt }: { expiresAt: string }) {
 
   if (remaining <= 0) {
     return (
-      <p className="text-sm mt-2 text-red-700">
+      <p className="text-sm mt-2 text-[var(--color-red-700)]">
         Reserva expirada. Atualizando…
       </p>
     );
   }
   return (
-    <p className="text-sm mt-2">
-      Tempo restante: <strong>{format(remaining)}</strong>
+    <p className="text-sm mt-2 inline-flex items-baseline gap-1.5">
+      Tempo restante:{' '}
+      <strong className="font-mono text-[var(--color-charcoal-900)] tabular-nums">
+        {format(remaining)}
+      </strong>
     </p>
   );
 }

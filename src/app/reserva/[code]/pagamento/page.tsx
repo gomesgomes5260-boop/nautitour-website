@@ -1,7 +1,9 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, Lock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Container from '@/components/Container';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { canPay, getMode } from '@/lib/pagarme/config';
 import PaymentMethodPicker from './PaymentMethodPicker';
@@ -62,22 +64,44 @@ export default async function PagamentoPage({
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="px-[60px] py-12 max-w-2xl mx-auto">
-          <p className="text-sm text-gray-500 mb-2">Pagamento da reserva</p>
-          <h1 className="text-[36px] font-normal mb-1" style={{ color: 'rgb(219, 56, 44)' }}>
+      <main className="bg-[var(--color-charcoal-50)]">
+        <Container as="section" className="py-10 sm:py-14 md:py-16 max-w-2xl">
+          <Link
+            href={`/reserva/${code}`}
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--color-charcoal-500)] hover:text-[var(--color-red-600)] transition-colors mb-6"
+          >
+            <ArrowLeft size={14} />
+            Voltar para os detalhes
+          </Link>
+
+          <span className="block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)] mb-3">
+            Pagamento · Código
+          </span>
+          <h1
+            className="font-mono text-[var(--color-charcoal-900)] font-bold tracking-tight mb-2"
+            style={{
+              fontSize: 'clamp(1.875rem, 5vw, 2.75rem)',
+              lineHeight: '1.05',
+            }}
+          >
             {b.booking_code}
           </h1>
-          <p className="text-gray-600 mb-8">{tour?.name}</p>
+          <p className="text-[var(--color-charcoal-500)] mb-2">{tour?.name}</p>
+          <p className="inline-flex items-center gap-1.5 text-xs text-[var(--color-charcoal-500)] mb-8">
+            <Lock size={12} />
+            Pagamento processado pela Pagar.me — dados criptografados.
+          </p>
 
           {!allowed ? (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-md p-6">
-              <p className="font-semibold mb-2">Pagamento online em breve</p>
-              <p className="text-sm">
+            <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
+              <p className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-2">
+                Pagamento online em breve
+              </p>
+              <p className="text-sm text-[var(--color-charcoal-700)]">
                 {mode === 'off'
                   ? 'Estamos finalizando a integração com o gateway de pagamento. Por enquanto, finalize a sua reserva pelo WhatsApp informando o código '
                   : 'Pagamento online ainda não liberado para este perfil. Finalize pelo WhatsApp informando o código '}
-                <strong>{b.booking_code}</strong>.
+                <strong className="text-[var(--color-charcoal-900)]">{b.booking_code}</strong>.
               </p>
               <a
                 href={`https://wa.me/5522998479728?text=${encodeURIComponent(
@@ -85,8 +109,7 @@ export default async function PagamentoPage({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block mt-4 px-6 py-3 text-white text-sm font-semibold rounded-full"
-                style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+                className="inline-block mt-5 px-6 py-3 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold rounded-full transition-colors"
               >
                 Falar no WhatsApp
               </a>
@@ -98,14 +121,7 @@ export default async function PagamentoPage({
               maxInstallments={maxInstallments}
             />
           )}
-
-          <Link
-            href={`/reserva/${code}`}
-            className="block text-center mt-6 text-sm text-gray-600 hover:underline"
-          >
-            ← Voltar para os detalhes da reserva
-          </Link>
-        </section>
+        </Container>
       </main>
       <Footer />
     </>

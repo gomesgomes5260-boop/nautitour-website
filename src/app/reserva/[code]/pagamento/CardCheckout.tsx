@@ -113,11 +113,16 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
     });
   };
 
+  const inputClass =
+    'w-full border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2.5 text-[var(--color-charcoal-900)] placeholder:text-[var(--color-charcoal-400)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-gray-50 rounded-lg p-6">
-        <p className="text-sm text-gray-600 mb-1">Total a pagar</p>
-        <p className="text-3xl font-bold" style={{ color: 'rgb(219, 56, 44)' }}>
+      <div className="rounded-2xl bg-[var(--color-charcoal-900)] text-white p-6 sm:p-8">
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60 mb-2">
+          Total a pagar
+        </p>
+        <p className="font-sans text-3xl sm:text-4xl font-black text-[var(--color-red-300)] leading-none">
           {PRICE_FORMATTER.format(totalCents / 100)}
         </p>
       </div>
@@ -131,7 +136,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
           value={number}
           onChange={(e) => setNumber(formatCardNumber(e.target.value))}
           placeholder="1234 5678 9012 3456"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono"
+          className={`${inputClass} font-mono`}
         />
       </Field>
 
@@ -142,7 +147,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
           autoComplete="cc-name"
           value={holder}
           onChange={(e) => setHolder(e.target.value.toUpperCase())}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 uppercase"
+          className={`${inputClass} uppercase`}
         />
       </Field>
 
@@ -151,7 +156,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
           <select
             value={installments}
             onChange={(e) => setInstallments(Number(e.target.value))}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className={inputClass}
           >
             {Array.from({ length: allowedInstallments }, (_, i) => i + 1).map((n) => {
               const perInstallment = Math.round(totalCents / n);
@@ -176,7 +181,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
             value={expiry}
             onChange={(e) => setExpiry(formatExpiry(e.target.value))}
             placeholder="MM/AA"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono"
+            className={`${inputClass} font-mono`}
           />
         </Field>
         <Field label="CVV" required>
@@ -188,13 +193,13 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
             value={cvv}
             onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="123"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono"
+            className={`${inputClass} font-mono`}
           />
         </Field>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 text-sm">
+        <div className="rounded-xl bg-[var(--color-red-50)] border border-[var(--color-red-100)] text-[var(--color-red-900)] p-3 text-sm">
           {error}
         </div>
       )}
@@ -202,8 +207,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
       <button
         type="submit"
         disabled={submitting}
-        className="w-full px-6 py-4 text-white text-base font-semibold rounded-full disabled:opacity-50"
-        style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+        className="w-full px-6 py-4 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[var(--shadow-2)]"
       >
         {phase === 'tokenizing'
           ? 'Validando cartão...'
@@ -211,7 +215,7 @@ export default function CardCheckout({ bookingCode, totalCents, maxInstallments 
             ? 'Processando pagamento...'
             : `Pagar ${PRICE_FORMATTER.format(totalCents / 100)}`}
       </button>
-      <p className="text-xs text-center text-gray-500">
+      <p className="text-xs text-center text-[var(--color-charcoal-500)]">
         Seus dados de cartão são enviados diretamente para a Pagar.me. Não
         armazenamos número, validade ou CVV.
       </p>
@@ -230,9 +234,9 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-gray-700 mb-1">
+      <span className="block text-sm font-medium text-[var(--color-charcoal-700)] mb-1.5">
         {label}
-        {required && <span className="text-red-600"> *</span>}
+        {required && <span className="text-[var(--color-red-600)]"> *</span>}
       </span>
       {children}
     </label>

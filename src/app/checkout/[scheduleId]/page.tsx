@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, MapPin, AlertTriangle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Container from '@/components/Container';
 import { createAdminClient } from '@/lib/supabase/admin';
 import CheckoutForm from './CheckoutForm';
 
@@ -56,24 +58,38 @@ export default async function CheckoutPage({
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <section className="px-[60px] py-12 max-w-4xl mx-auto">
+      <main className="bg-[var(--color-charcoal-50)]">
+        <Container as="section" className="py-10 sm:py-14 md:py-16 max-w-4xl">
           <Link
             href={`/${tour.slug === 'lancha-privativa' ? 'passeio-lancha' : 'passeio-escuna'}`}
-            className="text-sm text-gray-600 hover:underline mb-4 inline-block"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--color-charcoal-500)] hover:text-[var(--color-red-600)] transition-colors mb-6"
           >
-            ← Voltar
+            <ArrowLeft size={14} />
+            Voltar
           </Link>
-          <h1 className="text-[36px] font-normal mb-2" style={{ color: 'rgb(219, 56, 44)' }}>
+
+          <span className="block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)] mb-3">
             Finalizar reserva
+          </span>
+          <h1
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mb-6"
+            style={{
+              fontSize: 'clamp(1.875rem, 5vw, 3rem)',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Quase lá. Vamos só checar quem embarca.
           </h1>
 
-          <div className="bg-gray-50 rounded-lg p-6 mb-6">
-            <p className="text-sm text-gray-600 mb-1">{tour.name}</p>
-            <p className="text-lg font-semibold capitalize" style={{ color: 'rgb(9, 110, 171)' }}>
+          <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-7 mb-6">
+            <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-2">
+              {tour.name}
+            </p>
+            <p className="font-display text-xl sm:text-2xl font-semibold text-[var(--color-charcoal-900)] capitalize leading-tight">
               {DATE_FORMATTER.format(new Date(schedule.departure_at))}
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-[var(--color-charcoal-500)] mt-2">
               {isPrivate
                 ? `Lancha privativa — até ${schedule.capacity} pessoas`
                 : `${seatsLeft} ${seatsLeft === 1 ? 'vaga disponível' : 'vagas disponíveis'}`}
@@ -81,45 +97,56 @@ export default async function CheckoutPage({
           </div>
 
           {pierTyped && (
-            <div
-              className={`rounded-lg p-5 mb-8 border ${
-                pierTyped.fee_cents > 0
-                  ? 'bg-amber-50 border-amber-200'
-                  : 'bg-emerald-50 border-emerald-200'
-              }`}
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-600 mb-1">
-                Local de embarque
-              </p>
-              <p className="text-base font-bold text-gray-900">{pierTyped.name}</p>
-              {pierTyped.address && (
-                <p className="text-sm text-gray-700 mt-0.5">{pierTyped.address}</p>
-              )}
-              {pierTyped.fee_cents > 0 ? (
-                <p className="mt-3 text-sm text-amber-900 leading-relaxed">
-                  ⚠️ <strong>Taxa de embarque R$ {(pierTyped.fee_cents / 100).toFixed(2).replace('.', ',')} por pessoa</strong>{' '}
-                  paga presencialmente na loja no dia do passeio (não é cobrada no site).
-                </p>
-              ) : (
-                <p className="mt-2 text-sm text-emerald-900">
-                  Sem taxa de embarque adicional.
-                </p>
-              )}
+            <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-7 mb-8">
+              <div className="flex items-start gap-3">
+                <span
+                  className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${
+                    pierTyped.fee_cents > 0
+                      ? 'bg-[var(--color-red-50)] text-[var(--color-red-600)]'
+                      : 'bg-[var(--color-charcoal-50)] text-[var(--color-charcoal-700)]'
+                  }`}
+                >
+                  <MapPin size={18} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                    Local de embarque
+                  </p>
+                  <p className="text-base font-semibold text-[var(--color-charcoal-900)]">
+                    {pierTyped.name}
+                  </p>
+                  {pierTyped.address && (
+                    <p className="text-sm text-[var(--color-charcoal-500)] mt-0.5">
+                      {pierTyped.address}
+                    </p>
+                  )}
+                  {pierTyped.fee_cents > 0 ? (
+                    <p className="mt-3 text-sm text-[var(--color-charcoal-700)] leading-relaxed">
+                      <strong className="text-[var(--color-red-600)]">
+                        Taxa de embarque R$ {(pierTyped.fee_cents / 100).toFixed(2).replace('.', ',')} por pessoa
+                      </strong>{' '}
+                      paga presencialmente na loja no dia do passeio (não é cobrada no site).
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm text-[var(--color-charcoal-500)]">
+                      Sem taxa de embarque adicional.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
           {isCancelled ? (
-            <p className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
-              Esta saída foi cancelada.
-            </p>
+            <NoticeBox tone="danger">Esta saída foi cancelada.</NoticeBox>
           ) : isSoldOut ? (
-            <p className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4">
+            <NoticeBox tone="warning">
               Esta saída está esgotada. Escolha outra data.
-            </p>
+            </NoticeBox>
           ) : unitPriceCents == null ? (
-            <p className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4">
+            <NoticeBox tone="warning">
               Esta saída não tem preço configurado. Entre em contato pelo WhatsApp.
-            </p>
+            </NoticeBox>
           ) : (
             <CheckoutForm
               scheduleId={schedule.id}
@@ -128,9 +155,28 @@ export default async function CheckoutPage({
               maxPassengers={schedule.capacity}
             />
           )}
-        </section>
+        </Container>
       </main>
       <Footer />
     </>
+  );
+}
+
+function NoticeBox({
+  tone,
+  children,
+}: {
+  tone: 'danger' | 'warning';
+  children: React.ReactNode;
+}) {
+  const styles =
+    tone === 'danger'
+      ? 'bg-[var(--color-red-50)] border-[var(--color-red-100)] text-[var(--color-red-900)]'
+      : 'bg-[var(--color-charcoal-50)] border-[var(--color-charcoal-100)] text-[var(--color-charcoal-900)]';
+  return (
+    <div className={`rounded-2xl border p-5 flex items-start gap-3 ${styles}`}>
+      <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+      <p className="text-sm leading-relaxed">{children}</p>
+    </div>
   );
 }

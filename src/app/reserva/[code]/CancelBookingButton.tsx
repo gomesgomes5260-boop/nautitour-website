@@ -38,7 +38,7 @@ export default function CancelBookingButton({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="bg-white border border-red-300 text-red-700 text-sm px-4 py-1.5 rounded hover:bg-red-50"
+          className="bg-white border border-[var(--color-red-100)] text-[var(--color-red-700)] text-sm font-medium px-4 py-2 rounded-full hover:bg-[var(--color-red-50)] hover:border-[var(--color-red-300)] transition-colors"
         >
           Cancelar reserva
         </button>
@@ -46,7 +46,7 @@ export default function CancelBookingButton({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="text-xs text-red-700 hover:underline"
+          className="text-xs text-[var(--color-red-700)] hover:underline"
         >
           Cancelar
         </button>
@@ -54,28 +54,30 @@ export default function CancelBookingButton({
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-[var(--color-charcoal-900)]/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-md max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-2">Cancelar esta reserva?</h3>
-            <p className="text-sm text-gray-700 mb-3">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-[var(--shadow-3)]">
+            <h3 className="font-display text-xl font-semibold text-[var(--color-charcoal-900)] mb-2">
+              Cancelar esta reserva?
+            </h3>
+            <p className="text-sm text-[var(--color-charcoal-700)] mb-4">
               Sua reserva será cancelada e a vaga voltará a ficar disponível.
             </p>
             {hasPaidPayment && (
-              <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded p-3 text-sm mb-3">
+              <div className="bg-[var(--color-red-50)] border border-[var(--color-red-100)] text-[var(--color-red-900)] rounded-xl p-3 text-sm mb-4">
                 <strong>Você já pagou esta reserva.</strong> O reembolso será
                 processado pela nossa equipe em até <strong>5 dias úteis</strong>{' '}
                 no mesmo método de pagamento.
               </div>
             )}
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-[var(--color-charcoal-500)] mb-4">
               Cancelamento só é permitido até <strong>48 horas</strong> antes da
               saída. Mais perto disso, fale com a gente no WhatsApp.
             </p>
 
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium text-[var(--color-charcoal-700)] mb-1.5">
               Motivo (opcional)
             </label>
             <textarea
@@ -84,11 +86,11 @@ export default function CancelBookingButton({
               rows={3}
               maxLength={500}
               placeholder="Conta brevemente por que está cancelando — ajuda a gente a melhorar"
-              className="w-full border border-gray-300 rounded p-2 text-sm mb-3"
+              className="w-full border border-[var(--color-charcoal-200)] rounded-lg p-2.5 text-sm mb-4 focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors"
             />
 
             {err && (
-              <div className="bg-red-50 border border-red-200 text-red-800 rounded p-3 text-sm mb-3">
+              <div className="bg-[var(--color-red-50)] border border-[var(--color-red-100)] text-[var(--color-red-900)] rounded-xl p-3 text-sm mb-4">
                 {err}
               </div>
             )}
@@ -98,7 +100,7 @@ export default function CancelBookingButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={pending}
-                className="text-sm px-4 py-1.5 rounded border border-gray-300 hover:bg-gray-50"
+                className="text-sm font-medium px-4 py-2 rounded-full border border-[var(--color-charcoal-200)] text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-50 transition-colors"
               >
                 Voltar
               </button>
@@ -106,7 +108,7 @@ export default function CancelBookingButton({
                 type="button"
                 onClick={submit}
                 disabled={pending}
-                className="bg-red-600 text-white text-sm px-4 py-1.5 rounded hover:opacity-90 disabled:opacity-50"
+                className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-5 py-2 rounded-full disabled:opacity-50 transition-colors"
               >
                 {pending ? 'Cancelando…' : 'Confirmar cancelamento'}
               </button>
