@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
 import PrintButton from './PrintButton';
 import BlockScheduleButton from './BlockScheduleButton';
+import PierSelect from './PierSelect';
+import type { Pier } from '@/lib/piers';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +28,11 @@ export default async function ManifestoSchedulePage({
 
   const { data: schedule } = await admin
     .from('tour_schedules')
-    .select(`id, departure_at, capacity, status, tour:tours ( name )`)
+    .select(`
+      id, departure_at, capacity, status, embarkation_pier_id,
+      tour:tours ( name ),
+      pier:embarkation_piers ( slug, name, fee_cents, address, notes )
+    `)
     .eq('id', scheduleId)
     .maybeSingle();
 
@@ -36,10 +42,25 @@ export default async function ManifestoSchedulePage({
     departure_at: string;
     capacity: number;
     status: string;
+    embarkation_pier_id: string;
     tour: { name: string } | { name: string }[] | null;
+    pier:
+      | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
+      | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
+      | null;
   };
   const s = schedule as unknown as Sch;
   const tour = Array.isArray(s.tour) ? s.tour[0] : s.tour;
+  const currentPier = Array.isArray(s.pier) ? s.pier[0] : s.pier;
+
+  // Lista de píeres ativos (RLS permite leitura pública)
+  const { data: piersRaw } = await admin
+    .from('embarkation_piers')
+    .select('id, slug, name, fee_cents, address, is_default')
+    .eq('active', true)
+    .order('is_default', { ascending: false })
+    .order('fee_cents', { ascending: true });
+  const piers = (piersRaw ?? []) as Array<Pick<Pier, 'id' | 'slug' | 'name' | 'fee_cents' | 'address' | 'is_default'>>;
 
   const { data: bookings } = await admin
     .from('bookings')
@@ -103,6 +124,20 @@ export default async function ManifestoSchedulePage({
         </div>
       )}
 
+      {/* Pier selector — só no painel, esconde no print */}
+      <div className="mb-5 print:hidden">
+        <PierSelect
+          scheduleId={s.id}
+          piers={piers.map((p) => ({
+            slug: p.slug,
+            name: p.name,
+            fee_cents: p.fee_cents,
+            address: p.address,
+          }))}
+          currentSlug={currentPier?.slug ?? 'rua-pedras'}
+        />
+      </div>
+
       <div className="bg-white border border-gray-200 rounded-md p-6 print:border-0 print:rounded-none print:p-0">
         <header className="border-b border-gray-200 pb-4 mb-4">
           <h1 className="text-xl font-semibold">{tour?.name ?? '—'}</h1>
@@ -112,6 +147,19 @@ export default async function ManifestoSchedulePage({
           <p className="text-sm text-gray-600 mt-1">
             Passageiros confirmados: <strong>{totalPax}</strong> de {s.capacity}
           </p>
+          {currentPier && (
+            <p className="text-sm text-gray-700 mt-2">
+              <strong>Embarque:</strong> {currentPier.name}
+              {currentPier.address && (
+                <span className="text-gray-500"> · {currentPier.address}</span>
+              )}
+              {currentPier.fee_cents > 0 && (
+                <span className="ml-2 inline-block bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">
+                  Taxa R$ {(currentPier.fee_cents / 100).toFixed(2).replace('.', ',')}/pax presencial
+                </span>
+              )}
+            </p>
+          )}
         </header>
 
         {rows.length === 0 ? (

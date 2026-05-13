@@ -19,7 +19,7 @@ export async function sendBookingConfirmationFor(
       total_cents,
       currency,
       tour:tours ( name ),
-      schedule:tour_schedules ( departure_at ),
+      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
       customer:customers ( email, full_name )
       `
     )
@@ -34,13 +34,17 @@ export async function sendBookingConfirmationFor(
     return { ok: false, error: 'booking not found' };
   }
 
+  type PierJoined = { name: string; address: string | null; fee_cents: number };
   type Joined = {
     booking_code: string;
     passenger_count: number;
     total_cents: number;
     currency: string;
     tour: { name: string } | { name: string }[] | null;
-    schedule: { departure_at: string } | { departure_at: string }[] | null;
+    schedule:
+      | { departure_at: string; pier: PierJoined | PierJoined[] | null }
+      | { departure_at: string; pier: PierJoined | PierJoined[] | null }[]
+      | null;
     customer:
       | { email: string; full_name: string | null }
       | { email: string; full_name: string | null }[]
@@ -49,6 +53,11 @@ export async function sendBookingConfirmationFor(
   const b = data as unknown as Joined;
   const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
   const schedule = Array.isArray(b.schedule) ? b.schedule[0] : b.schedule;
+  const pier = schedule
+    ? Array.isArray(schedule.pier)
+      ? schedule.pier[0]
+      : schedule.pier
+    : null;
   const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
 
   if (!customer?.email) {
@@ -67,6 +76,13 @@ export async function sendBookingConfirmationFor(
     totalCents: b.total_cents,
     currency: b.currency,
     siteUrl,
+    pier: pier
+      ? {
+          name: pier.name,
+          address: pier.address,
+          feeCents: pier.fee_cents,
+        }
+      : null,
   });
 
   return sendEmail({ to: customer.email, subject, html, text });

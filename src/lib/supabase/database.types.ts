@@ -220,6 +220,48 @@ export type Database = {
         }
         Relationships: []
       }
+      embarkation_piers: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          created_at: string | null
+          fee_cents: number
+          google_maps_url: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          notes: string | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          fee_cents?: number
+          google_maps_url?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          notes?: string | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          created_at?: string | null
+          fee_cents?: number
+          google_maps_url?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          notes?: string | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       inquiry_requests: {
         Row: {
           admin_notes: string | null
@@ -426,6 +468,7 @@ export type Database = {
           capacity: number
           created_at: string
           departure_at: string
+          embarkation_pier_id: string
           id: string
           price_cents: number | null
           seats_taken: number
@@ -437,6 +480,7 @@ export type Database = {
           capacity: number
           created_at?: string
           departure_at: string
+          embarkation_pier_id: string
           id?: string
           price_cents?: number | null
           seats_taken?: number
@@ -448,6 +492,7 @@ export type Database = {
           capacity?: number
           created_at?: string
           departure_at?: string
+          embarkation_pier_id?: string
           id?: string
           price_cents?: number | null
           seats_taken?: number
@@ -456,6 +501,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tour_schedules_embarkation_pier_id_fkey"
+            columns: ["embarkation_pier_id"]
+            isOneToOne: false
+            referencedRelation: "embarkation_piers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tour_schedules_tour_id_fkey"
             columns: ["tour_id"]
@@ -537,9 +589,84 @@ export type Database = {
       }
     }
     Functions: {
-      customer_cancel_booking: {
+      admin_add_admin_by_email: {
+        Args: { p_email: string; p_role?: string }
+        Returns: string
+      }
+      admin_cancel_booking: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: undefined
+      }
+      admin_convert_inquiry_to_booking: {
+        Args: {
+          p_departure_at: string
+          p_inquiry_id: string
+          p_price_cents: number
+        }
+        Returns: {
+          booking_code: string
+          booking_id: string
+          payment_link_token: string
+        }[]
+      }
+      admin_mark_refund_attempt: {
+        Args: {
+          p_booking_id: string
+          p_charge_id: string
+          p_ok: boolean
+          p_response: Json
+        }
+        Returns: undefined
+      }
+      admin_remove_admin: { Args: { p_user_id: string }; Returns: undefined }
+      admin_set_embarkation_pier: {
+        Args: { p_pier_slug: string; p_schedule_id: string }
+        Returns: undefined
+      }
+      admin_update_inquiry: {
+        Args: {
+          p_admin_notes?: string
+          p_inquiry_id: string
+          p_status?: Database["public"]["Enums"]["inquiry_status"]
+        }
+        Returns: undefined
+      }
+      admin_update_tour_pricing: {
+        Args: {
+          p_apply_to_future_schedules?: boolean
+          p_base_price_cents?: number
+          p_max_capacity?: number
+          p_tour_id: string
+        }
+        Returns: number
+      }
+      block_schedule: {
+        Args: { p_reason: string; p_schedule_id: string }
+        Returns: number
+      }
+      confirm_booking_payment: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_paid_at: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+        }
+        Returns: undefined
+      }
+      confirm_booking_payment_v2: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_paid_at: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+        }
+        Returns: boolean
       }
       create_booking_pending: {
         Args: {
@@ -573,103 +700,20 @@ export type Database = {
           inquiry_id: string
         }[]
       }
-      confirm_booking_payment: {
-        Args: {
-          p_amount_cents: number
-          p_booking_id: string
-          p_pagarme_charge_id: string
-          p_pagarme_order_id: string
-          p_paid_at: string
-          p_payment_method: Database["public"]["Enums"]["payment_method"]
-          p_raw_response: Json
-        }
-        Returns: undefined
-      }
-      confirm_booking_payment_v2: {
-        Args: {
-          p_amount_cents: number
-          p_booking_id: string
-          p_pagarme_charge_id: string
-          p_pagarme_order_id: string
-          p_paid_at: string
-          p_payment_method: Database["public"]["Enums"]["payment_method"]
-          p_raw_response: Json
-        }
-        Returns: boolean
-      }
-      mark_booking_payment_failed: {
-        Args: {
-          p_amount_cents: number
-          p_booking_id: string
-          p_pagarme_charge_id: string
-          p_pagarme_order_id: string
-          p_payment_method: Database["public"]["Enums"]["payment_method"]
-          p_raw_response: Json
-          p_status: Database["public"]["Enums"]["payment_status"]
-        }
-        Returns: undefined
-      }
-      admin_add_admin_by_email: {
-        Args: { p_email: string; p_role?: string }
-        Returns: string
-      }
-      admin_cancel_booking: {
+      customer_cancel_booking: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: undefined
       }
-      admin_convert_inquiry_to_booking: {
-        Args: {
-          p_departure_at: string
-          p_inquiry_id: string
-          p_price_cents: number
-        }
-        Returns: {
-          booking_code: string
-          booking_id: string
-          payment_link_token: string
-        }[]
-      }
-      admin_mark_refund_attempt: {
-        Args: {
-          p_booking_id: string
-          p_charge_id: string
-          p_ok: boolean
-          p_response: Json
-        }
-        Returns: undefined
-      }
-      admin_remove_admin: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
-      admin_update_inquiry: {
-        Args: {
-          p_admin_notes?: string
-          p_inquiry_id: string
-          p_status?: Database["public"]["Enums"]["inquiry_status"]
-        }
-        Returns: undefined
-      }
-      admin_update_tour_pricing: {
-        Args: {
-          p_apply_to_future_schedules?: boolean
-          p_base_price_cents?: number
-          p_max_capacity?: number
-          p_tour_id: string
-        }
-        Returns: number
-      }
-      block_schedule: {
-        Args: { p_reason: string; p_schedule_id: string }
+      ensure_escuna_schedules: {
+        Args: { p_days_ahead?: number }
         Returns: number
       }
       expire_pending_bookings: { Args: never; Returns: number }
+      gen_booking_code: { Args: never; Returns: string }
       generate_future_schedules: {
         Args: { p_days_ahead?: number }
         Returns: number
       }
-      is_admin: { Args: { p_user_id: string }; Returns: boolean }
-      gen_booking_code: { Args: never; Returns: string }
       get_booking_by_code: {
         Args: { p_code: string }
         Returns: {
@@ -685,6 +729,19 @@ export type Database = {
           tour_name: string
           tour_slug: string
         }[]
+      }
+      is_admin: { Args: { p_user_id: string }; Returns: boolean }
+      mark_booking_payment_failed: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pagarme_charge_id: string
+          p_pagarme_order_id: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_raw_response: Json
+          p_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Returns: undefined
       }
     }
     Enums: {
