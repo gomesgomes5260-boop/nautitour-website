@@ -87,7 +87,7 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
             <>
               {isAdmin && (
                 <Link
-                  href="/admin/reservas"
+                  href="/admin/overview"
                   className="text-sm font-bold text-[var(--color-red-600)] hover:opacity-80 transition-opacity"
                 >
                   Admin
@@ -189,7 +189,7 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
                   </span>
                   {isAdmin && (
                     <Link
-                      href="/admin/reservas"
+                      href="/admin/overview"
                       onClick={() => setIsMenuOpen(false)}
                       className="text-sm font-bold text-[var(--color-red-600)]"
                     >

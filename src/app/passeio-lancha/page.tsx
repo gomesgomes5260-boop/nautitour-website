@@ -162,23 +162,23 @@ export default async function PasseioLanchaPage() {
               </div>
 
               {/* === RIGHT: booking sticky card === */}
-              <aside className="lg:col-span-5 lg:sticky lg:top-28 self-start">
+              <aside className="lg:col-span-5 lg:sticky lg:top-24 self-start">
                 <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white overflow-hidden shadow-[var(--shadow-2)]">
-                  <div className="p-6 sm:p-7 border-b border-[var(--color-charcoal-100)]">
-                    <span className="inline-block text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-red-600)] bg-[var(--color-red-50)] px-2.5 py-1 rounded-full mb-3">
+                  <div className="p-5 sm:p-6 border-b border-[var(--color-charcoal-100)]">
+                    <span className="inline-block text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-red-600)] bg-[var(--color-red-50)] px-2.5 py-1 rounded-full mb-2">
                       Privativo
                     </span>
-                    <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                    <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-0.5">
                       Preço fixo do barco
                     </p>
-                    <p className="font-sans text-3xl sm:text-4xl font-black text-[var(--color-red-600)] leading-tight">
+                    <p className="font-sans text-2xl sm:text-3xl font-black text-[var(--color-red-600)] leading-tight">
                       {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-charcoal-500)] mt-1">
                       Parcele em até 6× sem juros
                     </p>
                   </div>
-                  <div className="p-6 sm:p-7">
+                  <div className="p-5 sm:p-6">
                     <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-charcoal-700)] mb-4">
                       Escolha sua data
                     </h3>

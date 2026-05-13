@@ -156,12 +156,12 @@ export default async function PasseioEscunaPage() {
               </div>
 
               {/* === RIGHT: booking sticky card === */}
-              <aside className="lg:col-span-5 lg:sticky lg:top-28 self-start">
+              <aside className="lg:col-span-5 lg:sticky lg:top-24 self-start">
                 <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white overflow-hidden shadow-[var(--shadow-2)]">
-                  <div className="p-6 sm:p-7 border-b border-[var(--color-charcoal-100)]">
-                    <div className="flex items-center gap-1.5 mb-3">
+                  <div className="p-5 sm:p-6 border-b border-[var(--color-charcoal-100)]">
+                    <div className="flex items-center gap-1.5 mb-2">
                       <Star
-                        size={14}
+                        size={13}
                         className="fill-[var(--color-red-600)] text-[var(--color-red-600)]"
                       />
                       <span className="font-sans font-bold text-sm text-[var(--color-charcoal-900)]">
@@ -171,17 +171,17 @@ export default async function PasseioEscunaPage() {
                         · 280+ passageiros
                       </span>
                     </div>
-                    <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                    <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-0.5">
                       A partir de
                     </p>
-                    <p className="font-sans text-3xl sm:text-4xl font-black text-[var(--color-red-600)] leading-tight">
+                    <p className="font-sans text-2xl sm:text-3xl font-black text-[var(--color-red-600)] leading-tight">
                       {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
                       <span className="text-sm font-normal text-[var(--color-charcoal-500)]">
                         {' '}/ pessoa
                       </span>
                     </p>
                   </div>
-                  <div className="p-6 sm:p-7">
+                  <div className="p-5 sm:p-6">
                     <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-charcoal-700)] mb-4">
                       Escolha sua data
                     </h3>
