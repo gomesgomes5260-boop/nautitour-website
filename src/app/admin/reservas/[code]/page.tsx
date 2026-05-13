@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import CancelButton from './CancelButton';
@@ -10,12 +11,32 @@ export const dynamic = 'force-dynamic';
 
 type BookingStatus = Database['public']['Enums']['booking_status'];
 
-const STATUS_LABEL: Record<BookingStatus, { label: string; cls: string }> = {
-  pending_payment: { label: 'Pendente', cls: 'bg-amber-100 text-amber-800' },
-  confirmed: { label: 'Confirmada', cls: 'bg-green-100 text-green-800' },
-  completed: { label: 'Concluída', cls: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Cancelada', cls: 'bg-red-100 text-red-800' },
-  refunded: { label: 'Reembolsada', cls: 'bg-blue-100 text-blue-800' },
+const STATUS_LABEL: Record<BookingStatus, { label: string; cls: string; dot: string }> = {
+  pending_payment: {
+    label: 'Pendente',
+    cls: 'bg-amber-50 text-amber-800',
+    dot: 'bg-amber-500',
+  },
+  confirmed: {
+    label: 'Confirmada',
+    cls: 'bg-emerald-50 text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  completed: {
+    label: 'Concluída',
+    cls: 'bg-emerald-50 text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  cancelled: {
+    label: 'Cancelada',
+    cls: 'bg-[var(--color-red-50)] text-[var(--color-red-900)]',
+    dot: 'bg-[var(--color-red-600)]',
+  },
+  refunded: {
+    label: 'Reembolsada',
+    cls: 'bg-sky-50 text-sky-700',
+    dot: 'bg-sky-500',
+  },
 };
 
 const EVENT_LABEL: Record<string, string> = {
@@ -136,116 +157,107 @@ export default async function AdminBookingDetailPage({
     })[0];
   const totalPaidCents = lastPaidPayment?.amount_cents ?? 0;
   const isCancellable = !['cancelled', 'refunded', 'completed'].includes(b.status);
-  const canRefund =
-    hasPaidPayment && b.status !== 'refunded';
+  const canRefund = hasPaidPayment && b.status !== 'refunded';
   const canResendEmail = b.status === 'confirmed';
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <Link
           href="/admin/reservas"
-          className="text-sm text-gray-600 hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--color-charcoal-500)] hover:text-[var(--color-charcoal-900)] transition-colors"
         >
-          ← Voltar para reservas
+          <ArrowLeft size={14} />
+          Voltar para reservas
         </Link>
-        <span className={`inline-block px-3 py-1 rounded text-sm ${st.cls}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.cls}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden />
           {st.label}
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-lg font-semibold">
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <div className="flex items-baseline justify-between mb-5 gap-3 flex-wrap">
+              <h2
+                className="font-mono font-bold text-[var(--color-charcoal-900)] tracking-tight"
+                style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}
+              >
                 {b.booking_code}
               </h2>
-              <span className="text-2xl font-semibold text-[rgb(217,0,6)]">
+              <span className="font-sans font-bold text-2xl text-[var(--color-red-600)]">
                 {PRICE.format(b.total_cents / 100)}
               </span>
             </div>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Tour</dt>
-                <dd>{tour?.name ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Saída</dt>
-                <dd>
-                  {schedule?.departure_at
-                    ? DATETIME.format(new Date(schedule.departure_at))
-                    : '—'}
-                  {schedule?.status === 'cancelled' && (
-                    <span className="ml-2 text-xs text-red-700 font-semibold">
-                      (saída cancelada)
-                    </span>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Passageiros</dt>
-                <dd>{b.passenger_count}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Criado em</dt>
-                <dd>{DATETIME.format(new Date(b.created_at))}</dd>
-              </div>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+              <Field label="Tour">{tour?.name ?? '—'}</Field>
+              <Field label="Saída">
+                {schedule?.departure_at
+                  ? DATETIME.format(new Date(schedule.departure_at))
+                  : '—'}
+                {schedule?.status === 'cancelled' && (
+                  <span className="ml-2 text-xs text-[var(--color-red-700)] font-semibold">
+                    (saída cancelada)
+                  </span>
+                )}
+              </Field>
+              <Field label="Passageiros">{b.passenger_count}</Field>
+              <Field label="Criado em">{DATETIME.format(new Date(b.created_at))}</Field>
               {b.expires_at && b.status === 'pending_payment' && (
-                <div>
-                  <dt className="text-xs uppercase text-gray-500 mb-1">Hold expira em</dt>
-                  <dd>{DATETIME.format(new Date(b.expires_at))}</dd>
-                </div>
+                <Field label="Hold expira em">
+                  {DATETIME.format(new Date(b.expires_at))}
+                </Field>
               )}
               {b.confirmation_email_sent_at && (
-                <div>
-                  <dt className="text-xs uppercase text-gray-500 mb-1">E-mail enviado em</dt>
-                  <dd>{DATETIME.format(new Date(b.confirmation_email_sent_at))}</dd>
-                </div>
+                <Field label="E-mail enviado em">
+                  {DATETIME.format(new Date(b.confirmation_email_sent_at))}
+                </Field>
               )}
               {b.notes && (
                 <div className="sm:col-span-2">
-                  <dt className="text-xs uppercase text-gray-500 mb-1">Notas</dt>
-                  <dd className="whitespace-pre-wrap text-gray-800 text-sm">{b.notes}</dd>
+                  <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                    Notas
+                  </dt>
+                  <dd className="whitespace-pre-wrap text-[var(--color-charcoal-900)] text-sm">
+                    {b.notes}
+                  </dd>
                 </div>
               )}
             </dl>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Cliente</h2>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Nome</dt>
-                <dd>{customer?.full_name ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">E-mail</dt>
-                <dd>
-                  {customer?.email ? (
-                    <a href={`mailto:${customer.email}`} className="text-[rgb(9,110,171)] hover:underline">
-                      {customer.email}
-                    </a>
-                  ) : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Telefone</dt>
-                <dd>{customer?.phone ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">CPF</dt>
-                <dd>{customer?.cpf ?? '—'}</dd>
-              </div>
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Cliente
+            </h2>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+              <Field label="Nome">{customer?.full_name ?? '—'}</Field>
+              <Field label="E-mail">
+                {customer?.email ? (
+                  <a
+                    href={`mailto:${customer.email}`}
+                    className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline"
+                  >
+                    {customer.email}
+                  </a>
+                ) : (
+                  '—'
+                )}
+              </Field>
+              <Field label="Telefone">{customer?.phone ?? '—'}</Field>
+              <Field label="CPF">{customer?.cpf ?? '—'}</Field>
             </dl>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
               Passageiros ({b.passengers.length})
             </h2>
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase text-gray-600 border-b border-gray-200">
+              <thead className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)] border-b border-[var(--color-charcoal-100)]">
                 <tr>
                   <th className="py-2 pr-4">#</th>
                   <th className="py-2 pr-4">Nome</th>
@@ -255,11 +267,13 @@ export default async function AdminBookingDetailPage({
               </thead>
               <tbody>
                 {b.passengers.map((p, idx) => (
-                  <tr key={idx} className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-gray-500">{idx + 1}</td>
-                    <td className="py-2 pr-4">{p.full_name}</td>
-                    <td className="py-2 pr-4 text-gray-700">{p.document ?? '—'}</td>
-                    <td className="py-2 pr-4 text-gray-700">
+                  <tr key={idx} className="border-b border-[var(--color-charcoal-100)] last:border-0">
+                    <td className="py-2 pr-4 text-[var(--color-charcoal-500)]">{idx + 1}</td>
+                    <td className="py-2 pr-4 text-[var(--color-charcoal-900)]">{p.full_name}</td>
+                    <td className="py-2 pr-4 text-[var(--color-charcoal-700)]">
+                      {p.document ?? '—'}
+                    </td>
+                    <td className="py-2 pr-4 text-[var(--color-charcoal-700)]">
                       {p.is_child ? 'Criança' : 'Adulto'}
                     </td>
                   </tr>
@@ -268,15 +282,17 @@ export default async function AdminBookingDetailPage({
             </table>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
               Pagamentos ({b.payments.length})
             </h2>
             {b.payments.length === 0 ? (
-              <p className="text-sm text-gray-500">Nenhum pagamento registrado.</p>
+              <p className="text-sm text-[var(--color-charcoal-500)]">
+                Nenhum pagamento registrado.
+              </p>
             ) : (
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase text-gray-600 border-b border-gray-200">
+                <thead className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)] border-b border-[var(--color-charcoal-100)]">
                   <tr>
                     <th className="py-2 pr-4">Quando</th>
                     <th className="py-2 pr-4">Método</th>
@@ -287,14 +303,23 @@ export default async function AdminBookingDetailPage({
                 </thead>
                 <tbody>
                   {b.payments.map((p) => (
-                    <tr key={p.id} className="border-b border-gray-100">
-                      <td className="py-2 pr-4 text-gray-700">
+                    <tr
+                      key={p.id}
+                      className="border-b border-[var(--color-charcoal-100)] last:border-0"
+                    >
+                      <td className="py-2 pr-4 text-[var(--color-charcoal-700)]">
                         {DATETIME.format(new Date(p.paid_at ?? p.created_at))}
                       </td>
-                      <td className="py-2 pr-4 capitalize">{p.payment_method}</td>
-                      <td className="py-2 pr-4">{PRICE.format(p.amount_cents / 100)}</td>
-                      <td className="py-2 pr-4 capitalize">{p.status}</td>
-                      <td className="py-2 pr-4 font-mono text-xs text-gray-500">
+                      <td className="py-2 pr-4 capitalize text-[var(--color-charcoal-900)]">
+                        {p.payment_method}
+                      </td>
+                      <td className="py-2 pr-4 font-mono text-[var(--color-charcoal-900)]">
+                        {PRICE.format(p.amount_cents / 100)}
+                      </td>
+                      <td className="py-2 pr-4 capitalize text-[var(--color-charcoal-700)]">
+                        {p.status}
+                      </td>
+                      <td className="py-2 pr-4 font-mono text-xs text-[var(--color-charcoal-500)]">
                         {p.pagarme_charge_id ?? '—'}
                       </td>
                     </tr>
@@ -306,17 +331,14 @@ export default async function AdminBookingDetailPage({
         </div>
 
         <aside className="space-y-6">
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Ações</h2>
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Ações
+            </h2>
             <div className="space-y-3">
-              {canResendEmail && (
-                <ResendEmailButton bookingCode={b.booking_code} />
-              )}
+              {canResendEmail && <ResendEmailButton bookingCode={b.booking_code} />}
               {isCancellable && (
-                <CancelButton
-                  bookingCode={b.booking_code}
-                  isPaid={hasPaidPayment}
-                />
+                <CancelButton bookingCode={b.booking_code} isPaid={hasPaidPayment} />
               )}
               {canRefund && (
                 <RefundButton
@@ -325,31 +347,40 @@ export default async function AdminBookingDetailPage({
                 />
               )}
               {!isCancellable && !canRefund && !canResendEmail && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--color-charcoal-500)]">
                   Nenhuma ação disponível neste estado.
                 </p>
               )}
             </div>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Histórico</h2>
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Histórico
+            </h2>
             {events.length === 0 ? (
-              <p className="text-sm text-gray-500">Sem eventos.</p>
+              <p className="text-sm text-[var(--color-charcoal-500)]">Sem eventos.</p>
             ) : (
               <ol className="space-y-3 text-sm">
                 {events.map((e) => {
                   const payload = e.payload as Record<string, unknown> | null;
                   return (
-                    <li key={e.id} className="border-l-2 border-gray-200 pl-3">
-                      <div className="font-medium text-gray-800">
+                    <li
+                      key={e.id}
+                      className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4"
+                    >
+                      <span
+                        className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"
+                        aria-hidden
+                      />
+                      <div className="font-medium text-[var(--color-charcoal-900)]">
                         {EVENT_LABEL[e.kind] ?? e.kind}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-[var(--color-charcoal-500)] mt-0.5">
                         {DATETIME.format(new Date(e.created_at))}
                       </div>
                       {payload && 'reason' in payload && payload.reason ? (
-                        <div className="text-xs text-gray-700 mt-1 italic">
+                        <div className="text-xs text-[var(--color-charcoal-700)] mt-1 italic">
                           &ldquo;{String(payload.reason)}&rdquo;
                         </div>
                       ) : null}
@@ -361,6 +392,17 @@ export default async function AdminBookingDetailPage({
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+        {label}
+      </dt>
+      <dd className="text-[var(--color-charcoal-900)]">{children}</dd>
     </div>
   );
 }
