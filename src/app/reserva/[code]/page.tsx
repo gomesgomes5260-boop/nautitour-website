@@ -67,7 +67,7 @@ export default async function ReservaPage({
       created_at,
       expires_at,
       tour:tours ( name, slug ),
-      schedule:tour_schedules ( departure_at ),
+      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( slug, name, fee_cents, address, notes ) ),
       customer:customers ( email, full_name, auth_user_id )
     `
     )
@@ -86,7 +86,22 @@ export default async function ReservaPage({
     created_at: string;
     expires_at: string | null;
     tour: { name: string; slug: string } | { name: string; slug: string }[] | null;
-    schedule: { departure_at: string } | { departure_at: string }[] | null;
+    schedule:
+      | {
+          departure_at: string;
+          pier:
+            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
+            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
+            | null;
+        }
+      | {
+          departure_at: string;
+          pier:
+            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
+            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
+            | null;
+        }[]
+      | null;
     customer:
       | { email: string; full_name: string | null; auth_user_id: string | null }
       | { email: string; full_name: string | null; auth_user_id: string | null }[]
@@ -95,6 +110,11 @@ export default async function ReservaPage({
   const b = booking as unknown as Joined;
   const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
   const schedule = Array.isArray(b.schedule) ? b.schedule[0] : b.schedule;
+  const pier = schedule
+    ? Array.isArray(schedule.pier)
+      ? schedule.pier[0]
+      : schedule.pier
+    : null;
   const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
 
   const status = STATUS_LABEL[b.status] ?? { label: b.status, tone: 'blue' as const };
@@ -139,7 +159,7 @@ export default async function ReservaPage({
           </h1>
           <p className="text-gray-600 mb-8">{tour?.name}</p>
 
-          <div className={`border rounded-md p-4 mb-8 ${TONE_CLASSES[status.tone]}`}>
+          <div className={`border rounded-md p-4 mb-6 ${TONE_CLASSES[status.tone]}`}>
             <p className="font-semibold">{status.label}</p>
             {b.status === 'pending_payment' && (
               <>
@@ -151,6 +171,37 @@ export default async function ReservaPage({
               </>
             )}
           </div>
+
+          {pier && (
+            <div
+              className={`border rounded-md p-4 mb-8 ${
+                pier.fee_cents > 0
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-emerald-50 border-emerald-200'
+              }`}
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-600 mb-1">
+                Local de embarque
+              </p>
+              <p className="font-bold text-gray-900">{pier.name}</p>
+              {pier.address && (
+                <p className="text-sm text-gray-700 mt-0.5">{pier.address}</p>
+              )}
+              {pier.fee_cents > 0 ? (
+                <p className="text-sm text-amber-900 mt-2 leading-relaxed">
+                  ⚠️ <strong>
+                    Taxa de embarque R$ {(pier.fee_cents / 100).toFixed(2).replace('.', ',')} por pessoa
+                  </strong>{' '}
+                  paga presencialmente na loja no dia do passeio (não foi cobrada no site).
+                  Total p/ {b.passenger_count} pax: R$ {((pier.fee_cents * b.passenger_count) / 100).toFixed(2).replace('.', ',')}.
+                </p>
+              ) : (
+                <p className="text-sm text-emerald-900 mt-1">
+                  Sem taxa de embarque adicional.
+                </p>
+              )}
+            </div>
+          )}
 
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8">
             {schedule?.departure_at && (

@@ -41,7 +41,7 @@ export default async function PasseioLanchaPage() {
 
   const { data: schedules, error: schedulesError } = await supabase
     .from('tour_schedules')
-    .select('id, departure_at, capacity, seats_taken, price_cents, status')
+    .select(`id, departure_at, capacity, seats_taken, price_cents, status, pier:embarkation_piers ( slug, name, fee_cents )`)
     .eq('tour_id', tour.id)
     .gte('departure_at', new Date().toISOString())
     .neq('status', 'cancelled')
@@ -49,6 +49,28 @@ export default async function PasseioLanchaPage() {
     .limit(200);
 
   if (schedulesError) throw schedulesError;
+
+  type ScheduleRaw = {
+    id: string;
+    departure_at: string;
+    capacity: number;
+    seats_taken: number;
+    price_cents: number | null;
+    status: string;
+    pier:
+      | { slug: string; name: string; fee_cents: number }
+      | { slug: string; name: string; fee_cents: number }[]
+      | null;
+  };
+  const schedulesNormalized = ((schedules ?? []) as unknown as ScheduleRaw[]).map((s) => ({
+    id: s.id,
+    departure_at: s.departure_at,
+    capacity: s.capacity,
+    seats_taken: s.seats_taken,
+    price_cents: s.price_cents,
+    status: s.status,
+    pier: Array.isArray(s.pier) ? s.pier[0] : s.pier,
+  }));
 
   const highlights = Array.isArray(tour.highlights) ? (tour.highlights as string[]) : [];
 
@@ -184,7 +206,7 @@ export default async function PasseioLanchaPage() {
                       Escolha sua data
                     </h3>
                     <DateScheduleSelector
-                      schedules={schedules ?? []}
+                      schedules={schedulesNormalized}
                       fallbackPriceCents={tour.base_price_cents ?? null}
                       pricingMode="per_slot"
                       soldOutLabel="Reservado"

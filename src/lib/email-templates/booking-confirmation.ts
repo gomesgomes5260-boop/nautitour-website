@@ -7,6 +7,11 @@ export type BookingConfirmationPayload = {
   totalCents: number;
   currency: string;
   siteUrl: string;
+  pier?: {
+    name: string;
+    address: string | null;
+    feeCents: number;
+  } | null;
 };
 
 function formatBRL(cents: number, currency: string): string {
@@ -103,6 +108,8 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
                   <td style="padding:8px 0;font-size:14px;text-align:right;"><strong>${total}</strong></td>
                 </tr>
               </table>
+
+              ${p.pier ? renderPierBlock(p.pier, p.passengerCount) : ''}
               <p style="margin:24px 0 8px;font-size:14px;">
                 <a href="${bookingUrl}" style="background:#096EAB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Ver detalhes da reserva</a>
               </p>
@@ -113,7 +120,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
           </tr>
           <tr>
             <td style="background:#f4f6f8;padding:16px 24px;text-align:center;font-size:12px;color:#888;">
-              Nautitour · Passeios de barco em Arraial do Cabo
+              Nautitour · Passeios de barco em Armação dos Búzios
             </td>
           </tr>
         </table>
@@ -123,7 +130,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 </body>
 </html>`;
 
-  const text = [
+  const textParts = [
     `Olá, ${p.customerName || 'Cliente'}!`,
     '',
     'Recebemos seu pagamento. Sua reserva está confirmada.',
@@ -133,11 +140,66 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
     `Saída: ${departure}`,
     `Passageiros: ${p.passengerCount}`,
     `Total pago: ${total}`,
-    '',
-    `Detalhes: ${bookingUrl}`,
-    '',
-    'Nautitour — Arraial do Cabo',
-  ].join('\n');
+  ];
+
+  if (p.pier) {
+    textParts.push('');
+    textParts.push(`Local de embarque: ${p.pier.name}`);
+    if (p.pier.address) textParts.push(p.pier.address);
+    if (p.pier.feeCents > 0) {
+      const fee = (p.pier.feeCents / 100).toFixed(2).replace('.', ',');
+      const totalFee = ((p.pier.feeCents * p.passengerCount) / 100)
+        .toFixed(2)
+        .replace('.', ',');
+      textParts.push(
+        `ATENÇÃO: taxa de embarque R$ ${fee} por pessoa (total R$ ${totalFee} para ${p.passengerCount} pax) paga PRESENCIALMENTE na loja no dia do passeio. Não é cobrada no site.`
+      );
+    } else {
+      textParts.push('Sem taxa de embarque adicional.');
+    }
+  }
+
+  textParts.push('');
+  textParts.push(`Detalhes: ${bookingUrl}`);
+  textParts.push('');
+  textParts.push('Nautitour — Armação dos Búzios');
+
+  const text = textParts.join('\n');
 
   return { subject, html, text };
+}
+
+function renderPierBlock(
+  pier: { name: string; address: string | null; feeCents: number },
+  passengerCount: number
+): string {
+  const safeName = escapeHtml(pier.name);
+  const safeAddr = pier.address ? escapeHtml(pier.address) : '';
+  const isPaid = pier.feeCents > 0;
+  const bg = isPaid ? '#fffbeb' : '#ecfdf5';
+  const border = isPaid ? '#fcd34d' : '#86efac';
+  const accent = isPaid ? '#92400e' : '#065f46';
+
+  let feeBlock = '';
+  if (isPaid) {
+    const fee = (pier.feeCents / 100).toFixed(2).replace('.', ',');
+    const totalFee = ((pier.feeCents * passengerCount) / 100)
+      .toFixed(2)
+      .replace('.', ',');
+    feeBlock = `
+      <p style="margin:8px 0 0;font-size:13px;line-height:1.5;color:${accent};">
+        ⚠️ <strong>Taxa de embarque R$ ${fee} por pessoa</strong> paga presencialmente na loja no dia do passeio (não é cobrada no site).<br>
+        Total para ${passengerCount} ${passengerCount === 1 ? 'pessoa' : 'pessoas'}: <strong>R$ ${totalFee}</strong>
+      </p>`;
+  } else {
+    feeBlock = `<p style="margin:8px 0 0;font-size:13px;color:${accent};">Sem taxa de embarque adicional.</p>`;
+  }
+
+  return `
+    <div style="background:${bg};border:1px solid ${border};border-radius:6px;padding:14px 16px;margin:16px 0;">
+      <p style="margin:0;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:#555;">Local de embarque</p>
+      <p style="margin:4px 0 0;font-size:15px;font-weight:bold;color:#1a1a1a;">${safeName}</p>
+      ${safeAddr ? `<p style="margin:2px 0 0;font-size:13px;color:#555;">${safeAddr}</p>` : ''}
+      ${feeBlock}
+    </div>`;
 }

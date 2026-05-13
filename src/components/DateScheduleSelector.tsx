@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin } from 'lucide-react';
+
+type SchedulePier = {
+  slug: string;
+  name: string;
+  fee_cents: number;
+};
 
 type Schedule = {
   id: string;
@@ -11,6 +17,7 @@ type Schedule = {
   seats_taken: number;
   price_cents: number | null;
   status: string;
+  pier?: SchedulePier | null;
 };
 
 type Props = {
@@ -302,33 +309,48 @@ export default function DateScheduleSelector({
               return (
                 <li
                   key={s.id}
-                  className={`flex items-center gap-3 bg-white rounded-lg px-3 py-2.5 border ${
+                  className={`bg-white rounded-lg px-3 py-2.5 border ${
                     isSoldOut ? 'border-[var(--color-charcoal-100)] opacity-60' : 'border-[var(--color-charcoal-100)]'
                   }`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] leading-tight">
-                      Saída {time}
-                    </p>
-                    <p className={`text-xs font-semibold mt-0.5 ${statusColor}`}>
-                      {status}
-                      {price && !isSoldOut && (
-                        <span className="font-normal text-[var(--color-charcoal-500)]"> · {price}</span>
-                      )}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] leading-tight">
+                        Saída {time}
+                      </p>
+                      <p className={`text-xs font-semibold mt-0.5 ${statusColor}`}>
+                        {status}
+                        {price && !isSoldOut && (
+                          <span className="font-normal text-[var(--color-charcoal-500)]"> · {price}</span>
+                        )}
+                      </p>
+                    </div>
+                    {isSoldOut ? (
+                      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] px-2 py-1.5 shrink-0">
+                        {soldOutLabel}
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/checkout/${s.id}`}
+                        className="inline-flex items-center gap-1 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-xs px-3 py-2 rounded-full transition-colors shrink-0"
+                      >
+                        Reservar
+                        <ChevronRight size={12} />
+                      </Link>
+                    )}
                   </div>
-                  {isSoldOut ? (
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] px-2 py-1.5 shrink-0">
-                      {soldOutLabel}
-                    </span>
-                  ) : (
-                    <Link
-                      href={`/checkout/${s.id}`}
-                      className="inline-flex items-center gap-1 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-xs px-3 py-2 rounded-full transition-colors shrink-0"
-                    >
-                      Reservar
-                      <ChevronRight size={12} />
-                    </Link>
+                  {s.pier && (
+                    <div className="mt-2 pt-2 border-t border-[var(--color-charcoal-100)] flex items-start gap-1.5">
+                      <MapPin size={11} className="mt-0.5 text-[var(--color-charcoal-500)] shrink-0" />
+                      <p className="text-[11px] text-[var(--color-charcoal-500)] leading-snug">
+                        Embarque · <span className="font-semibold text-[var(--color-charcoal-700)]">{s.pier.name}</span>
+                        {s.pier.fee_cents > 0 && (
+                          <span className="ml-1 text-[var(--color-red-700)] font-semibold">
+                            (taxa R$ {(s.pier.fee_cents / 100).toFixed(2).replace('.', ',')}/pax presencial)
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   )}
                 </li>
               );
