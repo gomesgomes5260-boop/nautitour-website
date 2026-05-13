@@ -9,7 +9,7 @@ export default function HeroSection() {
       {/* === HERO === */}
       <section className="relative w-full overflow-hidden">
         <Image
-          src="/images/photos/escuna/escuna-pier-01.jpg"
+          src="/images/photos/aerea/drone-tartaruga-01.jpg"
           alt="Passeio de Escuna em Búzios"
           fill
           className="object-cover"
@@ -159,8 +159,8 @@ export default function HeroSection() {
               title="Lancha Privativa 3h"
               meta="Saída flexível · até 8 pessoas · roteiro custom"
               priceFrom="R$1.200"
-              imgSrc="/images/photos/misc/cruzeiro-vista-01.jpg"
-              imgAlt="Lancha privativa em Búzios"
+              imgSrc="/images/photos/ilhas/grupo-snorkel-01.jpg"
+              imgAlt="Grupo fazendo snorkel em Búzios"
               badge="Privativo"
               badgeStyle="red"
               cta="Consultar"
