@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+import CreateScheduleButton from './CreateScheduleButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,11 +160,29 @@ export default async function ManifestoIndex({
   const totalSeats = schedules.reduce((acc, s) => acc + (s.status === 'cancelled' ? 0 : s.capacity), 0);
   const bookedSeats = schedules.reduce((acc, s) => acc + (s.status === 'cancelled' ? 0 : s.seats_taken), 0);
 
+  // Tours ativos + píeres pra CreateScheduleButton
+  const [{ data: toursRaw }, { data: piersRaw }] = await Promise.all([
+    admin
+      .from('tours')
+      .select('id, name, slug, tour_type, base_price_cents')
+      .eq('active', true)
+      .order('name', { ascending: true }),
+    admin
+      .from('embarkation_piers')
+      .select('slug, name, fee_cents')
+      .eq('active', true)
+      .order('is_default', { ascending: false })
+      .order('fee_cents', { ascending: true }),
+  ]);
+  const toursForCreate = toursRaw ?? [];
+  const piersForCreate = piersRaw ?? [];
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-semibold">Agenda · {monthLabel(year, month)}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <CreateScheduleButton tours={toursForCreate} piers={piersForCreate} />
           <Link
             href={`/admin/manifesto?month=${prevMonth}`}
             className="text-sm px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50"
