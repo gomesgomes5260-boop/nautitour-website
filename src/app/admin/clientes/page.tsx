@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { Users, Repeat, BarChart3, UserX } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import Pagination from '@/components/Pagination';
+import KpiCard from '@/components/KpiCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,21 +35,23 @@ type Sort = 'spent' | 'recent' | 'count';
 
 type Search = { q?: string; sort?: Sort; page?: string };
 
+// Paleta de avatares mantida com diferenciação visual (8 hues).
+// Tom -500 consistente, paleta neutra-warm pra combinar com brand.
+const AVATAR_PALETTE = [
+  'bg-sky-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-violet-500',
+  'bg-rose-500',
+  'bg-fuchsia-500',
+  'bg-teal-500',
+  'bg-indigo-500',
+];
+
 function colorFromName(name: string): string {
-  // Hash leve pra cor de avatar (sem libs)
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
-  const palette = [
-    'bg-blue-500',
-    'bg-emerald-500',
-    'bg-amber-500',
-    'bg-purple-500',
-    'bg-red-500',
-    'bg-pink-500',
-    'bg-teal-500',
-    'bg-indigo-500',
-  ];
-  return palette[Math.abs(h) % palette.length];
+  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length];
 }
 
 function initials(name: string | null, email: string): string {
@@ -58,6 +62,9 @@ function initials(name: string | null, email: string): string {
   }
   return email.slice(0, 2).toUpperCase();
 }
+
+const inputClass =
+  'w-full border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
 
 export default async function AdminClientesPage({
   searchParams,
@@ -188,26 +195,49 @@ export default async function AdminClientesPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Clientes</h1>
+      <h1
+        className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight mb-6"
+        style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
+      >
+        Clientes
+      </h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Kpi label="Clientes ativos" value={String(totalCustomers)} />
-        <Kpi
+        <KpiCard
+          Icon={Users}
+          iconTone="bg-sky-50 text-sky-700"
+          label="Clientes ativos"
+          value={String(totalCustomers)}
+        />
+        <KpiCard
+          Icon={Repeat}
+          iconTone="bg-emerald-50 text-emerald-700"
           label="Recorrentes"
           value={String(recurrents)}
-          sub={totalCustomers > 0 ? `${Math.round((recurrents / totalCustomers) * 100)}%` : '—'}
+          sub={
+            totalCustomers > 0
+              ? `${Math.round((recurrents / totalCustomers) * 100)}%`
+              : '—'
+          }
         />
-        <Kpi label="Ticket médio" value={PRICE.format(avgTicket / 100)} />
-        <Kpi
+        <KpiCard
+          Icon={BarChart3}
+          iconTone="bg-[var(--color-red-50)] text-[var(--color-red-600)]"
+          label="Ticket médio"
+          value={PRICE.format(avgTicket / 100)}
+        />
+        <KpiCard
+          Icon={UserX}
+          iconTone="bg-amber-50 text-amber-700"
           label="Guests"
           value={`${guestPct}%`}
           sub={`${guestCount ?? 0} sem cadastro`}
         />
       </div>
 
-      <form className="bg-white border border-gray-200 rounded-md p-4 mb-6 flex flex-wrap items-end gap-4">
+      <form className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-5 mb-6 flex flex-wrap items-end gap-4">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-xs text-gray-600 mb-1">
+          <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
             Busca (nome ou e-mail)
           </label>
           <input
@@ -215,16 +245,14 @@ export default async function AdminClientesPage({
             name="q"
             defaultValue={q}
             placeholder="ex: Gabriel ou gabriel@…"
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Ordenar</label>
-          <select
-            name="sort"
-            defaultValue={sort}
-            className="border border-gray-300 rounded px-2 py-1.5 text-sm"
-          >
+          <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+            Ordenar
+          </label>
+          <select name="sort" defaultValue={sort} className={inputClass}>
             <option value="spent">Maior gasto</option>
             <option value="recent">Mais recente</option>
             <option value="count">Mais reservas</option>
@@ -232,29 +260,32 @@ export default async function AdminClientesPage({
         </div>
         <button
           type="submit"
-          className="bg-[rgb(9,110,171)] text-white text-sm px-4 py-1.5 rounded hover:opacity-90"
+          className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
         >
           Filtrar
         </button>
       </form>
 
-      <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
+      <div className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase text-gray-600">
+          <thead className="bg-[var(--color-charcoal-50)] text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)]">
             <tr>
-              <th className="px-4 py-2"></th>
-              <th className="px-4 py-2">Cliente</th>
-              <th className="px-4 py-2 hidden md:table-cell">Contato</th>
-              <th className="px-4 py-2 text-right">Reservas</th>
-              <th className="px-4 py-2 text-right">Gasto total</th>
-              <th className="px-4 py-2 hidden md:table-cell">Última</th>
-              <th className="px-4 py-2"></th>
+              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3">Cliente</th>
+              <th className="px-4 py-3 hidden md:table-cell">Contato</th>
+              <th className="px-4 py-3 text-right">Reservas</th>
+              <th className="px-4 py-3 text-right">Gasto total</th>
+              <th className="px-4 py-3 hidden md:table-cell">Última</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td
+                  colSpan={7}
+                  className="px-4 py-10 text-center text-[var(--color-charcoal-500)]"
+                >
                   Nenhum cliente encontrado{q && ` para "${q}"`}.
                 </td>
               </tr>
@@ -262,19 +293,25 @@ export default async function AdminClientesPage({
             {rows.map((c) => {
               const tags: Array<{ label: string; cls: string }> = [];
               if (c.total_spent_cents >= VIP_THRESHOLD_CENTS) {
-                tags.push({ label: 'VIP', cls: 'bg-amber-100 text-amber-800' });
+                tags.push({ label: 'VIP', cls: 'bg-amber-50 text-amber-800' });
               }
               if (c.bookings_count > 1) {
-                tags.push({ label: 'Recorrente', cls: 'bg-emerald-100 text-emerald-800' });
+                tags.push({
+                  label: 'Recorrente',
+                  cls: 'bg-emerald-50 text-emerald-700',
+                });
               }
               if (c.has_lancha) {
-                tags.push({ label: 'Lancha', cls: 'bg-blue-100 text-blue-800' });
+                tags.push({ label: 'Lancha', cls: 'bg-sky-50 text-sky-700' });
               }
               const displayName = c.full_name || c.email;
 
               return (
-                <tr key={c.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-2">
+                <tr
+                  key={c.id}
+                  className="border-t border-[var(--color-charcoal-100)] hover:bg-[var(--color-charcoal-50)]/60"
+                >
+                  <td className="px-4 py-3">
                     <div
                       className={`w-8 h-8 rounded-full text-white text-xs font-semibold flex items-center justify-center ${colorFromName(displayName)}`}
                       aria-hidden
@@ -282,14 +319,16 @@ export default async function AdminClientesPage({
                       {initials(c.full_name, c.email)}
                     </div>
                   </td>
-                  <td className="px-4 py-2">
-                    <div className="font-medium">{displayName}</div>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-[var(--color-charcoal-900)]">
+                      {displayName}
+                    </div>
                     {tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {tags.map((t) => (
                           <span
                             key={t.label}
-                            className={`text-[10px] px-1.5 py-0.5 rounded ${t.cls}`}
+                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${t.cls}`}
                           >
                             {t.label}
                           </span>
@@ -297,21 +336,25 @@ export default async function AdminClientesPage({
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-2 hidden md:table-cell text-xs text-gray-700">
+                  <td className="px-4 py-3 hidden md:table-cell text-xs text-[var(--color-charcoal-700)]">
                     {c.email}
-                    {c.phone && <div className="text-gray-500">{c.phone}</div>}
+                    {c.phone && (
+                      <div className="text-[var(--color-charcoal-500)]">{c.phone}</div>
+                    )}
                   </td>
-                  <td className="px-4 py-2 text-right">{c.bookings_count}</td>
-                  <td className="px-4 py-2 text-right font-mono font-semibold text-[rgb(217,0,6)]">
+                  <td className="px-4 py-3 text-right text-[var(--color-charcoal-900)] tabular-nums">
+                    {c.bookings_count}
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-[var(--color-red-600)]">
                     {PRICE.format(c.total_spent_cents / 100)}
                   </td>
-                  <td className="px-4 py-2 hidden md:table-cell text-gray-600 text-xs">
+                  <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-500)] text-xs">
                     {DATE.format(new Date(c.last_booking_at))}
                   </td>
-                  <td className="px-4 py-2 text-right">
+                  <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/clientes/${c.id}`}
-                      className="text-[rgb(9,110,171)] hover:underline text-xs"
+                      className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline text-xs font-medium"
                     >
                       Abrir
                     </Link>
@@ -332,20 +375,10 @@ export default async function AdminClientesPage({
         itemLabel={{ singular: 'cliente', plural: 'clientes' }}
       />
 
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-[var(--color-charcoal-500)] mt-3">
         Tour de teste excluído. KPIs do topo contam todos os clientes ativos
         (com pelo menos 1 reserva confirmada).
       </p>
-    </div>
-  );
-}
-
-function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-md p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="text-2xl font-semibold mt-1">{value}</div>
-      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
     </div>
   );
 }
