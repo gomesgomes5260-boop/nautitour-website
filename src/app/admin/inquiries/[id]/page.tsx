@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import InquiryActions from './InquiryActions';
@@ -9,11 +10,27 @@ export const dynamic = 'force-dynamic';
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status'];
 
-const STATUS_LABEL: Record<InquiryStatus, { label: string; cls: string }> = {
-  new: { label: 'Novo', cls: 'bg-amber-100 text-amber-800' },
-  contacted: { label: 'Contactado', cls: 'bg-blue-100 text-blue-800' },
-  won: { label: 'Ganho', cls: 'bg-green-100 text-green-800' },
-  lost: { label: 'Perdido', cls: 'bg-gray-100 text-gray-700' },
+const STATUS_LABEL: Record<InquiryStatus, { label: string; cls: string; dot: string }> = {
+  new: {
+    label: 'Novo',
+    cls: 'bg-amber-50 text-amber-800',
+    dot: 'bg-amber-500',
+  },
+  contacted: {
+    label: 'Contactado',
+    cls: 'bg-sky-50 text-sky-700',
+    dot: 'bg-sky-500',
+  },
+  won: {
+    label: 'Ganho',
+    cls: 'bg-emerald-50 text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  lost: {
+    label: 'Perdido',
+    cls: 'bg-[var(--color-charcoal-100)] text-[var(--color-charcoal-700)]',
+    dot: 'bg-[var(--color-charcoal-400)]',
+  },
 };
 
 const DATETIME = new Intl.DateTimeFormat('pt-BR', {
@@ -147,143 +164,173 @@ export default async function InquiryDetailPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <Link
           href="/admin/inquiries"
-          className="text-sm text-gray-600 hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--color-charcoal-500)] hover:text-[var(--color-charcoal-900)] transition-colors"
         >
-          ← Voltar para inquiries
+          <ArrowLeft size={14} />
+          Voltar para inquiries
         </Link>
-        <span className={`inline-block px-3 py-1 rounded text-sm ${st.cls}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.cls}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden />
           {st.label}
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Detalhes do pedido</h2>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Tour</dt>
-                <dd>{tour?.name ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Recebido em</dt>
-                <dd>{DATETIME.format(new Date(i.created_at))}</dd>
-              </div>
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Detalhes do pedido
+            </h2>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+              <Field label="Tour">{tour?.name ?? '—'}</Field>
+              <Field label="Recebido em">{DATETIME.format(new Date(i.created_at))}</Field>
               <div className="sm:col-span-2">
-                <dt className="text-xs uppercase text-gray-500 mb-1">Data desejada</dt>
-                <dd className="capitalize">
+                <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                  Data desejada
+                </dt>
+                <dd className="capitalize text-[var(--color-charcoal-900)]">
                   {i.requested_date
                     ? DATE_ONLY.format(new Date(`${i.requested_date}T12:00:00`))
                     : '—'}
                   {i.start_time && i.end_time && (
-                    <span className="ml-2 text-gray-700 font-mono">
+                    <span className="ml-2 text-[var(--color-charcoal-700)] font-mono">
                       {i.start_time.slice(0, 5)} às {i.end_time.slice(0, 5)}
                     </span>
                   )}
                 </dd>
               </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Passageiros</dt>
-                <dd>{i.passenger_count ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Open bar</dt>
-                <dd>{i.interested_in_open_bar ? 'Sim, tem interesse' : 'Não'}</dd>
-              </div>
+              <Field label="Passageiros">{i.passenger_count ?? '—'}</Field>
+              <Field label="Open bar">
+                {i.interested_in_open_bar ? 'Sim, tem interesse' : 'Não'}
+              </Field>
               {i.message && (
                 <div className="sm:col-span-2">
-                  <dt className="text-xs uppercase text-gray-500 mb-1">Mensagem do cliente</dt>
-                  <dd className="whitespace-pre-wrap text-gray-800">{i.message}</dd>
+                  <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+                    Mensagem do cliente
+                  </dt>
+                  <dd className="whitespace-pre-wrap text-[var(--color-charcoal-900)]">
+                    {i.message}
+                  </dd>
                 </div>
               )}
             </dl>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Cliente</h2>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Nome</dt>
-                <dd>{cust?.full_name ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">E-mail</dt>
-                <dd>
-                  {cust?.email ? (
-                    <a href={`mailto:${cust.email}`} className="text-[rgb(9,110,171)] hover:underline">
-                      {cust.email}
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Cliente
+            </h2>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+              <Field label="Nome">{cust?.full_name ?? '—'}</Field>
+              <Field label="E-mail">
+                {cust?.email ? (
+                  <a
+                    href={`mailto:${cust.email}`}
+                    className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline"
+                  >
+                    {cust.email}
+                  </a>
+                ) : (
+                  '—'
+                )}
+              </Field>
+              <Field label="Telefone">
+                {cust?.phone ? (
+                  whatsappLink ? (
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[var(--color-charcoal-700)] underline-offset-2 hover:underline"
+                    >
+                      {cust.phone}
+                      <MessageCircle size={14} className="text-emerald-600" />
                     </a>
-                  ) : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">Telefone</dt>
-                <dd>
-                  {cust?.phone ? (
-                    whatsappLink ? (
-                      <a href={whatsappLink} target="_blank" rel="noreferrer" className="text-[rgb(9,110,171)] hover:underline">
-                        {cust.phone} · WhatsApp
-                      </a>
-                    ) : (
-                      cust.phone
-                    )
-                  ) : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase text-gray-500 mb-1">CPF</dt>
-                <dd>{cust?.cpf ?? '—'}</dd>
-              </div>
+                  ) : (
+                    cust.phone
+                  )
+                ) : (
+                  '—'
+                )}
+              </Field>
+              <Field label="CPF">{cust?.cpf ?? '—'}</Field>
             </dl>
           </section>
         </div>
 
         <aside className="space-y-6">
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Histórico</h2>
-            <ul className="text-sm space-y-2 text-gray-700">
-              <li>
-                <strong>Criado:</strong> {DATETIME.format(new Date(i.created_at))}
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Histórico
+            </h2>
+            <ul className="text-sm space-y-3 text-[var(--color-charcoal-700)]">
+              <li className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4">
+                <span
+                  className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"
+                  aria-hidden
+                />
+                <strong className="text-[var(--color-charcoal-900)]">Criado:</strong>{' '}
+                {DATETIME.format(new Date(i.created_at))}
               </li>
               {i.whatsapp_contacted_at && (
-                <li>
-                  <strong>WhatsApp aberto:</strong>{' '}
+                <li className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4">
+                  <span
+                    className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"
+                    aria-hidden
+                  />
+                  <strong className="text-[var(--color-charcoal-900)]">
+                    WhatsApp aberto:
+                  </strong>{' '}
                   {DATETIME.format(new Date(i.whatsapp_contacted_at))}
                 </li>
               )}
               {i.status_changed_at && (
-                <li>
-                  <strong>Status atualizado:</strong>{' '}
+                <li className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4">
+                  <span
+                    className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"
+                    aria-hidden
+                  />
+                  <strong className="text-[var(--color-charcoal-900)]">
+                    Status atualizado:
+                  </strong>{' '}
                   {DATETIME.format(new Date(i.status_changed_at))}
                 </li>
               )}
             </ul>
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-lg font-semibold mb-4">Ações</h2>
+          <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+            <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-5">
+              Ações
+            </h2>
             {convertedBooking ? (
-              <div className="bg-green-50 border border-green-200 rounded p-3 text-sm mb-4">
-                <p className="font-semibold text-green-900 mb-1">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm mb-4">
+                <p className="font-semibold text-emerald-900 mb-1.5">
                   Convertido em reserva
                 </p>
                 <Link
                   href={`/admin/reservas/${convertedBooking.booking_code}`}
-                  className="text-[rgb(9,110,171)] hover:underline font-mono"
+                  className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline font-mono"
                 >
                   {convertedBooking.booking_code} →
                 </Link>
-                {convertedBooking.payment_link_token && convertedBooking.status === 'pending_payment' && (
-                  <div className="mt-2 text-xs text-gray-700">
-                    <strong>Link de pagamento</strong> (manda pro cliente):
-                    <div className="mt-1 p-2 bg-white border border-gray-200 rounded font-mono break-all">
-                      {siteUrl}/pagar/{convertedBooking.payment_link_token}
+                {convertedBooking.payment_link_token &&
+                  convertedBooking.status === 'pending_payment' && (
+                    <div className="mt-3 text-xs text-[var(--color-charcoal-700)]">
+                      <strong className="text-[var(--color-charcoal-900)]">
+                        Link de pagamento
+                      </strong>{' '}
+                      (manda pro cliente):
+                      <div className="mt-1 p-2 bg-white border border-[var(--color-charcoal-100)] rounded-lg font-mono break-all text-[var(--color-charcoal-900)]">
+                        {siteUrl}/pagar/{convertedBooking.payment_link_token}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             ) : (
               (i.status === 'new' || i.status === 'contacted') && (
@@ -305,6 +352,17 @@ export default async function InquiryDetailPage({
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
+        {label}
+      </dt>
+      <dd className="text-[var(--color-charcoal-900)]">{children}</dd>
     </div>
   );
 }
