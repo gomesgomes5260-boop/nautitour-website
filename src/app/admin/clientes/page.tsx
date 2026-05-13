@@ -1,7 +1,19 @@
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+import Pagination from '@/components/Pagination';
 
 export const dynamic = 'force-dynamic';
+
+const PAGE_SIZE = 25;
+
+function buildQuery(params: Record<string, string | number | undefined>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v != null && v !== '') sp.set(k, String(v));
+  }
+  const s = sp.toString();
+  return s ? `?${s}` : '';
+}
 
 const PRICE = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -19,7 +31,7 @@ const VIP_THRESHOLD_CENTS = 300000; // R$ 3.000,00
 
 type Sort = 'spent' | 'recent' | 'count';
 
-type Search = { q?: string; sort?: Sort };
+type Search = { q?: string; sort?: Sort; page?: string };
 
 function colorFromName(name: string): string {
   // Hash leve pra cor de avatar (sem libs)
@@ -55,6 +67,7 @@ export default async function AdminClientesPage({
   const sp = await searchParams;
   const q = (sp.q ?? '').trim();
   const sort: Sort = sp.sort === 'recent' || sp.sort === 'count' ? sp.sort : 'spent';
+  const requestedPage = Math.max(1, Number.parseInt(sp.page ?? '1', 10) || 1);
 
   const admin = createAdminClient();
 
@@ -123,19 +136,30 @@ export default async function AdminClientesPage({
     customers = data ?? [];
   }
 
-  // Combina + sort
-  const rows = customers
+  // Combina + sort (tiebreak por id garante ordem determinística pra paginação)
+  const sortedRows = customers
     .map((c) => ({
       ...c,
       ...(agg.get(c.id) as Agg),
     }))
     .sort((a, b) => {
-      if (sort === 'recent')
-        return b.last_booking_at.localeCompare(a.last_booking_at);
-      if (sort === 'count') return b.bookings_count - a.bookings_count;
-      return b.total_spent_cents - a.total_spent_cents;
-    })
-    .slice(0, 50);
+      if (sort === 'recent') {
+        const cmp = b.last_booking_at.localeCompare(a.last_booking_at);
+        return cmp !== 0 ? cmp : a.id.localeCompare(b.id);
+      }
+      if (sort === 'count') {
+        const cmp = b.bookings_count - a.bookings_count;
+        return cmp !== 0 ? cmp : a.id.localeCompare(b.id);
+      }
+      const cmp = b.total_spent_cents - a.total_spent_cents;
+      return cmp !== 0 ? cmp : a.id.localeCompare(b.id);
+    });
+
+  const totalRows = sortedRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const offset = (currentPage - 1) * PAGE_SIZE;
+  const rows = sortedRows.slice(offset, offset + PAGE_SIZE);
 
   // KPIs globais (sobre todos os customers, não só filtrados)
   const totalCustomers = customerIds.length;
@@ -299,9 +323,18 @@ export default async function AdminClientesPage({
         </table>
       </div>
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalRows}
+        pageSize={PAGE_SIZE}
+        buildHref={(p) => buildQuery({ q, sort, page: p === 1 ? undefined : p })}
+        itemLabel={{ singular: 'cliente', plural: 'clientes' }}
+      />
+
       <p className="text-xs text-gray-500 mt-3">
-        Top 50 clientes. Tour de teste excluído. KPIs do topo contam todos os
-        clientes ativos (com pelo menos 1 reserva confirmada).
+        Tour de teste excluído. KPIs do topo contam todos os clientes ativos
+        (com pelo menos 1 reserva confirmada).
       </p>
     </div>
   );
