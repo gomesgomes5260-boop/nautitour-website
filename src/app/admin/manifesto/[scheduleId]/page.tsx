@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import PrintButton from './PrintButton';
 import BlockScheduleButton from './BlockScheduleButton';
 import PierSelect from './PierSelect';
+import EditScheduleForm from './EditScheduleForm';
+import DeleteScheduleButton from './DeleteScheduleButton';
 import type { Pier } from '@/lib/piers';
 
 export const dynamic = 'force-dynamic';
@@ -29,8 +31,8 @@ export default async function ManifestoSchedulePage({
   const { data: schedule } = await admin
     .from('tour_schedules')
     .select(`
-      id, departure_at, capacity, status, embarkation_pier_id,
-      tour:tours ( name ),
+      id, departure_at, capacity, seats_taken, price_cents, status, embarkation_pier_id,
+      tour:tours ( name, base_price_cents ),
       pier:embarkation_piers ( slug, name, fee_cents, address, notes )
     `)
     .eq('id', scheduleId)
@@ -41,9 +43,14 @@ export default async function ManifestoSchedulePage({
     id: string;
     departure_at: string;
     capacity: number;
-    status: string;
+    seats_taken: number;
+    price_cents: number | null;
+    status: 'open' | 'sold_out' | 'cancelled';
     embarkation_pier_id: string;
-    tour: { name: string } | { name: string }[] | null;
+    tour:
+      | { name: string; base_price_cents: number | null }
+      | { name: string; base_price_cents: number | null }[]
+      | null;
     pier:
       | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
       | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
@@ -106,13 +113,17 @@ export default async function ManifestoSchedulePage({
         >
           ← Voltar
         </Link>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           {s.status !== 'cancelled' && (
             <BlockScheduleButton
               scheduleId={s.id}
               confirmedBookings={rows.length}
             />
           )}
+          <DeleteScheduleButton
+            scheduleId={s.id}
+            activeBookings={rows.length}
+          />
           <PrintButton />
         </div>
       </div>
@@ -124,8 +135,18 @@ export default async function ManifestoSchedulePage({
         </div>
       )}
 
-      {/* Pier selector — só no painel, esconde no print */}
-      <div className="mb-5 print:hidden">
+      {/* Editor de saída + pier — só no painel, esconde no print */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5 print:hidden">
+        <EditScheduleForm
+          scheduleId={s.id}
+          currentDepartureAt={s.departure_at}
+          currentCapacity={s.capacity}
+          currentPriceCents={s.price_cents}
+          currentStatus={s.status}
+          tourBasePriceCents={tour?.base_price_cents ?? null}
+          seatsTaken={s.seats_taken}
+          activeBookingsCount={rows.length}
+        />
         <PierSelect
           scheduleId={s.id}
           piers={piers.map((p) => ({

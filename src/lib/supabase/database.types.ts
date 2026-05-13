@@ -609,6 +609,10 @@ export type Database = {
           payment_link_token: string
         }[]
       }
+      admin_delete_tour_schedule: {
+        Args: { p_force?: boolean; p_schedule_id: string }
+        Returns: number
+      }
       admin_mark_refund_attempt: {
         Args: {
           p_booking_id: string
@@ -639,6 +643,22 @@ export type Database = {
           p_tour_id: string
         }
         Returns: number
+      }
+      admin_update_tour_schedule: {
+        Args: {
+          p_capacity?: number
+          p_departure_at?: string
+          p_price_cents?: number
+          p_schedule_id: string
+          p_status?: string
+        }
+        Returns: {
+          affected_booking_code: string
+          affected_booking_id: string
+          customer_email: string
+          new_departure_at: string
+          old_departure_at: string
+        }[]
       }
       block_schedule: {
         Args: { p_reason: string; p_schedule_id: string }
