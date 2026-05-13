@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Montserrat, JetBrains_Mono, Plus_Jakarta_Sans, Inter } from "next/font/google";
+import WhatsAppFab from "@/components/WhatsAppFab";
 import "./globals.css";
 
 // Fonts oficiais do Brand Guide (design/brand-guide/type/):
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${fraunces.variable} ${montserrat.variable} ${jetbrainsMono.variable} ${jakartaLegacy.variable} ${interLegacy.variable}`}
       >
         {children}
+        <WhatsAppFab />
       </body>
     </html>
   );
