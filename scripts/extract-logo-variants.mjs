@@ -47,19 +47,19 @@ for (const r of REGIONS) {
     let outR, outG, outB;
 
     if (r.darkLogo) {
-      // Logo escura: forçamos cor charcoal-700 (#404040), alpha = 255 - luma normalizada
-      // luma 0   → fully opaque (centro da logo)
-      // luma 255 → fully transparent (fundo claro)
-      // Usamos threshold suave entre 60 (opaco) e 240 (transparente).
+      // Logo escura em fundo claro: pixels escuros viram opacos, claros transparentes.
+      // Threshold suave entre 60 (opaco) e 240 (transparente).
       if (luma <= 60) alpha = 255;
       else if (luma >= 240) alpha = 0;
       else alpha = Math.round(((240 - luma) / (240 - 60)) * 255);
       outR = 0x40; outG = 0x40; outB = 0x40;
     } else {
-      // Logo clara: forçamos cor white, alpha proporcional à luma
+      // Logo clara em fundo escuro: pixels CLAROS viram opacos, escuros transparentes.
+      // Threshold mais agressivo: < 130 totalmente transparente (cobre charcoal-700 #404040
+      // luma ~64 e charcoal-900 #1F1F1F luma ~31 + semi-transparentes do antialiasing).
       if (luma >= 220) alpha = 255;
-      else if (luma <= 30) alpha = 0;
-      else alpha = Math.round(((luma - 30) / (220 - 30)) * 255);
+      else if (luma <= 130) alpha = 0;
+      else alpha = Math.round(((luma - 130) / (220 - 130)) * 255);
       outR = 0xFF; outG = 0xFF; outB = 0xFF;
     }
 
