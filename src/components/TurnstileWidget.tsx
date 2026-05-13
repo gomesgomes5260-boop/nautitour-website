@@ -20,7 +20,7 @@ declare global {
           'error-callback'?: () => void;
           'expired-callback'?: () => void;
           theme?: 'light' | 'dark' | 'auto';
-          size?: 'normal' | 'compact' | 'invisible';
+          size?: 'normal' | 'compact' | 'invisible' | 'flexible';
           action?: string;
         }
       ) => string;
@@ -66,7 +66,9 @@ export default function TurnstileWidget({ onToken, action }: Props) {
         'error-callback': () => onToken(null),
         'expired-callback': () => onToken(null),
         theme: 'light',
-        size: 'normal',
+        // 'flexible' adapta a largura ao container (min 300px, max 100%).
+        // Evita overflow do widget em viewports estreitos.
+        size: 'flexible',
         action,
       });
     }
@@ -96,7 +98,7 @@ export default function TurnstileWidget({ onToken, action }: Props) {
         defer
         strategy="afterInteractive"
       />
-      <div ref={containerRef} className="my-2" />
+      <div ref={containerRef} className="my-2 flex justify-center max-w-full" />
     </>
   );
 }
