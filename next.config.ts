@@ -1,6 +1,31 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+// CSP em report-only por enquanto: navegadores apenas logam violations
+// no console (não há endpoint configurado) — ajustamos a policy conforme
+// novos serviços aparecem, depois migramos pra enforce (Content-Security-Policy).
+const cspReportOnly = [
+  "default-src 'self'",
+  // 'unsafe-inline' / 'unsafe-eval' necessários por hidratação inline do Next
+  // e SDKs (sem nonce SSR). Turnstile carrega challenges.cloudflare.com.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+  // Tailwind v4 e next/font usam inline styles.
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  // images: photos locais + Supabase storage + Vercel preview + data/blob.
+  "img-src 'self' data: blob: https:",
+  // fetch: tokenize Pagar.me + Supabase (REST e Realtime WSS).
+  "connect-src 'self' https://api.pagar.me https://*.supabase.co wss://*.supabase.co",
+  // Turnstile renderiza um iframe pra captcha.
+  "frame-src 'self' https://challenges.cloudflare.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  // Versão moderna de X-Frame-Options: DENY (mantido em paralelo por compat).
+  "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
+].join('; ');
+
 const securityHeaders = [
   // Anti-clickjacking. We don't embed the site in iframes anywhere.
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -13,11 +38,19 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
   },
-  // HSTS: enforce HTTPS once the site is on a real domain (Vercel will serve
-  // over HTTPS automatically; harmless on localhost since it's HTTP-only).
+  // HSTS: enforce HTTPS once the site is on a real domain. 2-year max-age,
+  // includeSubDomains and preload satisfy the hstspreload.org submission
+  // criteria. Vercel serves over HTTPS automatically; harmless on localhost
+  // since the browser ignores HSTS on plain HTTP.
   {
     key: 'Strict-Transport-Security',
-    value: 'max-age=31536000; includeSubDomains',
+    value: 'max-age=63072000; includeSubDomains; preload',
+  },
+  // Content Security Policy em report-only: observa violations sem bloquear
+  // requests. Quando estiver estável, trocar a chave por 'Content-Security-Policy'.
+  {
+    key: 'Content-Security-Policy-Report-Only',
+    value: cspReportOnly,
   },
 ];
 
