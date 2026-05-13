@@ -1,5 +1,14 @@
 import Link from 'next/link';
+import {
+  ChevronLeft,
+  ChevronRight,
+  DollarSign,
+  Clock,
+  RotateCcw,
+  Ban,
+} from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
+import KpiCard from '@/components/KpiCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,17 +54,17 @@ const METHOD_LABEL: Record<string, string> = {
 
 const METHOD_COLOR: Record<string, string> = {
   pix: 'bg-emerald-500',
-  credit_card: 'bg-[rgb(9,110,171)]',
+  credit_card: 'bg-[var(--color-charcoal-700)]',
   boleto: 'bg-amber-500',
 };
 
-// Cores rotativas pra "Receita por produto" (no order: tours por slug)
+// Cores rotativas pra "Receita por produto" — paleta consistente com brand
 const TOUR_COLORS = [
-  'bg-[rgb(9,110,171)]', // azul
-  'bg-[rgb(217,0,6)]',   // vermelho
-  'bg-emerald-600',
+  'bg-[var(--color-red-600)]',
+  'bg-[var(--color-charcoal-700)]',
+  'bg-emerald-500',
   'bg-amber-500',
-  'bg-purple-500',
+  'bg-sky-500',
 ];
 
 function brtTodayParts(): { year: number; month: number } {
@@ -229,64 +238,72 @@ export default async function AdminFinanceiroPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-        <h1 className="text-2xl font-semibold">Financeiro · {monthLabel(year, month)}</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <h1
+          className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight"
+          style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
+        >
+          Financeiro · {monthLabel(year, month)}
+        </h1>
         <div className="flex gap-2">
-          <Link
-            href={`/admin/financeiro?month=${prevMonth}`}
-            className="text-sm px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50"
-          >
-            ← Mês anterior
-          </Link>
-          <Link
-            href="/admin/financeiro"
-            className="text-sm px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50"
-          >
-            Hoje
-          </Link>
-          <Link
-            href={`/admin/financeiro?month=${nextMonth}`}
-            className="text-sm px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50"
-          >
-            Próximo mês →
-          </Link>
+          <MonthNav href={`/admin/financeiro?month=${prevMonth}`} icon={<ChevronLeft size={14} />} label="Mês anterior" iconLeft />
+          <MonthNav href="/admin/financeiro" label="Hoje" />
+          <MonthNav href={`/admin/financeiro?month=${nextMonth}`} icon={<ChevronRight size={14} />} label="Próximo mês" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Kpi label="Receita do mês" value={PRICE.format(monthRevenue / 100)} />
-        <Kpi
+        <KpiCard
+          Icon={DollarSign}
+          iconTone="bg-emerald-50 text-emerald-700"
+          label="Receita do mês"
+          value={PRICE.format(monthRevenue / 100)}
+        />
+        <KpiCard
+          Icon={Clock}
+          iconTone="bg-amber-50 text-amber-700"
           label="A receber"
           value={PRICE.format(pendingTotal / 100)}
           sub={`${pendingCount} pendente${pendingCount === 1 ? '' : 's'}`}
         />
-        <Kpi
+        <KpiCard
+          Icon={RotateCcw}
+          iconTone="bg-sky-50 text-sky-700"
           label="Reembolsos"
           value={String(refundsCount)}
           sub={refundsTotal > 0 ? PRICE.format(refundsTotal / 100) : '—'}
         />
-        <Kpi label="Cancelados" value={String(cancelledCount)} />
+        <KpiCard
+          Icon={Ban}
+          iconTone="bg-[var(--color-red-50)] text-[var(--color-red-600)]"
+          label="Cancelados"
+          value={String(cancelledCount)}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <section className="bg-white border border-gray-200 rounded-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Receita por método</h2>
+        <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-4">
+            Receita por método
+          </h2>
           {methodRows.length === 0 ? (
-            <p className="text-sm text-gray-500">Sem pagamentos neste mês.</p>
+            <p className="text-sm text-[var(--color-charcoal-500)]">
+              Sem pagamentos neste mês.
+            </p>
           ) : (
             <ul className="space-y-3">
               {methodRows.map((m) => (
                 <li key={m.method}>
-                  <div className="flex justify-between text-sm mb-1">
+                  <div className="flex justify-between text-sm mb-1.5 text-[var(--color-charcoal-700)]">
                     <span>{METHOD_LABEL[m.method] ?? m.method}</span>
                     <span className="font-mono">
                       {COMPACT_PRICE.format(m.cents / 100)} ·{' '}
                       {(m.pct * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div className="h-3 bg-gray-100 rounded overflow-hidden">
+                  <div className="h-2.5 bg-[var(--color-charcoal-100)] rounded-full overflow-hidden">
                     <div
-                      className={`h-full ${METHOD_COLOR[m.method] ?? 'bg-gray-400'}`}
+                      className={`h-full rounded-full ${METHOD_COLOR[m.method] ?? 'bg-[var(--color-charcoal-400)]'}`}
                       style={{ width: `${Math.max(2, m.pct * 100)}%` }}
                     />
                   </div>
@@ -296,14 +313,18 @@ export default async function AdminFinanceiroPage({
           )}
         </section>
 
-        <section className="bg-white border border-gray-200 rounded-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Receita por produto</h2>
+        <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
+          <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-4">
+            Receita por produto
+          </h2>
           {tourRows.length === 0 ? (
-            <p className="text-sm text-gray-500">Sem pagamentos neste mês.</p>
+            <p className="text-sm text-[var(--color-charcoal-500)]">
+              Sem pagamentos neste mês.
+            </p>
           ) : (
             <>
               {/* Stacked bar 100% */}
-              <div className="h-3 bg-gray-100 rounded overflow-hidden flex mb-4">
+              <div className="h-2.5 bg-[var(--color-charcoal-100)] rounded-full overflow-hidden flex mb-4">
                 {tourRows.map((t, i) => (
                   <div
                     key={t.tourId}
@@ -313,10 +334,10 @@ export default async function AdminFinanceiroPage({
                   />
                 ))}
               </div>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2 text-sm text-[var(--color-charcoal-700)]">
                 {tourRows.map((t, i) => (
                   <li key={t.tourId} className="flex items-center gap-2">
-                    <span className={`inline-block w-3 h-3 rounded ${TOUR_COLORS[i % TOUR_COLORS.length]}`} />
+                    <span className={`inline-block w-3 h-3 rounded-full ${TOUR_COLORS[i % TOUR_COLORS.length]}`} />
                     <span className="flex-1">{t.name}</span>
                     <span className="font-mono">
                       {COMPACT_PRICE.format(t.cents / 100)} ·{' '}
@@ -330,27 +351,29 @@ export default async function AdminFinanceiroPage({
         </section>
       </div>
 
-      <section className="bg-white border border-gray-200 rounded-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">Últimas transações</h2>
-          <span className="text-xs text-gray-500">
+      <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--color-charcoal-100)] flex items-baseline justify-between gap-3 flex-wrap">
+          <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)]">
+            Últimas transações
+          </h2>
+          <span className="text-xs text-[var(--color-charcoal-500)]">
             mostrando {Math.min(20, validPayments.length)} de {validPayments.length}
           </span>
         </div>
         {validPayments.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-gray-500 text-center">
+          <p className="px-6 py-8 text-sm text-[var(--color-charcoal-500)] text-center">
             Sem transações neste mês.
           </p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-600">
+            <thead className="bg-[var(--color-charcoal-50)] text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)]">
               <tr>
-                <th className="px-4 py-2">Quando</th>
-                <th className="px-4 py-2">Reserva</th>
-                <th className="px-4 py-2">Cliente</th>
-                <th className="px-4 py-2 hidden md:table-cell">Tour</th>
-                <th className="px-4 py-2">Método</th>
-                <th className="px-4 py-2 text-right">Valor</th>
+                <th className="px-4 py-3">Quando</th>
+                <th className="px-4 py-3">Reserva</th>
+                <th className="px-4 py-3">Cliente</th>
+                <th className="px-4 py-3 hidden md:table-cell">Tour</th>
+                <th className="px-4 py-3">Método</th>
+                <th className="px-4 py-3 text-right">Valor</th>
               </tr>
             </thead>
             <tbody>
@@ -359,28 +382,35 @@ export default async function AdminFinanceiroPage({
                 const c = b ? customerById.get(b.customer_id) : null;
                 const tour = b ? toursById.get(b.tour_id) : null;
                 return (
-                  <tr key={p.id} className="border-t border-gray-100">
-                    <td className="px-4 py-2 text-gray-600 text-xs">
+                  <tr
+                    key={p.id}
+                    className="border-t border-[var(--color-charcoal-100)] hover:bg-[var(--color-charcoal-50)]/60"
+                  >
+                    <td className="px-4 py-3 text-[var(--color-charcoal-500)] text-xs">
                       {p.paid_at ? DATETIME.format(new Date(p.paid_at)) : '—'}
                     </td>
-                    <td className="px-4 py-2 font-mono text-xs">
+                    <td className="px-4 py-3 font-mono text-xs">
                       {b ? (
                         <Link
                           href={`/admin/reservas/${b.booking_code}`}
-                          className="text-[rgb(9,110,171)] hover:underline"
+                          className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline"
                         >
                           {b.booking_code}
                         </Link>
-                      ) : '—'}
+                      ) : (
+                        '—'
+                      )}
                     </td>
-                    <td className="px-4 py-2">{c?.full_name ?? c?.email ?? '—'}</td>
-                    <td className="px-4 py-2 hidden md:table-cell text-gray-600">
+                    <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
+                      {c?.full_name ?? c?.email ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-500)]">
                       {tour?.name ?? '—'}
                     </td>
-                    <td className="px-4 py-2 text-xs">
+                    <td className="px-4 py-3 text-xs text-[var(--color-charcoal-700)]">
                       {METHOD_LABEL[p.payment_method] ?? p.payment_method}
                     </td>
-                    <td className="px-4 py-2 text-right font-mono">
+                    <td className="px-4 py-3 text-right font-mono text-[var(--color-charcoal-900)]">
                       {PRICE.format(p.amount_cents / 100)}
                     </td>
                   </tr>
@@ -391,19 +421,32 @@ export default async function AdminFinanceiroPage({
         )}
       </section>
 
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-[var(--color-charcoal-500)] mt-3">
         Tour de teste (R$ 1) é excluído de todos os KPIs e gráficos.
       </p>
     </div>
   );
 }
 
-function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function MonthNav({
+  href,
+  label,
+  icon,
+  iconLeft,
+}: {
+  href: string;
+  label: string;
+  icon?: React.ReactNode;
+  iconLeft?: boolean;
+}) {
   return (
-    <div className="bg-white border border-gray-200 rounded-md p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="text-2xl font-semibold mt-1">{value}</div>
-      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
-    </div>
+    <Link
+      href={href}
+      className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border border-[var(--color-charcoal-200)] text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] hover:border-[var(--color-charcoal-300)] transition-colors"
+    >
+      {iconLeft && icon}
+      {label}
+      {!iconLeft && icon}
+    </Link>
   );
 }
