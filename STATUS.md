@@ -1,8 +1,145 @@
 # Nautitour — Status do Projeto
 
-Última atualização: 12/maio/2026 — **Tiers 0, 1 e 2 (7/8) concluídos**. Site `live` com soft-hold, e-mail confirmação, painel admin completo, parcelamento de cartão (lancha 6x), conversão inquiry→booking, dashboard overview, financeiro, clientes CRM-light, cancelamento pelo cliente até 48h. Restante: **PR-Final** (swap domínio apex pro Vercel + Resend verificado + lead recapture) — aguardando configuração DNS no painel mpjunior.
+Última atualização: **13/maio/2026** — Tiers 0–2 concluídos, Tier 3 parcial (Q+R mergeadas), **rebrand visual oficial aplicado**, **sistema de píeres de embarque** ativo, **CRUD completo de horários e templates no admin** com notificação automática por e-mail.
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
+
+---
+
+## 📌 Estado atual (13/maio)
+
+### Site em produção
+- **URL**: https://nautitour-website.vercel.app (modo Pagar.me `live`)
+- **Cliente**: Nautitour Passeios — **Armação dos Búzios, RJ** (não confundir com Maragogi/Arraial do Cabo)
+- **Pier de embarque padrão**: Píer da Rua das Pedras (sem taxa). 2 alternativos: Porto Veleiro e Pescador (R$ 10/pax presencial)
+- **Escuna pública**: Sáb/Dom 09:30 + 12:00 · Seg–Sex 11:30 · capacidade 120 · duração 2h30 · R$ 60/pax
+- **Lancha privativa**: schedule manual (via inquiry → admin cria booking 1-click ou cria saída avulsa)
+
+### Backend Tier 3 — 2/5 PRs mergeadas
+
+| PR | Item | Status |
+|---|---|---|
+| ✅ Q | Captcha Cloudflare Turnstile + rate limit Upstash em checkout/inquiry/payment/auth | Mergeada (#24) |
+| ✅ R | Sentry + PII scrubbing + tunnel route /monitoring | Mergeada (#25) |
+| 🔴 S | CSP report-only + Origin check signout + HSTS preload | Pendente |
+| 🔴 T | Refund parcial UI (backend já aceita amountCents opcional) | Pendente |
+| 🔴 U | Paginação `/admin/clientes` (substituir slice(0,50)) | Pendente |
+
+### PR-Final — bloqueada por DNS mpjunior
+Swap apex `nautitour.com.br` pro Vercel + verificar domínio Resend + lead recapture.
+
+### UI/UX rebrand visual — completo
+Brand guide oficial (charcoal+red, Fraunces+Montserrat+JetBrains Mono) aplicado em:
+- ✅ Header / Footer com logo PNG real (extraída via `scripts/extract-logo-variants.mjs`)
+- ✅ Home (hero drone-tartaruga + tour cards + how-to-book + why-choose-us + CTA)
+- ✅ `/passeio-escuna` + `/passeio-lancha` com calendário interativo + sticky card
+- ✅ Admin sidebar dark (`/admin/*`) + dashboard overview com KPIs coloridos
+- 🟡 Páginas internas remanescentes (`/checkout`, `/reserva`, `/login`, `/signup`, `/admin/reservas`, `/admin/financeiro`, `/admin/inquiries`, `/admin/clientes`) — herdam novo layout (sidebar + bg) mas conteúdo interno ainda com classes legacy
+
+### Embarkation piers (PR #43)
+3 píeres seedados em `embarkation_piers`:
+- **rua-pedras** (default, R$ 0)
+- **porto-veleiro** (R$ 10/pax presencial)
+- **pier-pescador** (R$ 10/pax presencial)
+
+Admin troca o píer de uma saída em `/admin/manifesto/[scheduleId]` via `PierSelect`. Cliente vê o píer + taxa em 4 touchpoints (calendário, checkout, página de reserva, e-mail de confirmação).
+
+### Schedule CRUD modular (PRs #44 + #45)
+- **Editar saída individual** (data/hora/capacity/preço/status) com checkbox "Notificar N clientes por e-mail"
+- **Deletar saída** com confirm especial (digitar `DELETAR`) se houver bookings
+- **CRUD templates** (`schedule_templates`) inline em `/admin/config`
+- **Criar saída avulsa** (modal em `/admin/manifesto`) — pra feriados/eventos
+- **E-mail template `schedule-changed.ts`** notifica clientes em mudança de data/hora
+
+---
+
+## 🗄️ Migrations recentes (Tier 3 + features)
+
+| # | Nome | O que faz |
+|---|---|---|
+| 014 | `confirm_booking_payment_v2` predicate fix | Reproduz `WHERE pagarme_charge_id IS NOT NULL` no ON CONFLICT (bug crítico encontrado no go-live) |
+| 015 | Soft-hold + pg_cron | `bookings.expires_at` + cron 1min expira pending_payment |
+| 015b | Confirmation email | `bookings.confirmation_email_sent_at` + RPC v2 com guard idempotente |
+| 016 | Admin role | Tabela `admins` + helpers + trigger seed `gomesgomes5260@gmail.com` |
+| 016b | Lead invitations | `lead_invitations` (tokens pra signup pós-compra) |
+| 017 | **Escuna schedule factory** | `ensure_escuna_schedules(N)` + pg_cron 06:00 UTC mantém 90 dias à frente. Capacity 120 |
+| 018 | **Embarkation piers** | Tabela + seed + FK em `tour_schedules` + trigger default + RPC `admin_set_embarkation_pier` |
+| 019 | **Schedule edit/delete** | RPCs `admin_update_tour_schedule` + `admin_delete_tour_schedule` (returns affected bookings) |
+| 020 | **Templates CRUD + create schedule** | RPCs CRUD `schedule_templates` + `admin_create_tour_schedule` (saída avulsa) |
+
+Arquivos SQL em `db/migrations/`.
+
+---
+
+## 📋 PRs recentes (depois do Tier 2)
+
+| PR | Título | Status |
+|---|---|---|
+| #24 | PR-Q: captcha Turnstile + rate limit Upstash | ✅ Mergeada |
+| #25 | PR-R: Sentry + PII scrubbing | ✅ Mergeada |
+| #26 | design: estrutura de inspirações + research | ✅ Mergeada |
+| #27 | docs: hostear research HTMLs em public/_design (depois renomeado pra public/design-docs) | ✅ Mergeada |
+| #28 | design: Fase 2 sistema visual (paleta + tipografia + tokens) | ✅ Mergeada (superseded) |
+| #29 | rebrand: brand guide oficial aplicado | ✅ Mergeada |
+| #30 | fix: renomear `_design` → `design-docs` (Vercel bloqueia `_` prefix) | ✅ Mergeada |
+| #31 | rebrand-2: Home + Header + Footer | ✅ Mergeada |
+| #32 | rebrand-2b: logo PNG real + card flutuante hero | ✅ Mergeada |
+| #33 | rebrand-2c: mobile spacing fix (overflow + clamp) | ✅ Mergeada |
+| #34 | rebrand-2d: overhaul mobile — Container + tipografia recalibrada | ✅ Mergeada |
+| #35 | rebrand-3: páginas passeio booking-style (lista) | ✅ Mergeada |
+| #36 | rebrand-3b: calendar picker + horários do dia (substitui lista) | ✅ Mergeada |
+| #37 | schedule-factory: sáb/dom 9:30+12:00, seg-sex 11:30, capacity 120 | ✅ Mergeada |
+| #38 | rebrand-admin: sidebar dark + KPIs com ícones + dashboard | ✅ Mergeada |
+| #39 | fix: regenera logo-white sem halo antialiasing | ✅ Mergeada |
+| #40 | fix: admin → overview default + logo sidebar maior + calendário compacto | ✅ Mergeada |
+| #41 | hero: novas imagens + remove card flutuante + reposiciona texto/botões | ✅ Mergeada |
+| #42 | duration: escuna agora dura 2h30 (era 6h) | ✅ Mergeada |
+| #43 | embarkation piers: admin gerencia + cliente vê taxa | ✅ Mergeada |
+| #44 | schedule edit/delete: editar saída + notificar clientes | 🟡 Aberta (conflito resolvido, pronta) |
+| #45 | templates CRUD + criar saída manual | ✅ Mergeada |
+
+---
+
+## 🎨 Brand guide oficial (em uso)
+
+Fonte: `design/brand-guide/` (PNGs enviados pelo cliente).
+
+### Paleta
+- **Charcoal** (primary): `#404040` ★ — escala 50-900
+- **Red** (accent/CTA): `#C00010` ★ — escala 50-900
+- **Sea** (overlays fotográficos only): 300/500/700 — não usar em UI sólida
+- **Stone-like warm grays** pra neutros
+
+### Tipografia
+- **Display** Fraunces (serif variável, opsz 9-144)
+- **Body** Montserrat (heavy 900 pro wordmark NAUTI+TOUR)
+- **Mono** JetBrains Mono (booking codes)
+
+### Gradientes
+`--gradient-flag` (red) · `--gradient-iron` (charcoal) · `--gradient-mare` (sea)
+
+### Logo
+3 variantes em `public/brand/` extraídas via `scripts/extract-logo-variants.mjs` (chroma key por luminância):
+- `logo-charcoal.png` — fundo claro
+- `logo-white.png` — fundo escuro
+- `logo-knockout.png` — preto puro
+
+Componente `<Logo>` em `src/components/Logo.tsx` usa via `next/image`.
+
+Docs visuais renderizadas:
+- https://nautitour-website.vercel.app/design-docs/00-status.html
+- https://nautitour-website.vercel.app/design-docs/01-fase1-personas.html
+- https://nautitour-website.vercel.app/design-docs/03-brand-guide-applied.html
+
+---
+
+## 🚧 O que falta (próximos passos sugeridos)
+
+1. **PR-S** (CSP report-only + Origin check signout + HSTS preload) — fecha pentest items D6/D11/D12
+2. **PR-T** (Refund parcial UI) — backend já aceita `amountCents` opcional
+3. **PR-U** (Paginação `/admin/clientes`)
+4. **Rebrand páginas internas remanescentes** — `/checkout`, `/reserva`, `/login`, `/signup`, `/admin/reservas`, etc — herdam layout mas conteúdo precisa migrar de classes legacy pra tokens novos
+5. **PR-Final** (swap domínio apex + Resend verificado) — aguarda DNS mpjunior
 
 ---
 
