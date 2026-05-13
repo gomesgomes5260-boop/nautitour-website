@@ -8,8 +8,10 @@ Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. �
 - **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres) + Pagar.me v5 + Resend
 - **Modo Pagar.me `live`** desde 11/maio. Bookings reais com PIX e cartão funcionando.
 - **Brand visual**: charcoal (`#404040`) + red (`#C00010`), Fraunces serif + Montserrat sans + JetBrains Mono. Logo PNG em `public/brand/`.
+- **Rebrand visual 100% completo** (customer-facing + admin). Tier 3 backend 5/5 (captcha, Sentry, CSP, refund parcial, paginação). Componentes compartilhados: `KpiCard`, `Pagination`, `WhatsAppFab`.
 - **Schedule da escuna**: sáb/dom 09:30+12:00, seg-sex 11:30, capacidade 120, 2h30 de duração
 - **Píeres de embarque**: 3 opções, Rua das Pedras default sem taxa, Porto Veleiro e Pescador R$ 10/pax presencial
+- **WhatsApp canônico**: `5522998479728` em `src/lib/whatsapp.ts`. FAB global aparece em todas customer-facing pages (esconde em `/admin`, `/checkout`, `/reserva`)
 
 ## ⚠️ Erros que cometi e não devem repetir
 
@@ -51,7 +53,10 @@ nautitour-website/
 │   │   ├── HeroSection.tsx       # Home hero full-bleed
 │   │   ├── DateScheduleSelector.tsx  # Calendário mensal pra escolha de data
 │   │   ├── AdminSidebar.tsx      # Sidebar dark do admin
-│   │   └── ... (TurnstileWidget, CheckoutForm, RefundButton, etc)
+│   │   ├── KpiCard.tsx           # KPI card canônico (Icon + label + value + sub) — usado em overview/financeiro/clientes
+│   │   ├── Pagination.tsx        # Paginação reusável com buildHref callback — usada em /admin/clientes
+│   │   ├── WhatsAppFab.tsx       # Balão flutuante global de WhatsApp (esconde em /admin /checkout /reserva)
+│   │   └── ... (TurnstileWidget, etc)
 │   └── lib/
 │       ├── supabase/{server,admin,client}.ts
 │       ├── supabase/database.types.ts  # gerado via MCP
@@ -65,6 +70,7 @@ nautitour-website/
 │       ├── rate-limit.ts         # Upstash
 │       ├── turnstile.ts          # Cloudflare
 │       ├── sentry-scrub.ts       # PII scrub
+│       ├── whatsapp.ts           # WHATSAPP_NUMBER + buildWaUrl(text) — canônico
 │       └── admin.ts              # isAdminUser / isOwnerUser
 ├── public/
 │   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
@@ -178,13 +184,26 @@ Todas no-op se ausentes (Turnstile, Upstash, Sentry) — dev local funciona sem.
 - **`design/research/`** — HTMLs de pesquisa UI/UX (também hostados em `/design-docs/`)
 - **`db/migrations/README.md`** — Convenção de migrations
 
-## 🎯 Próximos passos (em ordem de prioridade sugerida)
+## 🎯 Próximos passos
 
-1. **PR-S** (CSP report-only + Origin check signout + HSTS preload) — fecha pentest D6/D11/D12
-2. **PR-T** (Refund parcial UI) — `pagarme/client.ts:refundCharge` já aceita `amountCents`
-3. **PR-U** (Paginação `/admin/clientes`)
-4. **Rebrand das páginas internas remanescentes** — checkout, reserva, login, signup, admin/reservas, admin/financeiro, etc
-5. **PR-Final** (swap apex + Resend verificado + lead recapture) — aguarda DNS mpjunior
+1. **PR-Final** (swap apex `nautitour.com.br` + Resend verificado + lead recapture) — aguarda DNS mpjunior. Única frente que destrava várias coisas: e-mail com domínio próprio, lead recapture pra guests, swap final pro apex.
+
+### Follow-ups menores (qualidade de vida, sem urgência)
+- Refatorar os 5 callers existentes de `wa.me` (`passeio-lancha`, `locacao-escuna`, `reserva/pagamento`, `admin/inquiries`) pra usarem `buildWaUrl()` de `src/lib/whatsapp.ts` — centraliza número canônico
+- Promover CSP de `Content-Security-Policy-Report-Only` pra `Content-Security-Policy` (enforce) após ~2 semanas observando violations
+- Tracking de clicks no FAB de WhatsApp (Sentry breadcrumb) se quiser medir conversão
+- Tier 3 admin avançado: templates de horário editáveis na UI, heatmap semanal toggle, roles extras (comandante/financeiro)
+
+### Histórico recente (13/maio sessão tarde — 11 PRs mergeadas)
+| # | Frente |
+|---|---|
+| #47, #48 | Rebrand customer-facing (fluxo de compra + auth) |
+| #49 | PR-S: CSP + Origin check + HSTS preload (fecha pentest D6/D11/D12) |
+| #50 | PR-T: refund parcial UI |
+| #51 | PR-U: paginação `/admin/clientes` + componente `Pagination` |
+| #52-#55 | Rebrand admin completo (financeiro/reservas/inquiries/clientes) + extrai `KpiCard` |
+| #56 | Balão flutuante de WhatsApp global |
+| #57 | Fix Turnstile responsivo (size: flexible) |
 
 ## 🆘 Onde achar contexto histórico
 

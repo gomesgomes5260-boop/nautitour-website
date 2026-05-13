@@ -1,6 +1,6 @@
 # Nautitour — Status do Projeto
 
-Última atualização: **13/maio/2026** — Tiers 0–2 concluídos, Tier 3 parcial (Q+R mergeadas), **rebrand visual oficial aplicado**, **sistema de píeres de embarque** ativo, **CRUD completo de horários e templates no admin** com notificação automática por e-mail.
+Última atualização: **13/maio/2026** — **Tier 3 backend completo (5/5)**, **rebrand visual 100% concluído** (customer-facing + admin), **balão WhatsApp global** ativo. Site em produção vendendo, sem dívida visual conhecida. Única frente pendente é a **PR-Final** (swap apex + Resend verificado + lead recapture, bloqueada por DNS).
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
 
@@ -15,26 +15,34 @@
 - **Escuna pública**: Sáb/Dom 09:30 + 12:00 · Seg–Sex 11:30 · capacidade 120 · duração 2h30 · R$ 60/pax
 - **Lancha privativa**: schedule manual (via inquiry → admin cria booking 1-click ou cria saída avulsa)
 
-### Backend Tier 3 — 2/5 PRs mergeadas
+### Backend Tier 3 — 5/5 PRs mergeadas ✅
 
 | PR | Item | Status |
 |---|---|---|
 | ✅ Q | Captcha Cloudflare Turnstile + rate limit Upstash em checkout/inquiry/payment/auth | Mergeada (#24) |
 | ✅ R | Sentry + PII scrubbing + tunnel route /monitoring | Mergeada (#25) |
-| 🔴 S | CSP report-only + Origin check signout + HSTS preload | Pendente |
-| 🔴 T | Refund parcial UI (backend já aceita amountCents opcional) | Pendente |
-| 🔴 U | Paginação `/admin/clientes` (substituir slice(0,50)) | Pendente |
+| ✅ S | CSP report-only + Origin check signout + HSTS preload | Mergeada (#49) — fecha pentest D6/D11/D12 |
+| ✅ T | Refund parcial UI (backend já aceitava amountCents opcional) | Mergeada (#50) |
+| ✅ U | Paginação `/admin/clientes` (substituiu slice(0,50)) + componente `Pagination` reusável | Mergeada (#51) |
 
 ### PR-Final — bloqueada por DNS mpjunior
 Swap apex `nautitour.com.br` pro Vercel + verificar domínio Resend + lead recapture.
 
-### UI/UX rebrand visual — completo
-Brand guide oficial (charcoal+red, Fraunces+Montserrat+JetBrains Mono) aplicado em:
+### UI/UX rebrand visual — 100% completo ✅
+Brand guide oficial (charcoal+red, Fraunces+Montserrat+JetBrains Mono) aplicado em **todas** as páginas customer-facing e admin:
 - ✅ Header / Footer com logo PNG real (extraída via `scripts/extract-logo-variants.mjs`)
 - ✅ Home (hero drone-tartaruga + tour cards + how-to-book + why-choose-us + CTA)
 - ✅ `/passeio-escuna` + `/passeio-lancha` com calendário interativo + sticky card
 - ✅ Admin sidebar dark (`/admin/*`) + dashboard overview com KPIs coloridos
-- 🟡 Páginas internas remanescentes (`/checkout`, `/reserva`, `/login`, `/signup`, `/admin/reservas`, `/admin/financeiro`, `/admin/inquiries`, `/admin/clientes`) — herdam novo layout (sidebar + bg) mas conteúdo interno ainda com classes legacy
+- ✅ **Fluxo de compra** (PR #47): `/checkout/[scheduleId]`, `/reserva/[code]`, `/reserva/[code]/pagamento` (PIX + cartão)
+- ✅ **Auth** (PR #48): `/login`, `/signup`, `/esqueci-senha`, `/redefinir-senha`
+- ✅ **Admin internas** (PRs #52, #53, #54, #55): `/admin/financeiro`, `/admin/reservas` + `[code]`, `/admin/inquiries` + `[id]`, `/admin/clientes` + `[id]`
+
+### Componentes compartilhados (consolidados nesta sessão)
+- `src/components/Pagination.tsx` — paginação reusável com tokens charcoal+red (PR-U #51)
+- `src/components/KpiCard.tsx` — KPI card canônico (extraído de `/admin/overview`, reusado em `/admin/financeiro` + `/admin/clientes` + `/admin/clientes/[id]`) (PR-2 #52)
+- `src/components/WhatsAppFab.tsx` — balão flutuante global (PR #56)
+- `src/lib/whatsapp.ts` — `WHATSAPP_NUMBER` + `buildWaUrl(text)` helper (consolida número canônico hardcoded em 5 lugares)
 
 ### Embarkation piers (PR #43)
 3 píeres seedados em `embarkation_piers`:
@@ -95,8 +103,19 @@ Arquivos SQL em `db/migrations/`.
 | #41 | hero: novas imagens + remove card flutuante + reposiciona texto/botões | ✅ Mergeada |
 | #42 | duration: escuna agora dura 2h30 (era 6h) | ✅ Mergeada |
 | #43 | embarkation piers: admin gerencia + cliente vê taxa | ✅ Mergeada |
-| #44 | schedule edit/delete: editar saída + notificar clientes | 🟡 Aberta (conflito resolvido, pronta) |
+| #44 | schedule edit/delete: editar saída + notificar clientes | ✅ Mergeada |
 | #45 | templates CRUD + criar saída manual | ✅ Mergeada |
+| #47 | rebrand: fluxo de compra (`/checkout` + `/reserva` + `/pagamento`) | ✅ Mergeada |
+| #48 | rebrand: páginas de autenticação (login + signup + senha) | ✅ Mergeada |
+| #49 | PR-S: CSP report-only + Origin check signout + HSTS preload | ✅ Mergeada |
+| #50 | PR-T: refund parcial UI | ✅ Mergeada |
+| #51 | PR-U: paginação `/admin/clientes` + componente `Pagination` compartilhado | ✅ Mergeada |
+| #52 | rebrand `/admin/financeiro` + extrai `KpiCard` compartilhado | ✅ Mergeada |
+| #53 | rebrand `/admin/reservas` + subpath `[code]` | ✅ Mergeada |
+| #54 | rebrand `/admin/inquiries` + subpath `[id]` | ✅ Mergeada |
+| #55 | rebrand `/admin/clientes` + subpath `[id]` (usa `KpiCard`) | ✅ Mergeada |
+| #56 | feat: balão flutuante de WhatsApp global (FAB) | ✅ Mergeada |
+| #57 | fix: Turnstile widget responsivo (size: flexible) | ✅ Mergeada |
 
 ---
 
@@ -135,11 +154,12 @@ Docs visuais renderizadas:
 
 ## 🚧 O que falta (próximos passos sugeridos)
 
-1. **PR-S** (CSP report-only + Origin check signout + HSTS preload) — fecha pentest items D6/D11/D12
-2. **PR-T** (Refund parcial UI) — backend já aceita `amountCents` opcional
-3. **PR-U** (Paginação `/admin/clientes`)
-4. **Rebrand páginas internas remanescentes** — `/checkout`, `/reserva`, `/login`, `/signup`, `/admin/reservas`, etc — herdam layout mas conteúdo precisa migrar de classes legacy pra tokens novos
-5. **PR-Final** (swap domínio apex + Resend verificado) — aguarda DNS mpjunior
+1. **PR-Final** (swap domínio apex + Resend verificado + lead recapture) — aguarda DNS mpjunior. Única frente que destrava várias coisas: e-mail com domínio próprio, lead recapture pra guests, swap final pro apex `nautitour.com.br`.
+
+### Follow-ups menores (qualidade de vida)
+- Refatorar os 5 callers existentes de `wa.me` (`passeio-lancha`, `locacao-escuna`, `reserva/pagamento`, `admin/inquiries`) pra usarem `buildWaUrl()` de `src/lib/whatsapp.ts` — centraliza número canônico
+- Promover CSP report-only pra enforce (`Content-Security-Policy` em vez de `-Report-Only`) após ~2 semanas observando violations em prod
+- Tracking de clicks no FAB de WhatsApp (Sentry breadcrumb) se quiser medir conversão
 
 ---
 
@@ -475,10 +495,10 @@ Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11-#15) + Tier 2 ✅ (PRs #17-#22). Refer�
 - ✅ Gerenciar admins (adicionar por e-mail / remover, owner-only)
 - ✅ Editar preços e capacidades dos tours (com opção apply-to-future-schedules)
 - ✅ Login admin (roles `owner`/`operator`)
+- ✅ Paginação na lista de clientes — PR-U (#51), 25 por página + componente `Pagination` reusável
 - 🔴 Calendário/heatmap modo semanal (toggle) — Tier 3
 - 🔴 Templates de horário editáveis pela UI (criar/desativar) — Tier 3
 - 🔴 Roles além de owner/operator (comandante, financeiro) — Tier 3
-- 🔴 Paginação na lista de clientes (top 50 atual) — Tier 3 quando virar gargalo
 
 ---
 
@@ -526,17 +546,17 @@ Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11-#15) + Tier 2 ✅ (PRs #17-#22). Refer�
 | ID | Severidade | Descrição | Mitigação prevista |
 |---|---|---|---|
 | D1 | Baixa | `npm audit`: postcss <8.5.10 (XSS no CSS Stringify) — vulnerabilidade transitiva via `next` | Aguardar release do Next que bumpe o postcss; fix forçado downgrade quebra a build |
-| D2 | Média | RPC `create_booking_pending` (anon) pode ser chamado em loop pra esgotar capacidade de schedules | Captcha + rate limit no caminho HTTP; soft-hold com expiração |
-| D3 | Média | RPC `create_inquiry_request` (anon) pode ser spammado | Captcha + rate limit |
+| D2 | ~~Média~~ ✅ | ~~RPC `create_booking_pending` (anon) pode ser chamado em loop pra esgotar capacidade de schedules~~ | **Resolvido em PR-Q (#24)**: Cloudflare Turnstile + rate limit Upstash em `createBookingAction`. Soft-hold (D9) cobre o restante. |
+| D3 | ~~Média~~ ✅ | ~~RPC `create_inquiry_request` (anon) pode ser spammado~~ | **Resolvido em PR-Q (#24)**: mesma proteção (Turnstile + Upstash) em `createInquiryAction`. |
 | D4 | Baixa | `booking_code` tem 6 chars de alfabeto 32 (~10⁹) — enumerável em massa | Mitigado parcialmente em PR #4 (PII removida de `get_booking_by_code`, e-mail mascarado em `/reserva/[code]`, ownership cookie nas actions). Restante: rate limit no nível de página |
 | D5 | Baixa | `/reserva/[code]` exibia e-mail do cliente em claro | ✅ Mitigado em PR #4: e-mail mascarado (`a***@gmail.com`) |
-| D6 | Baixa | Sem CSP (Content-Security-Policy) | Definir `default-src 'self'` + nonces após estabilizar dependências |
-| D7 | Baixa | Sem error tracking em produção (Sentry) | Configurar antes do go-live |
+| D6 | ~~Baixa~~ ✅ | ~~Sem CSP (Content-Security-Policy)~~ | **Resolvido em PR-S (#49)**: `Content-Security-Policy-Report-Only` em `next.config.ts` com allowlist explícita (Pagar.me, Turnstile, Supabase REST + Realtime). Migrar pra enforce (`Content-Security-Policy`) em PR futura após observar violations em prod. |
+| D7 | ~~Baixa~~ ✅ | ~~Sem error tracking em produção (Sentry)~~ | **Resolvido em PR-R (#25)**: Sentry configurado com `sentry-scrub.ts` (PII scrubbing) + tunnel route `/monitoring` pra contornar adblockers. |
 | D8 | Informativa | 4 lints "SECURITY DEFINER callable by anon/authenticated" no advisor do Supabase | **Intencional**: 2 RPCs precisam ser anon-callable (guest checkout + inquiry). PR #4 revogou `get_booking_by_code` → desceu de 6 pra 4 lints |
 | D9 | ~~Média~~ ✅ | ~~**Oversell silencioso**: 2 clientes podem ter booking `pending_payment` na mesma vaga.~~ **Resolvido em PR #7 (Tier 0)**: vaga consumida no insert, TTL 10min, cron `pg_cron` cancela holds expirados a cada 1min. Caso de aresta restante: cliente paga PIX após `expires_at` (improvável agora que PIX expira em 10min) — webhook é no-op, sem refund automático. Refund automático fica como follow-up |
 | D10 | Baixa | Mensagens de erro nas server actions devolvem `error.message` cru do Supabase — pode vazar nome de constraint/table e ajudar enumeração de e-mail em login/signup | Mapear erros conhecidos pra mensagens UX em PT-BR; logar o erro original server-side. PR #4 já fez isso pras actions de pagamento; falta login/signup/resetpw |
-| D11 | Baixa | `/api/auth/signout` não valida header `Origin` | Adicionar check `Origin === host` como defesa em profundidade |
-| D12 | Baixa | HSTS sem `preload` | Adicionar `; preload` quando migrar pro domínio próprio |
+| D11 | ~~Baixa~~ ✅ | ~~`/api/auth/signout` não valida header `Origin`~~ | **Resolvido em PR-S (#49)**: handler valida `Origin` (ou `Referer` fallback) contra a origin da própria request. POST cross-site retorna 403. |
+| D12 | ~~Baixa~~ ✅ | ~~HSTS sem `preload`~~ | **Resolvido em PR-S (#49)**: `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`. Submissão à lista oficial hstspreload.org fica pra fase pós-swap apex. |
 
 ### Cobertura — OWASP Top 10
 | | Avaliação |
@@ -544,12 +564,12 @@ Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11-#15) + Tier 2 ✅ (PRs #17-#22). Refer�
 | **A01** Broken Access Control | ✅ RLS + column grants + safeRedirect |
 | **A02** Crypto Failures | ✅ Senhas via Supabase (bcrypt), HTTPS via Vercel, sem secrets em client bundle |
 | **A03** Injection | ✅ Sem SQL string concatenation; React escapa por padrão; sem `dangerouslySetInnerHTML` |
-| **A04** Insecure Design | 🟡 Sem captcha/rate limit em fluxos públicos (D2, D3) |
-| **A05** Security Misconfig | ✅ Headers + sem debug em prod |
+| **A04** Insecure Design | ✅ Captcha Turnstile + rate limit Upstash em checkout/inquiry/payment/auth (PR-Q #24) |
+| **A05** Security Misconfig | ✅ Headers + CSP report-only + HSTS preload + Origin check signout (PR-S #49) |
 | **A06** Vulnerable Components | 🟡 1 transitiva moderada (D1) |
 | **A07** Identification & Auth | ✅ Senha mín. 8 chars, e-mail confirm ON por padrão, reset com token Supabase |
 | **A08** Data Integrity | ✅ CSRF: server actions + cookies SameSite |
-| **A09** Logging | 🔴 Sem log/tracker estruturado (D7) |
+| **A09** Logging | ✅ Sentry com PII scrubbing + tunnel route `/monitoring` (PR-R #25) |
 | **A10** SSRF | ✅ Sem fetch de URL controlada por usuário |
 
 ---
@@ -699,7 +719,8 @@ Tier 0 ✅ (PR #9) + Tier 1 ✅ (PRs #11-#15) + Tier 2 ✅ (PRs #17-#22). Refer�
 - ✅ Tier 0: reservas + manifesto + CSV (PR #9)
 - ✅ Tier 1 completo (PRs #11-#15): schedule generator + cron, inquiries com workflow, drawer reserva com cancel/refund híbrido, heatmap mensal, admin management UI + edição de preços/capacidades
 - ✅ Tier 2 completo (PRs #17-#22): parcelamento cartão, conversão inquiry→booking, dashboard overview, financeiro, cancelamento cliente, clientes CRM
-- 🔴 Tier 3: paginação clientes, templates de horário editáveis na UI, roles extras (comandante/financeiro), heatmap semanal toggle, refund parcial automatizado
+- ✅ Tier 3 backend (PRs #24, #25, #49, #50, #51): captcha + rate limit, Sentry, CSP + Origin + HSTS, refund parcial UI, paginação clientes + `Pagination` component compartilhado
+- 🔴 Tier 3 admin avançado (não-bloqueante): templates de horário editáveis na UI, roles extras (comandante/financeiro), heatmap semanal toggle
 
 ### P5 — PR-Final (swap domínio + Resend verificado + lead recapture)
 
