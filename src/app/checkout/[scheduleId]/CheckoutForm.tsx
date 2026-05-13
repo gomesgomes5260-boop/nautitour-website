@@ -89,10 +89,16 @@ export default function CheckoutForm({
     });
   };
 
+  const inputClass =
+    'w-full border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2.5 text-[var(--color-charcoal-900)] placeholder:text-[var(--color-charcoal-400)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <section>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(9, 110, 171)' }}>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <section className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
+        <span className="block text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)] mb-1.5">
+          Etapa 1
+        </span>
+        <h2 className="font-display text-xl sm:text-2xl font-semibold text-[var(--color-charcoal-900)] mb-5">
           Dados do responsável
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -102,7 +108,7 @@ export default function CheckoutForm({
               required
               value={contact.fullName}
               onChange={(e) => setContact({ ...contact, fullName: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className={inputClass}
             />
           </Field>
           <Field label="E-mail" required>
@@ -111,7 +117,7 @@ export default function CheckoutForm({
               required
               value={contact.email}
               onChange={(e) => setContact({ ...contact, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className={inputClass}
             />
           </Field>
           <Field label="Telefone (com DDD)" required>
@@ -120,7 +126,7 @@ export default function CheckoutForm({
               required
               value={contact.phone}
               onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className={inputClass}
               placeholder="(22) 99999-9999"
             />
           </Field>
@@ -129,30 +135,37 @@ export default function CheckoutForm({
               type="text"
               value={contact.cpf}
               onChange={(e) => setContact({ ...contact, cpf: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              className={inputClass}
             />
           </Field>
         </div>
       </section>
 
-      <section>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold" style={{ color: 'rgb(9, 110, 171)' }}>
-            Passageiros ({passengers.length})
-          </h2>
-          <div className="flex gap-2">
+      <section className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
+        <div className="flex justify-between items-start mb-5 gap-3">
+          <div>
+            <span className="block text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)] mb-1.5">
+              Etapa 2
+            </span>
+            <h2 className="font-display text-xl sm:text-2xl font-semibold text-[var(--color-charcoal-900)]">
+              Passageiros ({passengers.length})
+            </h2>
+          </div>
+          <div className="inline-flex items-center gap-1 rounded-full border border-[var(--color-charcoal-200)] p-1 shrink-0">
             <button
               type="button"
               onClick={() =>
-                setPassengers((p) =>
-                  p.length > 1 ? p.slice(0, -1) : p
-                )
+                setPassengers((p) => (p.length > 1 ? p.slice(0, -1) : p))
               }
               disabled={passengers.length <= 1}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+              aria-label="Remover passageiro"
+              className="w-8 h-8 rounded-full text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-lg leading-none"
             >
               −
             </button>
+            <span className="w-6 text-center text-sm font-semibold text-[var(--color-charcoal-900)]">
+              {passengers.length}
+            </span>
             <button
               type="button"
               onClick={() =>
@@ -163,7 +176,8 @@ export default function CheckoutForm({
                 )
               }
               disabled={passengers.length >= maxPassengers}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+              aria-label="Adicionar passageiro"
+              className="w-8 h-8 rounded-full text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-lg leading-none"
             >
               +
             </button>
@@ -172,8 +186,11 @@ export default function CheckoutForm({
 
         <div className="space-y-4">
           {passengers.map((p, idx) => (
-            <div key={idx} className="border border-gray-200 rounded-md p-4">
-              <p className="text-sm font-medium text-gray-600 mb-3">
+            <div
+              key={idx}
+              className="rounded-xl border border-[var(--color-charcoal-100)] bg-[var(--color-charcoal-50)] p-4 sm:p-5"
+            >
+              <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-3">
                 Passageiro {idx + 1}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -183,7 +200,7 @@ export default function CheckoutForm({
                     required
                     value={p.full_name}
                     onChange={(e) => updatePassenger(idx, { full_name: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className={inputClass}
                   />
                 </Field>
                 <Field label="Documento (opcional)">
@@ -191,15 +208,16 @@ export default function CheckoutForm({
                     type="text"
                     value={p.document}
                     onChange={(e) => updatePassenger(idx, { document: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className={inputClass}
                   />
                 </Field>
               </div>
-              <label className="flex items-center gap-2 mt-3 text-sm text-gray-700">
+              <label className="flex items-center gap-2 mt-3 text-sm text-[var(--color-charcoal-700)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={p.is_child}
                   onChange={(e) => updatePassenger(idx, { is_child: e.target.checked })}
+                  className="w-4 h-4 rounded border-[var(--color-charcoal-300)] accent-[var(--color-red-600)]"
                 />
                 Criança (até 12 anos)
               </label>
@@ -208,24 +226,24 @@ export default function CheckoutForm({
         </div>
       </section>
 
-      <section>
+      <section className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
         <Field label="Observações (opcional)">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className={inputClass}
             placeholder="Restrições alimentares, idade das crianças, dúvidas..."
           />
         </Field>
       </section>
 
-      <section className="bg-gray-50 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-2 text-gray-700">
+      <section className="rounded-2xl bg-[var(--color-charcoal-900)] text-white p-6 sm:p-8">
+        <div className="flex justify-between items-center mb-3 text-sm text-white/70">
           {pricingMode === 'per_slot' ? (
             <span>
               Lancha privativa — {passengers.length}{' '}
-              {passengers.length === 1 ? 'pessoa' : 'pessoas'} (preço fixo do barco)
+              {passengers.length === 1 ? 'pessoa' : 'pessoas'} (preço fixo)
             </span>
           ) : (
             <span>
@@ -234,16 +252,20 @@ export default function CheckoutForm({
             </span>
           )}
         </div>
-        <div className="flex justify-between items-center text-2xl font-bold" style={{ color: 'rgb(219, 56, 44)' }}>
-          <span>Total</span>
-          <span>{PRICE_FORMATTER.format(total / 100)}</span>
+        <div className="flex justify-between items-baseline">
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
+            Total
+          </span>
+          <span className="font-sans text-3xl sm:text-4xl font-black text-[var(--color-red-300)] leading-none">
+            {PRICE_FORMATTER.format(total / 100)}
+          </span>
         </div>
       </section>
 
       <TurnstileWidget onToken={handleTurnstileToken} action="checkout" />
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 text-sm">
+        <div className="rounded-xl bg-[var(--color-red-50)] border border-[var(--color-red-100)] text-[var(--color-red-900)] p-4 text-sm">
           {error}
         </div>
       )}
@@ -251,12 +273,11 @@ export default function CheckoutForm({
       <button
         type="submit"
         disabled={isPending || !turnstileToken}
-        className="w-full px-6 py-4 text-white text-base font-semibold rounded-full disabled:opacity-50"
-        style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+        className="w-full px-6 py-4 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[var(--shadow-2)]"
       >
         {isPending ? 'Reservando...' : 'Confirmar reserva'}
       </button>
-      <p className="text-xs text-center text-gray-500">
+      <p className="text-xs text-center text-[var(--color-charcoal-500)]">
         A reserva ficará pendente de pagamento. Você será redirecionado para a tela de
         confirmação com seu código.
       </p>
@@ -275,9 +296,9 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-gray-700 mb-1">
+      <span className="block text-sm font-medium text-[var(--color-charcoal-700)] mb-1.5">
         {label}
-        {required && <span className="text-red-600"> *</span>}
+        {required && <span className="text-[var(--color-red-600)]"> *</span>}
       </span>
       {children}
     </label>
