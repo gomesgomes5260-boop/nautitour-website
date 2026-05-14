@@ -60,6 +60,7 @@ export default function Footer() {
               <li><Link href="/sobre-nos" className="text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">Quem somos</Link></li>
               <li><Link href="/politica-de-privacidade" className="text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">Política de Privacidade</Link></li>
               <li><Link href="/politica-de-cancelamento" className="text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">Política de Cancelamento</Link></li>
+              <li><Link href="/termos-de-uso" className="text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">Termos de Uso</Link></li>
             </ul>
           </div>
 

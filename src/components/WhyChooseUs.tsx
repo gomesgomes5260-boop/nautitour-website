@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import { ShieldCheck, Wine, Globe2 } from 'lucide-react';
+import { ShieldCheck, Wine, Globe2, BadgeCheck, Anchor } from 'lucide-react';
 import Container from './Container';
 
 type Feature = {
@@ -68,12 +67,51 @@ export default function WhyChooseUs() {
           <p className="text-center text-[var(--color-charcoal-700)] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] mb-8">
             Certificados pelos principais órgãos reguladores
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12 md:gap-16">
-            <Image src="/images/cert-buzios.png" alt="Certificação Búzios" width={110} height={110} />
-            <Image src="/images/cert-cadastur.png" alt="Certificação CADASTUR" width={110} height={110} />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 md:gap-14">
+            <CertBadge
+              Icon={BadgeCheck}
+              label="Cadastur"
+              sublabel="Cadastro Ministério do Turismo"
+            />
+            <CertBadge
+              Icon={Anchor}
+              label="Marinha do Brasil"
+              sublabel="Embarcação habilitada"
+            />
+            <CertBadge
+              Icon={ShieldCheck}
+              label="Convenção Búzios"
+              sublabel="Convenção Coletiva 2025"
+            />
           </div>
         </div>
       </Container>
     </section>
+  );
+}
+
+function CertBadge({
+  Icon,
+  label,
+  sublabel,
+}: {
+  Icon: typeof ShieldCheck;
+  label: string;
+  sublabel: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-[var(--color-charcoal-100)] bg-white min-w-[200px]">
+      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] shrink-0">
+        <Icon size={18} />
+      </span>
+      <div>
+        <p className="text-sm font-bold text-[var(--color-charcoal-900)] leading-tight">
+          {label}
+        </p>
+        <p className="text-[10px] text-[var(--color-charcoal-500)] mt-0.5 leading-tight">
+          {sublabel}
+        </p>
+      </div>
+    </div>
   );
 }

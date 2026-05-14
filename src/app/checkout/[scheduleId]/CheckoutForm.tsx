@@ -126,6 +126,8 @@ export default function CheckoutForm({
           <Field label="Telefone (com DDD)" required>
             <input
               type="tel"
+              inputMode="tel"
+              autoComplete="tel"
               required
               value={contact.phone}
               onChange={(e) => setContact({ ...contact, phone: e.target.value })}
@@ -136,9 +138,12 @@ export default function CheckoutForm({
           <Field label="CPF (opcional)">
             <input
               type="text"
+              inputMode="numeric"
+              autoComplete="off"
               value={contact.cpf}
               onChange={(e) => setContact({ ...contact, cpf: e.target.value })}
               className={inputClass}
+              placeholder="123.456.789-00"
             />
           </Field>
         </div>
@@ -209,6 +214,8 @@ export default function CheckoutForm({
                 <Field label="Documento (opcional)">
                   <input
                     type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
                     value={p.document}
                     onChange={(e) => updatePassenger(idx, { document: e.target.value })}
                     className={inputClass}
