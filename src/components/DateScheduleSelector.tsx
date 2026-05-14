@@ -229,7 +229,6 @@ export default function DateScheduleSelector({
             const allSoldOut = dayList.length > 0 && !hasAvailable;
             const isSelected = cell.key === selectedKey;
             const isToday = cell.key === todayKey;
-            const isPast = cell.key < todayKey;
 
             let className =
               'relative h-9 flex items-center justify-center text-[13px] font-semibold rounded-md transition-colors';
