@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Montserrat, JetBrains_Mono, Plus_Jakarta_Sans, Inter } from "next/font/google";
 import WhatsAppFab from "@/components/WhatsAppFab";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://nautitour-website.vercel.app";
 
 // Fonts oficiais do Brand Guide (design/brand-guide/type/):
 // - Fraunces (display, h1-h6) — opsz variável 9-144, peso 300-900
@@ -42,8 +46,48 @@ const interLegacy = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Passeio de Barco e Escuna em Búzios | Nautitour Passeios",
-  description: "Tenha uma experiência inesquecível com a Família e Amigos com a Nautitour Passeios. Passeio de Escuna e Lancha em Búzios.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Passeio de Barco e Escuna em Búzios | Nautitour Passeios",
+    template: "%s | Nautitour Passeios",
+  },
+  description:
+    "Tenha uma experiência inesquecível com família e amigos. Passeio de escuna e lancha privativa em Armação dos Búzios — reserva online com Pix ou cartão.",
+  keywords: [
+    "passeio de barco Búzios",
+    "passeio de escuna Búzios",
+    "lancha privativa Búzios",
+    "Armação dos Búzios",
+    "turismo Búzios",
+    "Nautitour",
+  ],
+  authors: [{ name: "Nautitour Passeios" }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: "Nautitour Passeios",
+    title: "Passeio de Barco e Escuna em Búzios | Nautitour Passeios",
+    description:
+      "Reserve online seu passeio de escuna ou lancha privativa em Armação dos Búzios. Pix ou cartão, confirmação imediata.",
+    images: [
+      {
+        url: "/images/photos/escuna/escuna-pier-01.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Escuna da Nautitour navegando em Búzios",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Passeio de Barco e Escuna em Búzios | Nautitour Passeios",
+    description:
+      "Reserve online seu passeio de escuna ou lancha privativa em Armação dos Búzios.",
+    images: ["/images/photos/escuna/escuna-pier-01.jpg"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -54,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         {children}
         <WhatsAppFab />
+        <GoogleAnalytics />
       </body>
     </html>
   );
