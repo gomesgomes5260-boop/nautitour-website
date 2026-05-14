@@ -73,20 +73,6 @@
   --color-bg-page: #FFFFFF;
   --color-bg-surface-alt: #F4F4F4;
   --color-bg-inverse: #404040;
-
-  /* === Legacy aliases (manter retrocompat com componentes existentes
-   *    enquanto migração gradual acontece. Remover em PR futura). === */
-  --color-primary: #404040;
-  --color-primary-dark: #1F1F1F;
-  --color-accent-red: #C00010;
-  --color-accent-red-dark: #980010;
-  --color-accent-red-darker: #6E0000;
-  --color-warning: #FFC107;
-  --color-text-dark: #1F1F1F;
-  --color-text-gray: #606060;
-  --color-text-link: #C00010;
-  --color-white: #FFFFFF;
-  --color-bg-red: #C00010;
 }
 
 html {
