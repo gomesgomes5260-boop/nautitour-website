@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback } from 'react';
 import { createBookingAction } from './actions';
 import TurnstileWidget from '@/components/TurnstileWidget';
+import { analytics } from '@/lib/analytics';
 
 type Passenger = { full_name: string; document: string; is_child: boolean };
 
@@ -66,6 +67,8 @@ export default function CheckoutForm({
       setError('Aguarde a verificação anti-spam carregar.');
       return;
     }
+
+    analytics.beginCheckout(scheduleId, total / 100, passengers.length);
 
     startTransition(async () => {
       const result = await createBookingAction({

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, AlertTriangle } from 'lucide-react';
@@ -8,6 +9,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import CheckoutForm from './CheckoutForm';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Finalizar reserva',
+  description: 'Confirmação dos dados para sua reserva Nautitour.',
+  robots: { index: false, follow: false },
+};
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   weekday: 'long',

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Star, Clock, Users, Check, MessageCircle } from 'lucide-react';
@@ -5,10 +6,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import TourJsonLd from '@/components/TourJsonLd';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Lancha Privativa em Búzios — passeio exclusivo até 12 pessoas',
+  description:
+    'Lancha privativa em Armação dos Búzios para grupos, eventos e ocasiões especiais. Roteiro sob medida, atendimento personalizado via WhatsApp. Reserve online ou consulte horário.',
+  alternates: { canonical: '/passeio-lancha' },
+  openGraph: {
+    title: 'Lancha Privativa em Búzios | Nautitour',
+    description:
+      'Passeio exclusivo de lancha privativa em Búzios. Grupos até 12 pessoas, roteiro flexível.',
+    url: '/passeio-lancha',
+    images: ['/images/photos/escuna/escuna-pier-01.jpg'],
+  },
+};
 
 const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -77,6 +93,15 @@ export default async function PasseioLanchaPage() {
   return (
     <>
       <Header />
+      <TourJsonLd
+        name={tour.name}
+        description={tour.description ?? 'Lancha privativa em Armação dos Búzios.'}
+        imageUrl={tour.cover_image_url ?? '/images/photos/escuna/escuna-pier-01.jpg'}
+        priceCents={tour.base_price_cents}
+        durationMinutes={tour.duration_minutes}
+        maxCapacity={tour.max_capacity}
+        url={`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nautitour-website.vercel.app'}/passeio-lancha`}
+      />
       <main className="bg-[var(--color-charcoal-50)]">
         {/* === HERO === */}
         <section className="relative w-full overflow-hidden">

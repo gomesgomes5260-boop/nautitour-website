@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
@@ -8,8 +9,15 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import HoldCountdown from './HoldCountdown';
 import CancelBookingButton from './CancelBookingButton';
+import PurchaseTracker from './PurchaseTracker';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Sua reserva',
+  description: 'Detalhes da reserva Nautitour.',
+  robots: { index: false, follow: false },
+};
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   weekday: 'long',
@@ -160,6 +168,10 @@ export default async function ReservaPage({
   return (
     <>
       <Header />
+      <PurchaseTracker
+        bookingCode={b.booking_code}
+        valueBRL={b.total_cents / 100}
+      />
       <main className="bg-[var(--color-charcoal-50)]">
         <Container as="section" className="py-10 sm:py-14 md:py-16 max-w-3xl">
           <span className="block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)] mb-3">

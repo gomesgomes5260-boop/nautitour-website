@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Lock } from 'lucide-react';
@@ -9,6 +10,12 @@ import { canPay, getMode } from '@/lib/pagarme/config';
 import PaymentMethodPicker from './PaymentMethodPicker';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Pagamento da reserva',
+  description: 'Pagamento seguro via Pagar.me.',
+  robots: { index: false, follow: false },
+};
 
 export default async function PagamentoPage({
   params,

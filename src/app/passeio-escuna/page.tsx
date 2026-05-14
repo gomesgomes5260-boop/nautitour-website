@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Star, Clock, Users, Check } from 'lucide-react';
@@ -5,10 +6,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import TourJsonLd from '@/components/TourJsonLd';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Passeio de Escuna em Búzios — Sáb/Dom 09:30 e 12:00',
+  description:
+    'Passeio de escuna em Armação dos Búzios. Saídas diárias com duração de 2h30, capacidade 120 pessoas. Reserve online com Pix ou cartão a partir de R$ 60/pessoa.',
+  alternates: { canonical: '/passeio-escuna' },
+  openGraph: {
+    title: 'Passeio de Escuna em Búzios | Nautitour',
+    description:
+      'Saídas diárias em Armação dos Búzios. 2h30 de passeio, parada para banho nas ilhas. A partir de R$ 60/pessoa.',
+    url: '/passeio-escuna',
+    images: ['/images/photos/escuna/escuna-pier-01.jpg'],
+  },
+};
 
 const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -71,6 +87,15 @@ export default async function PasseioEscunaPage() {
   return (
     <>
       <Header />
+      <TourJsonLd
+        name={tour.name}
+        description={tour.description ?? 'Passeio de escuna em Armação dos Búzios.'}
+        imageUrl={tour.cover_image_url ?? '/images/photos/escuna/escuna-pier-01.jpg'}
+        priceCents={tour.base_price_cents}
+        durationMinutes={tour.duration_minutes}
+        maxCapacity={tour.max_capacity}
+        url={`${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nautitour-website.vercel.app'}/passeio-escuna`}
+      />
       <main className="bg-[var(--color-charcoal-50)]">
         {/* === HERO === */}
         <section className="relative w-full overflow-hidden">
