@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Montserrat, JetBrains_Mono, Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Fraunces, Montserrat, JetBrains_Mono } from "next/font/google";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
@@ -28,21 +28,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   weight: ["400", "500", "700"],
-});
-
-// Legacy aliases — mantém Plus_Jakarta_Sans e Inter como CSS vars
-// pra que componentes que ainda referenciam --font-jakarta / --font-inter
-// continuem renderizando enquanto a migração gradual acontece.
-const jakartaLegacy = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const interLegacy = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -94,7 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body
-        className={`${fraunces.variable} ${montserrat.variable} ${jetbrainsMono.variable} ${jakartaLegacy.variable} ${interLegacy.variable}`}
+        className={`${fraunces.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
       >
         {children}
         <WhatsAppFab />
