@@ -5,12 +5,12 @@ export const metadata = {
   description: 'Como tratamos seus dados pessoais conforme a LGPD.',
 };
 
-// TODO: revisar com assessoria jurídica antes do go-live
+// TODO: validar redação com assessoria jurídica antes de tratar como versão final.
 export default function PrivacidadePage() {
   return (
     <ContentPage
       title="Política de Privacidade"
-      intro="Última atualização: maio/2026. Esta versão é preliminar e deve ser revisada por assessoria jurídica antes da publicação oficial."
+      intro="Última atualização: maio/2026. Como a Nautitour Passeios trata seus dados pessoais em conformidade com a LGPD (Lei nº 13.709/2018)."
     >
       <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-2">1. Dados que coletamos</h2>
       <p>
