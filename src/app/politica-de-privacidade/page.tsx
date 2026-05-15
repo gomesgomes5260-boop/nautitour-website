@@ -45,6 +45,51 @@ export default function PrivacidadePage() {
         Mantemos seus dados pelo tempo necessário para cumprir as finalidades
         descritas e obrigações legais (mínimo de 5 anos para registros fiscais).
       </p>
+
+      <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-2">
+        6. Cookies e tecnologias similares
+      </h2>
+      <p>
+        Usamos três categorias de cookies, conforme detalhado abaixo. Você pode
+        rever ou revogar seu consentimento a qualquer momento pela página{' '}
+        <a
+          href="/cookie-preferences"
+          className="text-[var(--color-red-600)] underline-offset-2 hover:underline"
+        >
+          Preferências de cookies
+        </a>
+        .
+      </p>
+      <ul className="list-disc list-inside space-y-1 mt-2">
+        <li>
+          <strong>Essenciais</strong>: necessários para o funcionamento do site
+          (sessão de login, proteção contra fraude, carrinho de reserva).
+          Sempre ativos, conforme art. 7º, IX da LGPD (legítimo interesse para
+          execução de contrato).
+        </li>
+        <li>
+          <strong>Analíticos</strong>: Google Analytics 4 e Microsoft Clarity.
+          Coletam métricas agregadas e anônimas (IP anonimizado) para
+          entendermos como melhorar o site. Só carregam se você der
+          consentimento.
+        </li>
+        <li>
+          <strong>Marketing</strong>: reservado para futuras integrações de
+          remarketing (Meta Pixel, Google Ads). Hoje não utilizamos. Opção
+          disponível na página de preferências.
+        </li>
+      </ul>
+      <p className="mt-3">
+        Em qualquer momento você pode revogar o consentimento — as preferências
+        valem por 6 meses e podem ser revistas a qualquer instante na página de{' '}
+        <a
+          href="/cookie-preferences"
+          className="text-[var(--color-red-600)] underline-offset-2 hover:underline"
+        >
+          Preferências de cookies
+        </a>
+        .
+      </p>
     </ContentPage>
   );
 }
