@@ -46,6 +46,9 @@ export const bookingLimiter = buildLimiter(redis, 'booking', 5, '1 h');
 export const inquiryLimiter = buildLimiter(redis, 'inquiry', 3, '1 h');
 export const paymentLimiter = buildLimiter(redis, 'payment', 30, '1 h');
 export const authLimiter = buildLimiter(redis, 'auth', 10, '15 m');
+// Lead recapture: 10/min por IP. Best-effort — burst de tab-switching no
+// checkout pode disparar várias capturas válidas, então limite mais permissivo.
+export const leadCaptureLimiter = buildLimiter(redis, 'lead', 10, '1 m');
 
 /**
  * Extrai IP do cliente lendo `x-forwarded-for` (primeiro IP), fallback

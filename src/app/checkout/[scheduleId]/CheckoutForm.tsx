@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useTransition, useCallback } from 'react';
+import { useState, useTransition, useCallback, useRef } from 'react';
 import { createBookingAction } from './actions';
+import { captureLeadAction } from './lead-actions';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import { analytics } from '@/lib/analytics';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 type Passenger = { full_name: string; document: string; is_child: boolean };
 
@@ -43,6 +46,28 @@ export default function CheckoutForm({
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const handleTurnstileToken = useCallback((t: string | null) => setTurnstileToken(t), []);
+
+  // Dedup de lead capture por email — não dispara 2x pro mesmo valor na
+  // mesma sessão (typing → tab → typing → tab continuaria gerando 1 lead só).
+  const capturedEmailRef = useRef<string | null>(null);
+
+  const handleEmailBlur = () => {
+    const email = contact.email.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) return;
+    if (capturedEmailRef.current === email) return;
+    capturedEmailRef.current = email;
+    // Fire-and-forget — não bloqueia o submit nem mostra feedback.
+    void captureLeadAction({
+      email,
+      fullName: contact.fullName.trim() || undefined,
+      phone: contact.phone.trim() || undefined,
+      source: 'checkout_abandon',
+    }).catch(() => {
+      // Best-effort. Re-permite captura se falhou (talvez tenha mais sorte
+      // no próximo blur com mesma string).
+      capturedEmailRef.current = null;
+    });
+  };
 
   const total =
     pricingMode === 'per_slot' ? unitPriceCents : unitPriceCents * passengers.length;
@@ -117,9 +142,11 @@ export default function CheckoutForm({
           <Field label="E-mail" required>
             <input
               type="email"
+              autoComplete="email"
               required
               value={contact.email}
               onChange={(e) => setContact({ ...contact, email: e.target.value })}
+              onBlur={handleEmailBlur}
               className={inputClass}
             />
           </Field>
