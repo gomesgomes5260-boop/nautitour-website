@@ -1,10 +1,19 @@
-import Script from 'next/script';
+'use client';
 
-// Carrega GA4 só se NEXT_PUBLIC_GA_ID estiver configurado.
-// No-op silencioso em dev/preview sem env var.
+import Script from 'next/script';
+import { useCookieConsent } from '@/lib/use-cookie-consent';
+
+// Carrega GA4 só se NEXT_PUBLIC_GA_ID estiver configurado E o usuário deu
+// consent pra cookies analíticos (LGPD). No-op silencioso caso contrário.
+//
+// useCookieConsent reage dinamicamente — se o usuário aceitar depois (via
+// banner ou /cookie-preferences), GA4 carrega sem refresh.
 export default function GoogleAnalytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const consent = useCookieConsent();
+
   if (!gaId) return null;
+  if (!consent?.analytics) return null;
 
   return (
     <>

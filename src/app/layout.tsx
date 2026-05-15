@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Montserrat, JetBrains_Mono } from "next/font/google";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
 const SITE_URL =
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         {children}
         <WhatsAppFab />
+        <CookieBanner />
         <GoogleAnalytics />
       </body>
     </html>
