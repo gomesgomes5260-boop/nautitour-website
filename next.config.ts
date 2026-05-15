@@ -7,15 +7,15 @@ import { withSentryConfig } from "@sentry/nextjs";
 const cspReportOnly = [
   "default-src 'self'",
   // 'unsafe-inline' / 'unsafe-eval' necessários por hidratação inline do Next
-  // e SDKs (sem nonce SSR). Turnstile carrega challenges.cloudflare.com.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+  // e SDKs (sem nonce SSR). Turnstile + Microsoft Clarity (analytics).
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.clarity.ms https://c.bing.com",
   // Tailwind v4 e next/font usam inline styles.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   // images: photos locais + Supabase storage + Vercel preview + data/blob.
   "img-src 'self' data: blob: https:",
-  // fetch: tokenize Pagar.me + Supabase (REST e Realtime WSS).
-  "connect-src 'self' https://api.pagar.me https://*.supabase.co wss://*.supabase.co",
+  // fetch: tokenize Pagar.me + Supabase (REST e Realtime WSS) + Clarity beacons.
+  "connect-src 'self' https://api.pagar.me https://*.supabase.co wss://*.supabase.co https://www.clarity.ms https://c.bing.com",
   // Turnstile renderiza um iframe pra captcha.
   "frame-src 'self' https://challenges.cloudflare.com",
   "object-src 'none'",
