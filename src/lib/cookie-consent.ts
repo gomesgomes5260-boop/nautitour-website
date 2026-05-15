@@ -46,12 +46,25 @@ function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
   document.cookie = attrs;
 }
 
+// Cache por raw string — getConsent() é chamada pelo useSyncExternalStore
+// em cada render. Retornar objeto novo a cada call entra em loop infinito
+// ("The result of getSnapshot should be cached"), crashando a página.
+// Sentinel inicial força primeira leitura. setConsent() escreve o cookie e
+// a próxima leitura detecta raw diferente, re-parseando.
+let _cachedRaw: string | null = '__uninit__';
+let _cachedConsent: ConsentState | null = null;
+
 export function getConsent(): ConsentState | null {
   const raw = readCookie(CONSENT_COOKIE);
-  if (!raw) return null;
+  if (raw === _cachedRaw) return _cachedConsent;
+  _cachedRaw = raw;
+  if (!raw) {
+    _cachedConsent = null;
+    return null;
+  }
   try {
     const parsed = JSON.parse(raw) as Partial<ConsentState>;
-    return {
+    _cachedConsent = {
       essential: true,
       analytics: parsed.analytics === true,
       retargeting: parsed.retargeting === true,
@@ -59,7 +72,9 @@ export function getConsent(): ConsentState | null {
         ? parsed.updatedAt
         : new Date().toISOString(),
     };
+    return _cachedConsent;
   } catch {
+    _cachedConsent = null;
     return null;
   }
 }
