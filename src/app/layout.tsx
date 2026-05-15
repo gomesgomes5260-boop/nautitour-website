@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Montserrat, JetBrains_Mono } from "next/font/google";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
 import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WhatsAppFab />
         <CookieBanner />
         <GoogleAnalytics />
+        <MicrosoftClarity />
       </body>
     </html>
   );
