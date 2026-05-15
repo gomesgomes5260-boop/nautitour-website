@@ -340,6 +340,7 @@ export type Database = {
           customer_id: string
           expires_at: string
           id: string
+          source: string | null
           token: string
           used_at: string | null
         }
@@ -348,6 +349,7 @@ export type Database = {
           customer_id: string
           expires_at: string
           id?: string
+          source?: string | null
           token: string
           used_at?: string | null
         }
@@ -356,6 +358,7 @@ export type Database = {
           customer_id?: string
           expires_at?: string
           id?: string
+          source?: string | null
           token?: string
           used_at?: string | null
         }
@@ -754,6 +757,18 @@ export type Database = {
         }
         Returns: {
           inquiry_id: string
+        }[]
+      }
+      create_lead_invitation: {
+        Args: {
+          p_email: string
+          p_full_name?: string
+          p_phone?: string
+          p_source?: string
+        }
+        Returns: {
+          token: string
+          was_new: boolean
         }[]
       }
       customer_cancel_booking: {
