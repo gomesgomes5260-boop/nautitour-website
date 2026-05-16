@@ -170,43 +170,45 @@ function Lightbox({
 
   const current = photos[index];
 
+  // Fecha só se clique foi DIRETAMENTE no overlay (e.target === overlay), não
+  // em filhos (imagem, botões). Mais robusto que stopPropagation nos filhos —
+  // evita confusão de z-index/stacking quando o container da imagem cobre os
+  // botões.
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Visualização ampliada da galeria"
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center"
+      onClick={handleOverlayClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Botão fechar (canto sup direito) */}
+      {/* Botão fechar (canto sup direito) — z-10 pra ficar acima da imagem */}
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
+        onClick={onClose}
         aria-label="Fechar"
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors backdrop-blur"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors backdrop-blur"
       >
         <X size={20} />
       </button>
 
       {/* Contador */}
-      <span className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white/80 text-xs sm:text-sm font-mono bg-white/10 backdrop-blur px-3 py-1.5 rounded-full">
+      <span className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 text-white/80 text-xs sm:text-sm font-mono bg-white/10 backdrop-blur px-3 py-1.5 rounded-full">
         {index + 1} / {photos.length}
       </span>
 
       {/* Prev */}
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onPrev();
-        }}
+        onClick={onPrev}
         aria-label="Foto anterior"
-        className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors backdrop-blur"
+        className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors backdrop-blur"
       >
         <ChevronLeft size={24} />
       </button>
@@ -214,26 +216,24 @@ function Lightbox({
       {/* Next */}
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onNext();
-        }}
+        onClick={onNext}
         aria-label="Próxima foto"
-        className="hidden sm:flex absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors backdrop-blur"
+        className="hidden sm:flex absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors backdrop-blur"
       >
         <ChevronRight size={24} />
       </button>
 
-      {/* Imagem */}
+      {/* Imagem — dimensões fixas em vw/vh pra deixar espaço clicável no
+          overlay ao redor (e.target !== currentTarget fecha). */}
       <div
-        className="relative w-full h-full max-w-6xl max-h-[85vh] mx-4 sm:mx-12"
-        onClick={(e) => e.stopPropagation()}
+        className="relative pointer-events-none"
+        style={{ width: 'min(92vw, 1100px)', height: 'min(78vh, 800px)' }}
       >
         <Image
           src={current.src}
           alt={current.alt}
           fill
-          sizes="(max-width: 1024px) 100vw, 1024px"
+          sizes="(max-width: 1024px) 92vw, 1100px"
           className="object-contain"
           priority
         />
