@@ -6,7 +6,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
+import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
 
@@ -262,6 +264,12 @@ export default async function PasseioLanchaPage() {
             </div>
           </Container>
         </section>
+        <PhotoGallery
+          eyebrow="Galeria"
+          title="Experiência privativa"
+          subtitle="Imagens de roteiros privativos — ilhas, drone aéreo e momentos íntimos a bordo."
+          photos={PASSEIO_LANCHA_GALLERY}
+        />
       </main>
       <Footer />
     </>

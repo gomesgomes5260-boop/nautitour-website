@@ -4,6 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import InquiryForm from './InquiryForm';
+import PhotoGallery from '@/components/PhotoGallery';
+import { LOCACAO_ESCUNA_GALLERY } from '@/lib/photo-gallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +93,12 @@ export default async function LocacaoEscunaPage() {
             </div>
           </div>
         </section>
+        <PhotoGallery
+          eyebrow="Galeria"
+          title="Seu evento, sua escuna"
+          subtitle="Festas, confraternizações e celebrações — espaço completo com bar a bordo."
+          photos={LOCACAO_ESCUNA_GALLERY}
+        />
       </main>
       <Footer />
     </>

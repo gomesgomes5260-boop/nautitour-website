@@ -80,6 +80,13 @@ html {
   overflow-x: hidden;
 }
 
+/* Esconde scrollbar mas mantém scroll funcional (usado no PhotoGallery
+   carousel). Firefox usa scrollbar-width via inline style; aqui cobrimos
+   Chrome/Safari/Edge. */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-charcoal-900);

@@ -6,7 +6,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
+import { PASSEIO_ESCUNA_GALLERY } from '@/lib/photo-gallery';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
 
@@ -245,6 +247,12 @@ export default async function PasseioEscunaPage() {
             </div>
           </Container>
         </section>
+        <PhotoGallery
+          eyebrow="Galeria"
+          title="A bordo da nossa escuna"
+          subtitle="Fotos reais do passeio — escuna, ilhas, snorkel e os melhores momentos a bordo."
+          photos={PASSEIO_ESCUNA_GALLERY}
+        />
       </main>
       <Footer />
     </>
