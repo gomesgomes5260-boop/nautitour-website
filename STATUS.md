@@ -1,8 +1,85 @@
 # Nautitour — Status do Projeto
 
-Última atualização: **13/maio/2026** — **Tier 3 backend completo (5/5)**, **rebrand visual 100% concluído** (customer-facing + admin), **balão WhatsApp global** ativo. Site em produção vendendo, sem dívida visual conhecida. Única frente pendente é a **PR-Final** (swap apex + Resend verificado + lead recapture, bloqueada por DNS).
+Última atualização: **17/maio/2026** — **Sessão 15-17/maio**: PR-AUDIT-1/2/3 (CI + tests + DB hygiene + legacy cleanup + trust signals), **fundação LGPD** (cookie consent + GA gated + Microsoft Clarity), **lead recapture** (RPC + onBlur), **galeria de fotos** (carousel + lightbox em 4 páginas), **2 hotfixes críticos** corrigidos no mesmo dia (loop infinito useSyncExternalStore + lightbox close handler). Stack agora tem CI no GitHub Actions, 22 testes unitários, e DB advisor 100% limpo.
+
+Estado prévio mantido: site em produção vendendo, Tier 3 backend 5/5, rebrand visual 100%, balão WhatsApp global. Única frente externa pendente continua sendo **PR-Final** (DNS mpjunior).
 
 **Legenda:** ✅ pronto · 🟡 parcial · 🔴 falta · ⏸️ bloqueado por dependência externa
+
+---
+
+## 🆕 Sessão 15-17/maio 2026 (PR-AUDIT + LGPD + Captação + Galeria)
+
+### Auditoria pós-Tier 3 (PRs #58 a #65)
+Audit retrospectivo + execução de follow-ups identificados:
+- **PR-AUDIT-1**: Google Analytics 4 instalado (gated por env var na época, posteriormente refatorado pra gating por consent na #66)
+- **PR-AUDIT-2 (#60)**: ConfirmModal extraído + refatoração de cancelamentos (`admin/reservas`, `minhas-reservas`)
+- **PR-AUDIT-3 (#61)**: Trust signals inline com lucide ícones (substitui PNGs de cert 404) + página `/termos-de-uso` (LGPD/risco legal) + `prefers-reduced-motion` global
+- **PR-FUP-1/db-hygiene (#62)** — **migration 021**: search_path em trigger, 10 RLS policies otimizadas via `(SELECT auth.uid())`, 4 covering indexes em FKs. **Supabase advisor 100% limpo**
+- **PR-FUP-2 (#63)**: remove fonts legacy Plus_Jakarta_Sans + Inter + 14 CSS aliases — economiza ~120-150KB gzip em font files
+- **PR-FUP-3 (#64)**: GitHub Action `.github/workflows/ci.yml` rodando lint + build em cada PR + flat config ESLint 9 + Next 16
+- **PR-FUP-4 (#65)**: Vitest + 15 testes em helpers críticos (`whatsapp`, `format-duration`, `safe-redirect`)
+
+### Captação & LGPD (PRs #66 a #68)
+3 frentes de captação implementadas em PRs encadeadas:
+- **PR #66 — Cookie consent + LGPD foundation**:
+  - `src/lib/cookie-consent.ts` + `src/lib/use-cookie-consent.ts` (hook via `useSyncExternalStore`)
+  - `<CookieBanner>` Client component bottom-fixed (esconde em `/admin/*`)
+  - 3 categorias: essential (sempre) / analytics / retargeting. Cookie `nautitour_consent` Max-Age 6 meses
+  - **GA4 refatorado**: só carrega se `analytics === true`. Reage dinamicamente via evento `cookie-consent-changed`
+  - `/cookie-preferences` (toggles iOS-style) + seção 6 em `/politica-de-privacidade`
+  - Link "Preferências de cookies" no Footer
+- **PR #67 — Microsoft Clarity** (PR encadeada):
+  - `<MicrosoftClarity>` gated por consent (idêntico pattern do GA4)
+  - CSP atualizado: `script-src` + `connect-src` ganham `https://www.clarity.ms` + `https://c.bing.com`
+  - No-op silencioso se `NEXT_PUBLIC_CLARITY_ID` ausente
+- **PR #68 — Lead recapture** (independente):
+  - **Migration 022**: RPC `create_lead_invitation(p_email, p_full_name?, p_phone?, p_source?)` SECURITY DEFINER + UPSERT customer + idempotência (reusa invitation ativa) + index parcial
+  - Server action `captureLeadAction` com rate limit `leadCaptureLimiter` (10/min/IP)
+  - `onBlur` no email do CheckoutForm dispara captura fire-and-forget (dedup via useRef)
+  - **Out of scope**: envio efetivo de email "complete sua reserva" depende de PR-Final (Resend domain verificado)
+
+### Galeria de fotos (PR #71)
+- `src/components/PhotoGallery.tsx` (~210 linhas) — carousel scroll-snap horizontal + lightbox custom fullscreen
+- Lightbox: ESC + setas teclado + swipe mobile + counter + body overflow lock
+- `src/lib/photo-gallery.ts` — 4 curadorias estáticas (Home 12, Passeio Escuna 15, Passeio Lancha 12, Locação 14)
+- Aproveita todas as ~45 fotos de `public/images/photos/{aerea, buzios, clientes, drinks-bordo, equipe, escuna, ilhas}/`
+- Inserido em home (entre WhyChooseUs e CTA), passeio-escuna, passeio-lancha, locacao-escuna
+- next/image lazy + sizes responsivos + `.scrollbar-hide` utility no globals.css
+
+### Hotfixes críticos (PRs #70 + #72)
+- **PR #70 — Site quebrado em produção** (mostrava "Algo deu errado" em toda página):
+  - **Root cause**: `getConsent()` chamava `JSON.parse()` retornando objeto novo a cada call. `useSyncExternalStore` detectava mudança de referência infinitamente → loop infinito de re-render → React crash → `global-error.tsx`
+  - **Fix**: cache module-level em `_cachedRaw` + `_cachedConsent`. Compara raw string do cookie; reusa objeto cached se igual
+  - **Regressão test**: 7 novos testes em `cookie-consent.test.ts` (mock manual de `document.cookie`, sem dep jsdom). **22/22 testes passando**
+- **PR #72 — Lightbox X e click-fora não fechavam**:
+  - **Root cause**: container da imagem (`w-full h-full max-w-6xl`) ocupava viewport quase toda, declarado depois dos botões no JSX, renderizava por cima com `onClick stopPropagation`
+  - **Fix**: container com dimensões fixas em vw/vh (`min(92vw, 1100px) × min(78vh, 800px)`) + `pointer-events-none` + `handleOverlayClick` que verifica `e.target === e.currentTarget` + botões ganham `z-10`
+
+### Banner compacto (PR #69)
+- Cookie banner refatorado de 200px altura pra ~52px (desktop) / ~96px (mobile) — não cobre mais CTA "Reserve agora" do hero
+- Layout horizontal: ícone + texto inline + `[Personalizar]` + `[Aceitar]` + `[X]` numa linha em desktop
+
+### Infraestrutura — discussão sobre custos
+Avaliação completa de custos Vercel + Supabase + alternativas (VPS BR, self-host casa). Conclusões:
+- **Custo atual** em escala: Vercel Pro $20 + Supabase Pro $25 = **~R$225/mês** — desprezível pra negócio que vende passeio
+- **Self-host em casa rejeitado** pra produção comercial (TOS ISP residencial, upload assimétrico, uptime 95-98%, LGPD)
+- **VPS BR** (Vultr SP / KingHost) viável a partir de R$80-150/mês mas exige gestão
+- **Recomendação**: stay com Vercel + Supabase Pro; setar billing alerts; só re-avaliar se passar R$500/mês
+
+### Migração Supabase pra `sa-east-1` — **adiada**
+Projeto atual hospedado em `us-west-2` (Oregon) adiciona ~150-200ms de RTT em cada query. Plano detalhado salvo em `/root/.claude/plans/merge-feito-fluxo-de-goofy-valley.md` com:
+- Inventário do estado (14MB DB, 3 pg_cron jobs, 0 storage, 0 vault, só auth email)
+- Custo de criar 2º projeto: $10/mês prorratado (~$0.15 pelas horas de coexistência)
+- Fases: pré (setar `BOOKING_SESSION_SECRET` no Vercel!), criar projeto novo, restore-to-another-project (feature Pro), recriar pg_cron jobs manualmente, rotacionar env vars, smoke test, deletar antigo
+- **Decisão**: adiada — fazer quando houver janela de manutenção em madrugada
+
+### Componentes/libs adicionados nesta sessão
+- `src/lib/cookie-consent.ts` + `src/lib/use-cookie-consent.ts` — consent state com cache estável
+- `src/components/CookieBanner.tsx` + `src/components/MicrosoftClarity.tsx`
+- `src/app/cookie-preferences/` (page + Client form)
+- `src/components/PhotoGallery.tsx` + `src/lib/photo-gallery.ts`
+- `src/app/checkout/[scheduleId]/lead-actions.ts` — captureLeadAction server action
 
 ---
 
@@ -74,6 +151,8 @@ Admin troca o píer de uma saída em `/admin/manifesto/[scheduleId]` via `PierSe
 | 018 | **Embarkation piers** | Tabela + seed + FK em `tour_schedules` + trigger default + RPC `admin_set_embarkation_pier` |
 | 019 | **Schedule edit/delete** | RPCs `admin_update_tour_schedule` + `admin_delete_tour_schedule` (returns affected bookings) |
 | 020 | **Templates CRUD + create schedule** | RPCs CRUD `schedule_templates` + `admin_create_tour_schedule` (saída avulsa) |
+| 021 | **DB hygiene pós-audit** | search_path em `tg_set_default_embarkation_pier` + 10 RLS policies usando `(SELECT auth.uid())` em vez de `auth.uid()` (otimização initplan) + 4 covering indexes em FKs sem index. Fecha 100% dos warnings do Supabase advisor |
+| 022 | **Lead invitation RPC** | `ALTER TABLE lead_invitations ADD COLUMN source` + RPC `create_lead_invitation(p_email, p_full_name?, p_phone?, p_source?)` SECURITY DEFINER, idempotente (reusa invitation ativa por customer). Index parcial em `(customer_id, expires_at) WHERE used_at IS NULL`. GRANT EXECUTE TO anon, authenticated |
 
 Arquivos SQL em `db/migrations/`.
 
@@ -116,6 +195,21 @@ Arquivos SQL em `db/migrations/`.
 | #55 | rebrand `/admin/clientes` + subpath `[id]` (usa `KpiCard`) | ✅ Mergeada |
 | #56 | feat: balão flutuante de WhatsApp global (FAB) | ✅ Mergeada |
 | #57 | fix: Turnstile widget responsivo (size: flexible) | ✅ Mergeada |
+| #58 | PR-AUDIT-1: Google Analytics 4 base | ✅ Mergeada |
+| #59 | PR-AUDIT-1 (parte 2) | ✅ Mergeada |
+| #60 | PR-AUDIT-2: ConfirmModal extraído + refactor de cancelamentos | ✅ Mergeada |
+| #61 | PR-AUDIT-3: trust signals inline + `/termos-de-uso` + prefers-reduced-motion | ✅ Mergeada |
+| #62 | PR-FUP-1/db-hygiene: migration 021 (RLS otimizadas + covering indexes + search_path) — advisor 100% limpo | ✅ Mergeada |
+| #63 | PR-FUP-2: remove fonts Plus_Jakarta+Inter + 14 CSS aliases legacy | ✅ Mergeada |
+| #64 | PR-FUP-3: GitHub Action `ci.yml` (lint+build em PR) + ESLint 9 flat config | ✅ Mergeada |
+| #65 | PR-FUP-4: Vitest + 15 testes em helpers críticos | ✅ Mergeada |
+| #66 | feat: cookie consent banner + GA gate + LGPD (PR 1/3) | ✅ Mergeada |
+| #67 | feat: Microsoft Clarity heatmap + CSP update (PR 3/3) | ✅ Mergeada |
+| #68 | feat: lead recapture com onBlur em checkout (PR 2/3) — migration 022 | ✅ Mergeada |
+| #69 | fix(cookies): compactar banner pra não cobrir CTAs do hero | ✅ Mergeada |
+| #70 | 🚨 hotfix(cookies): cachear getConsent — corrige loop infinito que crashava o site | ✅ Mergeada |
+| #71 | feat: photo gallery com carousel + lightbox em 4 páginas | ✅ Mergeada |
+| #72 | 🚨 hotfix(lightbox): X e click-fora não fechavam — container cobria botões | ✅ Mergeada |
 
 ---
 
@@ -154,12 +248,24 @@ Docs visuais renderizadas:
 
 ## 🚧 O que falta (próximos passos sugeridos)
 
-1. **PR-Final** (swap domínio apex + Resend verificado + lead recapture) — aguarda DNS mpjunior. Única frente que destrava várias coisas: e-mail com domínio próprio, lead recapture pra guests, swap final pro apex `nautitour.com.br`.
+1. **PR-Final** (swap domínio apex + Resend verificado + envio efetivo do email "complete sua reserva") — aguarda DNS mpjunior. Única frente que destrava: e-mail com domínio próprio, disparo de lead recapture (infra já está pronta da PR #68), swap final pro apex `nautitour.com.br`.
+
+2. **🎯 Próximo épico: Blog/Conteúdo (planejado, 3 PRs)** — feature decidida no fim da sessão 17/maio:
+   - Decisões consolidadas: editor **block-based estilo Notion** (BlockNote, fallback Tiptap puro), storage **Supabase Storage** bucket público `blog-images`, features V1: draft/publicado + slug+SEO + categorias + imagem de capa obrigatória
+   - **PR 1 — Foundation**: migration 023 (tabelas `blog_posts` + `blog_categories` + RLS + bucket) + types + helpers em `src/lib/blog.ts` (placeholder atual)
+   - **PR 2 — Admin CRUD + Editor**: `/admin/blog`, `/admin/blog/novo`, `/admin/blog/[id]/editar`, `/admin/blog/categorias` + BlockNoteEditor + upload imagens
+   - **PR 3 — Pública**: `/blog` listagem paginada + `/blog/[slug]` post com SSR + metadata dinâmica + OG image + link header/footer + sitemap.xml
+   - **Não iniciada**: vai começar em sessão nova
+
+3. **Migração Supabase pra `sa-east-1`** — adiada. Plano completo em `/root/.claude/plans/merge-feito-fluxo-de-goofy-valley.md`. Pré-requisito imediato: setar `BOOKING_SESSION_SECRET` no Vercel (pré-migração, evita invalidar sessões de checkout quando trocar service key)
 
 ### Follow-ups menores (qualidade de vida)
+- **Billing alerts** (Vercel + Supabase) — proteção barata pra evitar custo escapar do controle
+- **Sentry rate limit** no SDK pra evitar storm de erros virar custo
 - Refatorar os 5 callers existentes de `wa.me` (`passeio-lancha`, `locacao-escuna`, `reserva/pagamento`, `admin/inquiries`) pra usarem `buildWaUrl()` de `src/lib/whatsapp.ts` — centraliza número canônico
 - Promover CSP report-only pra enforce (`Content-Security-Policy` em vez de `-Report-Only`) após ~2 semanas observando violations em prod
 - Tracking de clicks no FAB de WhatsApp (Sentry breadcrumb) se quiser medir conversão
+- **Microsoft Clarity ID** — criar conta em clarity.microsoft.com + setar `NEXT_PUBLIC_CLARITY_ID` no Vercel (infra da #67 já pronta, só falta a env var)
 
 ---
 
