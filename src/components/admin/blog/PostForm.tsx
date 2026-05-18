@@ -13,6 +13,7 @@ import {
 } from '@/app/admin/blog/actions';
 import { slugify } from '@/lib/blog';
 import CoverImageUpload from './CoverImageUpload';
+import EditorErrorBoundary from './EditorErrorBoundary';
 
 // BlockNote roda só client-side e tem deps grandes — lazy load pra não bloquear navegação
 const BlockNoteEditor = dynamic(() => import('./BlockNoteEditor'), {
@@ -71,6 +72,7 @@ export default function PostForm({ initial, categories, mode }: Props) {
   const [seoDescription, setSeoDescription] = useState(initial.seoDescription);
   const [ogImageUrl, setOgImageUrl] = useState(initial.ogImageUrl);
   const [publishedAt, setPublishedAt] = useState(initial.publishedAt);
+  const [editorKey, setEditorKey] = useState(0);
 
   // initialContent é capturado uma vez — BlockNote não rerenderiza por mudança de prop
   const initialEditorContent = useMemo(() => initial.content, [initial.content]);
@@ -254,10 +256,12 @@ export default function PostForm({ initial, categories, mode }: Props) {
             <label className="block text-xs font-medium text-[var(--color-charcoal-600)] mb-1">
               Conteúdo
             </label>
-            <BlockNoteEditor
-              initialContent={initialEditorContent}
-              onChange={setContent}
-            />
+            <EditorErrorBoundary key={editorKey} onReset={() => setEditorKey((k) => k + 1)}>
+              <BlockNoteEditor
+                initialContent={initialEditorContent}
+                onChange={setContent}
+              />
+            </EditorErrorBoundary>
           </div>
         </div>
 
