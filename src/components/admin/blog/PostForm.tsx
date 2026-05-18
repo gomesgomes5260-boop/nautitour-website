@@ -15,8 +15,8 @@ import { slugify } from '@/lib/blog';
 import CoverImageUpload from './CoverImageUpload';
 import EditorErrorBoundary from './EditorErrorBoundary';
 
-// BlockNote roda só client-side e tem deps grandes — lazy load pra não bloquear navegação
-const BlockNoteEditor = dynamic(() => import('./BlockNoteEditor'), {
+// TipTap roda só client-side — lazy load pra não bloquear bundle inicial.
+const RichTextEditor = dynamic(() => import('./RichTextEditor'), {
   ssr: false,
   loading: () => (
     <div className="rounded-lg border border-[var(--color-charcoal-200)] bg-white p-8 text-center text-sm text-[var(--color-charcoal-500)]">
@@ -257,7 +257,7 @@ export default function PostForm({ initial, categories, mode }: Props) {
               Conteúdo
             </label>
             <EditorErrorBoundary key={editorKey} onReset={() => setEditorKey((k) => k + 1)}>
-              <BlockNoteEditor
+              <RichTextEditor
                 initialContent={initialEditorContent}
                 onChange={setContent}
               />
