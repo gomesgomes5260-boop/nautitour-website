@@ -35,6 +35,98 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          category_id: string | null
+          content: Json
+          cover_image_alt: string | null
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          og_image_url: string | null
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          category_id?: string | null
+          content?: Json
+          cover_image_alt?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          og_image_url?: string | null
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          category_id?: string | null
+          content?: Json
+          cover_image_alt?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          og_image_url?: string | null
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "blog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_events: {
         Row: {
           actor_user_id: string | null
@@ -614,22 +706,22 @@ export type Database = {
       }
       admin_create_schedule_template: {
         Args: {
+          p_capacity: number
+          p_departure_time: string
+          p_price_cents?: number
           p_tour_id: string
           p_weekday: number
-          p_departure_time: string
-          p_capacity: number
-          p_price_cents?: number
         }
         Returns: string
       }
       admin_create_tour_schedule: {
         Args: {
-          p_tour_id: string
-          p_departure_at: string
           p_capacity: number
-          p_price_cents?: number
+          p_departure_at: string
           p_pier_slug?: string
+          p_price_cents?: number
           p_status?: string
+          p_tour_id: string
         }
         Returns: string
       }
@@ -665,12 +757,12 @@ export type Database = {
       }
       admin_update_schedule_template: {
         Args: {
+          p_active?: boolean
+          p_capacity?: number
+          p_departure_time?: string
+          p_price_cents?: number
           p_template_id: string
           p_weekday?: number
-          p_departure_time?: string
-          p_capacity?: number
-          p_price_cents?: number
-          p_active?: boolean
         }
         Returns: undefined
       }
