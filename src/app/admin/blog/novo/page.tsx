@@ -1,7 +1,22 @@
 import { createAdminClient } from '@/lib/supabase/admin';
-import PostForm, { makeEmptyInitial, type Category } from '@/components/admin/blog/PostForm';
+import PostForm, { type Category, type PostFormInitial } from '@/components/admin/blog/PostForm';
 
 export const dynamic = 'force-dynamic';
+
+const EMPTY_INITIAL: PostFormInitial = {
+  title: '',
+  slug: '',
+  excerpt: '',
+  content: [],
+  coverImageUrl: null,
+  coverImageAlt: '',
+  categoryId: null,
+  status: 'draft',
+  seoTitle: '',
+  seoDescription: '',
+  ogImageUrl: null,
+  publishedAt: null,
+};
 
 export default async function AdminBlogNovoPage() {
   const admin = createAdminClient();
@@ -12,5 +27,5 @@ export default async function AdminBlogNovoPage() {
 
   const categories: Category[] = (data ?? []).map((c) => ({ id: c.id, name: c.name }));
 
-  return <PostForm mode="create" initial={makeEmptyInitial()} categories={categories} />;
+  return <PostForm mode="create" initial={EMPTY_INITIAL} categories={categories} />;
 }
