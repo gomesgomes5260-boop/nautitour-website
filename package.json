@@ -11,9 +11,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@blocknote/core": "^0.51.0",
-        "@blocknote/mantine": "^0.51.0",
-        "@blocknote/react": "^0.51.0",
+        "@blocknote/core": "^0.50.0",
+        "@blocknote/mantine": "^0.50.0",
+        "@blocknote/react": "^0.50.0",
         "@sentry/nextjs": "^10.53.0",
         "@supabase/ssr": "^0.10.3",
         "@supabase/supabase-js": "^2.49.0",
