@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import { createClient } from '@/lib/supabase/server';
 import { getPostBySlug, deriveExcerpt } from '@/lib/blog';
-import { BlockNoteRenderer } from '@/components/blog/BlockNoteRenderer';
+import { RichTextRenderer } from '@/components/blog/RichTextRenderer';
 
 export const dynamic = 'force-dynamic';
 
@@ -164,7 +164,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
           </Container>
 
           <Container className="py-10 sm:py-14 md:py-16 max-w-3xl">
-            <BlockNoteRenderer content={post.content} />
+            <RichTextRenderer content={post.content} />
           </Container>
         </article>
 

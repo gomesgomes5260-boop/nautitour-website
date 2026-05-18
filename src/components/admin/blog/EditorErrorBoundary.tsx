@@ -21,7 +21,7 @@ export default class EditorErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[BlockNoteEditor] crashed:', error, info);
+    console.error('[RichTextEditor] crashed:', error, info);
     this.setState({ info });
   }
 

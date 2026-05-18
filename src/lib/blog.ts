@@ -45,51 +45,45 @@ export function resolveBlogImageUrl(pathOrUrl: string): string {
   return `${base}/storage/v1/object/public/${BLOG_IMAGES_BUCKET}/${path}`;
 }
 
-// Extrai um excerpt textual simples de um content BlockNote (array de blocos).
-// V1: percorre os blocos top-level, concatena texto, trunca em `maxLen`.
-// Não tenta renderizar formatação — só preview pro card e meta description.
-const BLOCKNOTE_TEXT_KEYS = ['text', 'content'] as const;
-
-type BlockNoteInlineLike = { type?: string; text?: string };
-type BlockNoteBlockLike = {
+// Extrai um excerpt textual simples de um content TipTap (ProseMirror JSON).
+// Aceita tanto { type:'doc', content:[...] } quanto array cru de blocos
+// (legado de tentativa anterior com BlockNote). Percorre recursivamente
+// concatenando node.text. Não renderiza formatação — só preview pro card
+// e meta description.
+type ProseMirrorNodeLike = {
   type?: string;
-  content?: BlockNoteInlineLike[] | string | unknown;
-  children?: BlockNoteBlockLike[];
+  text?: string;
+  content?: ProseMirrorNodeLike[];
 };
 
 export function deriveExcerpt(
   content: Database['public']['Tables']['blog_posts']['Row']['content'],
   maxLen: number = 200
 ): string {
-  if (!Array.isArray(content)) return '';
-  const out: string[] = [];
+  let nodes: ProseMirrorNodeLike[] = [];
+  if (Array.isArray(content)) {
+    nodes = content as ProseMirrorNodeLike[];
+  } else if (
+    content &&
+    typeof content === 'object' &&
+    (content as ProseMirrorNodeLike).type === 'doc' &&
+    Array.isArray((content as ProseMirrorNodeLike).content)
+  ) {
+    nodes = (content as ProseMirrorNodeLike).content!;
+  } else {
+    return '';
+  }
 
-  const visit = (node: unknown): void => {
+  const out: string[] = [];
+  const visit = (node: ProseMirrorNodeLike): void => {
     if (out.join(' ').length >= maxLen) return;
     if (!node || typeof node !== 'object') return;
-    const block = node as BlockNoteBlockLike;
-    const inline = block.content;
-    if (typeof inline === 'string') {
-      out.push(inline);
-    } else if (Array.isArray(inline)) {
-      for (const piece of inline) {
-        if (piece && typeof piece === 'object') {
-          for (const key of BLOCKNOTE_TEXT_KEYS) {
-            const value = (piece as Record<string, unknown>)[key];
-            if (typeof value === 'string') {
-              out.push(value);
-              break;
-            }
-          }
-        }
-      }
-    }
-    if (Array.isArray(block.children)) {
-      for (const child of block.children) visit(child);
+    if (typeof node.text === 'string') out.push(node.text);
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) visit(child);
     }
   };
-
-  for (const block of content) visit(block);
+  for (const node of nodes) visit(node);
 
   const joined = out.join(' ').replace(/\s+/g, ' ').trim();
   if (joined.length <= maxLen) return joined;
