@@ -53,25 +53,6 @@ type Props = {
   mode: 'create' | 'edit';
 };
 
-const EMPTY_INITIAL: PostFormInitial = {
-  title: '',
-  slug: '',
-  excerpt: '',
-  content: [],
-  coverImageUrl: null,
-  coverImageAlt: '',
-  categoryId: null,
-  status: 'draft',
-  seoTitle: '',
-  seoDescription: '',
-  ogImageUrl: null,
-  publishedAt: null,
-};
-
-export function makeEmptyInitial(): PostFormInitial {
-  return { ...EMPTY_INITIAL };
-}
-
 export default function PostForm({ initial, categories, mode }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
