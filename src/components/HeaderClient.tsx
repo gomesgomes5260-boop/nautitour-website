@@ -25,6 +25,7 @@ const navLinks = [
   { href: '/passeio-escuna', label: 'Passeio de Escuna' },
   { href: '/passeio-lancha', label: 'Passeio de Lancha' },
   { href: '/locacao-escuna', label: 'Locação Privativa' },
+  { href: '/blog', label: 'Blog' },
 ];
 
 export default function HeaderClient({ user, isAdmin = false }: Props) {
