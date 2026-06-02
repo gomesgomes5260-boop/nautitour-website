@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Image from 'next/image';
-import { ShieldCheck, Wine, Globe2, BadgeCheck, Anchor, Landmark } from 'lucide-react';
+import { ShieldCheck, Wine, Globe2, BadgeCheck, Anchor, Landmark, Award } from 'lucide-react';
 import Container from './Container';
 
 type Feature = {
@@ -47,6 +47,9 @@ export default function WhyChooseUs() {
   const prefeituraLogo = hasLogo('prefeitura-buzios.png')
     ? '/images/logos/certifications/prefeitura-buzios.png'
     : null;
+  const turistaSeguroLogo = hasLogo('turista-seguro.png')
+    ? '/images/logos/certifications/turista-seguro.png'
+    : null;
 
   return (
     <section className="bg-white py-16 sm:py-20 md:py-28">
@@ -86,7 +89,7 @@ export default function WhyChooseUs() {
           <p className="text-center text-[var(--color-charcoal-700)] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] mb-8">
             Certificados pelos principais órgãos reguladores
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12 md:gap-16">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-10">
             <CertBadge
               logoSrc={cadasturLogo}
               logoAlt="Logo do Cadastur"
@@ -107,6 +110,13 @@ export default function WhyChooseUs() {
               FallbackIcon={Landmark}
               label="Prefeitura de Búzios"
               sublabel="Registrada no município"
+            />
+            <CertBadge
+              logoSrc={turistaSeguroLogo}
+              logoAlt="Logo do programa Turista Seguro"
+              FallbackIcon={Award}
+              label="Turista Seguro"
+              sublabel="Selo de proteção ao turista"
             />
           </div>
         </div>
