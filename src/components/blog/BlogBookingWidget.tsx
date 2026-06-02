@@ -22,16 +22,6 @@ type Props = {
   postTitle: string;
 };
 
-const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-});
-
-function formatPrice(cents: number | null | undefined) {
-  if (cents == null) return null;
-  return PRICE_FORMATTER.format(cents / 100);
-}
-
 export default function BlogBookingWidget({
   escunaSchedules,
   escunaPriceCents,
@@ -74,7 +64,7 @@ export default function BlogBookingWidget({
       {tour === 'escuna' ? (
         <>
           <div className="p-5 sm:p-6 border-b border-[var(--color-charcoal-100)]">
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-3">
               <Star
                 size={13}
                 className="fill-[var(--color-red-600)] text-[var(--color-red-600)]"
@@ -86,14 +76,11 @@ export default function BlogBookingWidget({
                 · 280+ passageiros
               </span>
             </div>
-            <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-[var(--color-charcoal-500)] mb-0.5">
-              A partir de
-            </p>
-            <p className="font-sans text-2xl sm:text-3xl font-black text-[var(--color-red-600)] leading-tight">
-              {formatPrice(escunaPriceCents) ?? 'Sob consulta'}
-              <span className="text-sm font-normal text-[var(--color-charcoal-500)]">
-                {' '}/ pessoa
-              </span>
+            <h3 className="font-display text-[var(--color-charcoal-900)] text-xl sm:text-2xl font-semibold leading-tight">
+              Reserve seu passeio de escuna.
+            </h3>
+            <p className="text-sm text-[var(--color-charcoal-600)] leading-relaxed mt-2">
+              Pix ou cartão, confirmação na hora.
             </p>
           </div>
           <div className="p-5 sm:p-6">

@@ -20,16 +20,6 @@ type Props = {
   postTitle: string;
 };
 
-const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-});
-
-function formatPrice(cents: number | null | undefined) {
-  if (cents == null) return null;
-  return PRICE_FORMATTER.format(cents / 100);
-}
-
 export default function BlogMobileBookingCta(props: Props) {
   const [open, setOpen] = useState(false);
 
@@ -42,8 +32,6 @@ export default function BlogMobileBookingCta(props: Props) {
     };
   }, [open]);
 
-  const price = formatPrice(props.escunaPriceCents);
-
   return (
     <>
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[var(--color-charcoal-100)] shadow-[0_-6px_18px_rgba(0,0,0,0.08)]">
@@ -53,16 +41,11 @@ export default function BlogMobileBookingCta(props: Props) {
           className="flex items-center justify-between gap-3 w-full px-4 py-3"
         >
           <span className="flex flex-col items-start">
-            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-charcoal-500)] leading-none">
-              A partir de
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-red-600)] leading-none">
+              Reserve agora
             </span>
-            <span className="font-sans text-base font-black text-[var(--color-red-600)] leading-tight mt-0.5">
-              {price ?? 'Sob consulta'}
-              {price && (
-                <span className="text-xs font-normal text-[var(--color-charcoal-500)]">
-                  {' '}/ pessoa
-                </span>
-              )}
+            <span className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] leading-tight mt-1">
+              Escolha sua data
             </span>
           </span>
           <span className="flex items-center gap-2 rounded-xl bg-[var(--color-red-600)] text-white text-sm font-semibold py-2.5 px-4">
