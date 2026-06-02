@@ -1,4 +1,5 @@
-import { ShieldCheck, Wine, Globe2, BadgeCheck, Anchor } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, Wine, Globe2 } from 'lucide-react';
 import Container from './Container';
 
 type Feature = {
@@ -67,21 +68,24 @@ export default function WhyChooseUs() {
           <p className="text-center text-[var(--color-charcoal-700)] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] mb-8">
             Certificados pelos principais órgãos reguladores
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 md:gap-14">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12 md:gap-16">
             <CertBadge
-              Icon={BadgeCheck}
+              logoSrc="/images/logos/certifications/cadastur.png"
+              logoAlt="Logo do Cadastur"
               label="Cadastur"
               sublabel="Cadastro Ministério do Turismo"
             />
             <CertBadge
-              Icon={Anchor}
+              logoSrc="/images/logos/certifications/marinha.png"
+              logoAlt="Brasão da Marinha do Brasil"
               label="Marinha do Brasil"
               sublabel="Embarcação habilitada"
             />
             <CertBadge
-              Icon={ShieldCheck}
-              label="Convenção Búzios"
-              sublabel="Convenção Coletiva 2025"
+              logoSrc="/images/logos/certifications/prefeitura-buzios.png"
+              logoAlt="Brasão da Prefeitura de Armação dos Búzios"
+              label="Prefeitura de Búzios"
+              sublabel="Registrada no município"
             />
           </div>
         </div>
@@ -91,19 +95,27 @@ export default function WhyChooseUs() {
 }
 
 function CertBadge({
-  Icon,
+  logoSrc,
+  logoAlt,
   label,
   sublabel,
 }: {
-  Icon: typeof ShieldCheck;
+  logoSrc: string;
+  logoAlt: string;
   label: string;
   sublabel: string;
 }) {
   return (
-    <div className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-[var(--color-charcoal-100)] bg-white min-w-[200px]">
-      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-red-50)] text-[var(--color-red-600)] shrink-0">
-        <Icon size={18} />
-      </span>
+    <div className="flex items-center gap-4 px-5 py-3 rounded-2xl border border-[var(--color-charcoal-100)] bg-white min-w-[220px]">
+      <div className="relative w-14 h-14 shrink-0">
+        <Image
+          src={logoSrc}
+          alt={logoAlt}
+          fill
+          sizes="56px"
+          className="object-contain"
+        />
+      </div>
       <div>
         <p className="text-sm font-bold text-[var(--color-charcoal-900)] leading-tight">
           {label}
