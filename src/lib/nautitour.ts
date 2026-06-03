@@ -68,6 +68,13 @@ export class NautitourSyncError extends Error {
 const TIMEOUT_MS = 10_000;
 
 function getConfig() {
+  // Feature flag explícita pra desligar em Preview do Vercel sem precisar
+  // remover NAUTITOUR_API_KEY (deploys de PR rodam contra o painel de
+  // produção; sem essa flag, todo pagamento de teste viraria booking real).
+  // Aceita "false", "0", "off" — case insensitive — pra desligar.
+  const flag = process.env.NAUTITOUR_SYNC_ENABLED?.trim().toLowerCase();
+  if (flag === 'false' || flag === '0' || flag === 'off') return null;
+
   const url = process.env.NAUTITOUR_API_URL;
   const key = process.env.NAUTITOUR_API_KEY;
   if (!url || !key) return null;

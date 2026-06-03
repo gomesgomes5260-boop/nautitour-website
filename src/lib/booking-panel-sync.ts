@@ -45,15 +45,23 @@ export async function syncBookingToPanel(
     return { ok: true, skipped: 'disabled' };
   }
 
+  // Barreira de idempotência dupla. Checamos os dois sinais que são
+  // setados juntos no UPDATE pós-sync:
+  //   - nautitour_booking_id: cuid retornado pelo painel
+  //   - nautitour_synced_at:  timestamp de conclusão da transação
+  // Qualquer um dos dois marca o booking como já sincado. Cobre:
+  //   1. Webhook duplicado do Pagar.me (também pego pela RPC v2)
+  //   2. Retry manual de admin chamando syncBookingToPanel direto
+  //   3. Cron de retry futuro pegando bookings com sync_failed_at
   const { data: existing, error: existingErr } = await admin
     .from('bookings')
-    .select('nautitour_booking_id, nautitour_code, nautitour_ticket_url')
+    .select('nautitour_booking_id, nautitour_code, nautitour_ticket_url, nautitour_synced_at')
     .eq('id', bookingId)
     .maybeSingle();
   if (existingErr) {
     return { ok: false, error: `lookup failed: ${existingErr.message}` };
   }
-  if (existing?.nautitour_booking_id) {
+  if (existing?.nautitour_synced_at || existing?.nautitour_booking_id) {
     return {
       ok: true,
       skipped: 'already_synced',
