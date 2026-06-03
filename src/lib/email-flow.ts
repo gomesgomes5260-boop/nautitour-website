@@ -18,6 +18,9 @@ export async function sendBookingConfirmationFor(
       passenger_count,
       total_cents,
       currency,
+      nautitour_booking_id,
+      nautitour_code,
+      nautitour_ticket_url,
       tour:tours ( name ),
       schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
       customer:customers ( email, full_name )
@@ -40,6 +43,9 @@ export async function sendBookingConfirmationFor(
     passenger_count: number;
     total_cents: number;
     currency: string;
+    nautitour_booking_id: string | null;
+    nautitour_code: string | null;
+    nautitour_ticket_url: string | null;
     tour: { name: string } | { name: string }[] | null;
     schedule:
       | { departure_at: string; pier: PierJoined | PierJoined[] | null }
@@ -67,6 +73,24 @@ export async function sendBookingConfirmationFor(
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
 
+  // Gera o QR de embarque a partir do nautitour_booking_id (cuid do painel)
+  // — esse é o valor que o scanner /admin/scan no painel decodifica.
+  // Se sync com painel falhou ou está desabilitado, panelQrDataUri fica null
+  // e o email continua sendo enviado sem QR (fallback graceful).
+  let panelQrDataUri: string | null = null;
+  if (b.nautitour_booking_id) {
+    try {
+      const QRCode = await import('qrcode');
+      panelQrDataUri = await QRCode.toDataURL(b.nautitour_booking_id, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 360,
+      });
+    } catch (err) {
+      console.error('[email-flow] failed to generate QR', err);
+    }
+  }
+
   const { subject, html, text } = renderBookingConfirmation({
     bookingCode: b.booking_code,
     customerName: customer.full_name ?? '',
@@ -83,6 +107,9 @@ export async function sendBookingConfirmationFor(
           feeCents: pier.fee_cents,
         }
       : null,
+    panelCode: b.nautitour_code,
+    panelTicketUrl: b.nautitour_ticket_url,
+    panelQrDataUri,
   });
 
   return sendEmail({ to: customer.email, subject, html, text });
