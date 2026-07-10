@@ -791,6 +791,13 @@ export type Database = {
         Args: { p_booking_id: string; p_reason: string }
         Returns: undefined
       }
+      admin_check_in_booking: {
+        Args: { p_booking_code: string }
+        Returns: {
+          booking_id: string
+          first_checkin: boolean
+        }[]
+      }
       admin_convert_inquiry_to_booking: {
         Args: {
           p_departure_at: string
