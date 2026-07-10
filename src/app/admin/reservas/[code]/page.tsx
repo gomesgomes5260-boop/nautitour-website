@@ -86,6 +86,12 @@ export default async function AdminBookingDetailPage({
       expires_at,
       confirmation_email_sent_at,
       notes,
+      amount_paid_cents,
+      manual_payment_method,
+      needs_pickup,
+      pickup_address,
+      pickup_room,
+      seller:sellers ( full_name, role ),
       tour:tours ( name, slug ),
       schedule:tour_schedules ( id, departure_at, capacity, status ),
       customer:customers ( full_name, email, phone, cpf ),
@@ -109,6 +115,15 @@ export default async function AdminBookingDetailPage({
     expires_at: string | null;
     confirmation_email_sent_at: string | null;
     notes: string | null;
+    amount_paid_cents: number;
+    manual_payment_method: string | null;
+    needs_pickup: boolean;
+    pickup_address: string | null;
+    pickup_room: string | null;
+    seller:
+      | { full_name: string; role: string }
+      | { full_name: string; role: string }[]
+      | null;
     tour: { name: string; slug: string } | { name: string; slug: string }[] | null;
     schedule:
       | { id: string; departure_at: string; capacity: number; status: string }
@@ -135,6 +150,7 @@ export default async function AdminBookingDetailPage({
     }>;
   };
   const b = data as unknown as Joined;
+  const seller = Array.isArray(b.seller) ? b.seller[0] : b.seller;
   const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
   const schedule = Array.isArray(b.schedule) ? b.schedule[0] : b.schedule;
   const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
@@ -214,6 +230,34 @@ export default async function AdminBookingDetailPage({
               {b.confirmation_email_sent_at && (
                 <Field label="E-mail enviado em">
                   {DATETIME.format(new Date(b.confirmation_email_sent_at))}
+                </Field>
+              )}
+              {seller && (
+                <Field label="Vendedor">
+                  {seller.full_name}
+                  {seller.role === 'agency' && (
+                    <span className="ml-2 text-xs text-[var(--color-charcoal-500)]">(agência)</span>
+                  )}
+                </Field>
+              )}
+              {seller && (
+                <Field label="Sinal recebido (manual)">
+                  {PRICE.format(b.amount_paid_cents / 100)}
+                  {b.manual_payment_method && (
+                    <span className="ml-2 text-xs text-[var(--color-charcoal-500)]">
+                      via {b.manual_payment_method}
+                    </span>
+                  )}
+                </Field>
+              )}
+              {b.needs_pickup && (
+                <Field label="Pickup">
+                  {b.pickup_address ?? '—'}
+                  {b.pickup_room && (
+                    <span className="ml-2 text-xs text-[var(--color-charcoal-500)]">
+                      quarto {b.pickup_room}
+                    </span>
+                  )}
                 </Field>
               )}
               {b.notes && (
