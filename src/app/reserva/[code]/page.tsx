@@ -83,9 +83,6 @@ export default async function ReservaPage({
       currency,
       created_at,
       expires_at,
-      nautitour_booking_id,
-      nautitour_code,
-      nautitour_ticket_url,
       tour:tours ( name, slug ),
       schedule:tour_schedules ( departure_at, pier:embarkation_piers ( slug, name, fee_cents, address, notes ) ),
       customer:customers ( email, full_name, auth_user_id )
@@ -105,9 +102,6 @@ export default async function ReservaPage({
     currency: string;
     created_at: string;
     expires_at: string | null;
-    nautitour_booking_id: string | null;
-    nautitour_code: string | null;
-    nautitour_ticket_url: string | null;
     tour: { name: string; slug: string } | { name: string; slug: string }[] | null;
     schedule:
       | {
@@ -171,13 +165,13 @@ export default async function ReservaPage({
     hasPaidPayment = !!paid;
   }
 
-  // QR de embarque: gera data URI server-side a partir do cuid do painel
-  // Nautitour. O scanner /admin/scan do painel decodifica esse mesmo cuid.
-  let panelQrDataUri: string | null = null;
-  if (b.nautitour_booking_id) {
+  // QR de embarque codifica o booking_code — só aparece com a reserva paga
+  // (o check-in em /admin/scan recusa qualquer outro status de toda forma).
+  let qrDataUri: string | null = null;
+  if (b.status === 'confirmed' || b.status === 'completed') {
     try {
       const QRCode = await import('qrcode');
-      panelQrDataUri = await QRCode.toDataURL(b.nautitour_booking_id, {
+      qrDataUri = await QRCode.toDataURL(b.booking_code, {
         errorCorrectionLevel: 'M',
         margin: 1,
         width: 480,
@@ -187,9 +181,7 @@ export default async function ReservaPage({
     }
   }
 
-  // Painel é fonte de verdade do código exposto ao cliente. Fallback graceful.
-  const displayCode = b.nautitour_code?.trim() || b.booking_code;
-  const showInternalCode = !!b.nautitour_code && b.nautitour_code !== b.booking_code;
+  const displayCode = b.booking_code;
 
   return (
     <>
@@ -212,14 +204,7 @@ export default async function ReservaPage({
           >
             {displayCode}
           </h1>
-          <p className="text-[var(--color-charcoal-500)] mb-8">
-            {tour?.name}
-            {showInternalCode && (
-              <span className="block text-xs mt-1 text-[var(--color-charcoal-400)]">
-                Ref. interna: <span className="font-mono">{b.booking_code}</span>
-              </span>
-            )}
-          </p>
+          <p className="text-[var(--color-charcoal-500)] mb-8">{tour?.name}</p>
 
           <div className={`rounded-2xl border p-5 mb-6 ${TONE_CLASSES[status.tone]}`}>
             <div className="flex items-center gap-2">
@@ -237,29 +222,25 @@ export default async function ReservaPage({
             )}
           </div>
 
-          {panelQrDataUri && (
+          {qrDataUri && (
             <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8 mb-8 text-center">
               <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-3">
                 Apresente este QR no embarque
               </p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={panelQrDataUri}
+                src={qrDataUri}
                 alt={`QR code de embarque para ${displayCode}`}
                 width={240}
                 height={240}
                 className="mx-auto block"
               />
-              {b.nautitour_ticket_url && (
-                <a
-                  href={b.nautitour_ticket_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 mt-5 rounded-xl bg-[var(--color-red-600)] text-white text-sm font-semibold py-2.5 px-5 hover:bg-[var(--color-red-700)] transition-colors"
-                >
-                  Baixar ticket completo (PDF)
-                </a>
-              )}
+              <Link
+                href={`/ticket/${b.booking_code}`}
+                className="inline-flex items-center gap-2 mt-5 rounded-xl bg-[var(--color-red-600)] text-white text-sm font-semibold py-2.5 px-5 hover:bg-[var(--color-red-700)] transition-colors"
+              >
+                Ver ticket de embarque
+              </Link>
             </div>
           )}
 

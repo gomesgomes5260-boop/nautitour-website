@@ -127,16 +127,6 @@ export async function POST(request: Request) {
       );
       if (error) throw error;
       if (didSend === true) {
-        // 1. Sincronizar com painel webreservas.xyz ANTES do email — assim
-        //    o email já sai com o nautitour_code do painel + QR de embarque.
-        //    Idempotente: helper retorna no-op se já sincronizado.
-        //    Falha de painel é gravada na booking + booking_events; nunca
-        //    bloqueia o email (PIX foi pago, cliente precisa da confirmação).
-        const { syncBookingToPanel } = await import('@/lib/booking-panel-sync');
-        await syncBookingToPanel(admin, bookingId, { paymentMethod }).catch((e) =>
-          console.error('[pagarme webhook] panel sync threw', e)
-        );
-
         const { sendBookingConfirmationFor } = await import('@/lib/email-flow');
         await sendBookingConfirmationFor(admin, bookingId).catch((e) =>
           console.error('[pagarme webhook] email send failed', e)
