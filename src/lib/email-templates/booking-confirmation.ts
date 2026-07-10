@@ -13,16 +13,13 @@ export type BookingConfirmationPayload = {
     feeCents: number;
   } | null;
   /**
-   * Painel Nautitour (webreservas.xyz). Quando presente:
-   *  - panelCode vira o número de reserva exposto ao cliente (NTR-...)
-   *  - panelQrDataUri renderiza o QR de embarque (value = panelBookingId)
-   *  - panelTicketUrl é um link "Ver ticket completo"
-   * Quando ausente (painel offline ou falha de sync), fallback pro
-   * booking_code próprio do site sem QR.
+   * Ticket de embarque interno (/ticket/[code]):
+   *  - qrDataUri renderiza o QR de embarque (value = booking_code)
+   *  - ticketUrl é o link "Ver ticket de embarque"
+   * Quando qrDataUri ausente (falha de geração), o email sai sem QR.
    */
-  panelCode?: string | null;
-  panelTicketUrl?: string | null;
-  panelQrDataUri?: string | null;
+  ticketUrl?: string | null;
+  qrDataUri?: string | null;
 };
 
 function formatBRL(cents: number, currency: string): string {
@@ -70,9 +67,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
   const safeName = escapeHtml(p.customerName || 'Cliente');
   const safeTour = escapeHtml(p.tourName);
 
-  // Painel Nautitour é a fonte de verdade pra cliente quando disponível.
-  // Fallback graceful: se sync falhou, usa booking_code do site (sem QR).
-  const displayCode = p.panelCode?.trim() || p.bookingCode;
+  const displayCode = p.bookingCode;
   const safeCode = escapeHtml(displayCode);
   const bookingUrl = `${p.siteUrl.replace(/\/$/, '')}/reserva/${encodeURIComponent(p.bookingCode)}`;
 
@@ -105,7 +100,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
                 <p style="margin:0;font-size:13px;color:#555;">Código da reserva</p>
                 <p style="margin:6px 0 0;font-size:24px;font-weight:bold;color:#D90006;letter-spacing:1px;">${safeCode}</p>
               </div>
-              ${p.panelQrDataUri ? renderQrBlock(p.panelQrDataUri, p.panelTicketUrl ?? null) : ''}
+              ${p.qrDataUri ? renderQrBlock(p.qrDataUri, p.ticketUrl ?? null) : ''}
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:16px 0;">
                 <tr>
                   <td style="padding:8px 0;border-bottom:1px solid #eee;font-size:14px;color:#555;">Tour</td>
@@ -177,11 +172,11 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 
   textParts.push('');
   textParts.push(`Detalhes: ${bookingUrl}`);
-  if (p.panelTicketUrl) {
-    textParts.push(`Ticket completo (PDF): ${p.panelTicketUrl}`);
+  if (p.ticketUrl) {
+    textParts.push(`Ticket de embarque: ${p.ticketUrl}`);
   }
-  if (p.panelQrDataUri) {
-    textParts.push('Apresente o QR code anexo no embarque.');
+  if (p.qrDataUri) {
+    textParts.push('Apresente o QR code do ticket no embarque.');
   }
   textParts.push('');
   textParts.push('Nautitour — Armação dos Búzios');
@@ -194,7 +189,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 function renderQrBlock(qrDataUri: string, ticketUrl: string | null): string {
   const ticketCta = ticketUrl
     ? `<p style="margin:12px 0 0;font-size:13px;">
-         <a href="${ticketUrl}" style="color:#096EAB;text-decoration:underline;font-weight:bold;">Baixar ticket completo (PDF)</a>
+         <a href="${ticketUrl}" style="color:#096EAB;text-decoration:underline;font-weight:bold;">Ver ticket de embarque</a>
        </p>`
     : '';
   return `
