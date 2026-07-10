@@ -1006,6 +1006,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      seller_create_booking: {
+        Args: {
+          p_amount_paid_cents?: number
+          p_customer_email?: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_manual_payment_method?: string
+          p_needs_pickup?: boolean
+          p_notes?: string
+          p_passengers?: Json
+          p_pickup_address?: string
+          p_pickup_room?: string
+          p_schedule_id: string
+        }
+        Returns: {
+          booking_code: string
+          booking_id: string
+          total_cents: number
+        }[]
+      }
       seller_id_for: { Args: { p_user_id: string }; Returns: string }
     }
     Enums: {
