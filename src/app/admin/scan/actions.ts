@@ -135,7 +135,17 @@ export async function checkInBookingAction(
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return { ok: false, error: 'Falha no check-in.' };
 
+  // Payout de comissão só no PRIMEIRO check-in; nunca bloqueia o embarque
+  // (triggerSellerPayout não lança — falha vira retry em /admin/comissoes).
+  if (row.first_checkin) {
+    const { triggerSellerPayout } = await import('@/lib/seller-payout');
+    await triggerSellerPayout(supabase, row.booking_id).catch((e) =>
+      console.error('[checkInBookingAction] payout error', e)
+    );
+  }
+
   revalidatePath('/admin/reservas');
   revalidatePath('/admin/manifesto');
+  revalidatePath('/admin/comissoes');
   return { ok: true, firstCheckin: row.first_checkin };
 }

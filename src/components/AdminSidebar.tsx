@@ -34,6 +34,7 @@ const NAV: Array<{ href: string; label: string; Icon: typeof LayoutDashboard }> 
   { href: '/admin/inquiries', label: 'Inquiries', Icon: MessageSquare },
   { href: '/admin/clientes', label: 'Clientes', Icon: Users },
   { href: '/admin/vendedores', label: 'Vendedores', Icon: UserPlus },
+  { href: '/admin/comissoes', label: 'Comissões', Icon: Banknote },
   { href: '/admin/financeiro', label: 'Financeiro', Icon: Banknote },
   { href: '/admin/blog', label: 'Blog', Icon: Newspaper },
   { href: '/admin/config', label: 'Configurações', Icon: Settings },
