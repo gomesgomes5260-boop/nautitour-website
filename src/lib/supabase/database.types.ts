@@ -202,22 +202,30 @@ export type Database = {
       }
       bookings: {
         Row: {
+          amount_paid_cents: number
           booking_code: string
+          checked_in_at: string | null
+          checked_in_by: string | null
           confirmation_email_sent_at: string | null
           created_at: string
           currency: string
           customer_id: string
           expires_at: string | null
           id: string
+          manual_payment_method: string | null
           nautitour_booking_id: string | null
           nautitour_code: string | null
           nautitour_sync_error: string | null
           nautitour_sync_failed_at: string | null
           nautitour_synced_at: string | null
           nautitour_ticket_url: string | null
+          needs_pickup: boolean
           notes: string | null
           passenger_count: number
           payment_link_token: string | null
+          pickup_address: string | null
+          pickup_room: string | null
+          seller_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_cents: number
           tour_id: string
@@ -225,22 +233,30 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid_cents?: number
           booking_code?: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           confirmation_email_sent_at?: string | null
           created_at?: string
           currency?: string
           customer_id: string
           expires_at?: string | null
           id?: string
+          manual_payment_method?: string | null
           nautitour_booking_id?: string | null
           nautitour_code?: string | null
           nautitour_sync_error?: string | null
           nautitour_sync_failed_at?: string | null
           nautitour_synced_at?: string | null
           nautitour_ticket_url?: string | null
+          needs_pickup?: boolean
           notes?: string | null
           passenger_count: number
           payment_link_token?: string | null
+          pickup_address?: string | null
+          pickup_room?: string | null
+          seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents: number
           tour_id: string
@@ -248,22 +264,30 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid_cents?: number
           booking_code?: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           confirmation_email_sent_at?: string | null
           created_at?: string
           currency?: string
           customer_id?: string
           expires_at?: string | null
           id?: string
+          manual_payment_method?: string | null
           nautitour_booking_id?: string | null
           nautitour_code?: string | null
           nautitour_sync_error?: string | null
           nautitour_sync_failed_at?: string | null
           nautitour_synced_at?: string | null
           nautitour_ticket_url?: string | null
+          needs_pickup?: boolean
           notes?: string | null
           passenger_count?: number
           payment_link_token?: string | null
+          pickup_address?: string | null
+          pickup_room?: string | null
+          seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents?: number
           tour_id?: string
@@ -276,6 +300,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
           {
@@ -572,6 +603,56 @@ export type Database = {
             columns: ["tour_id"]
             isOneToOne: false
             referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sellers: {
+        Row: {
+          active: boolean
+          agency_id: string | null
+          created_at: string
+          full_name: string
+          id: string
+          neto_value_cents: number
+          phone: string | null
+          pix_key: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          agency_id?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          neto_value_cents?: number
+          phone?: string | null
+          pix_key?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          agency_id?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          neto_value_cents?: number
+          phone?: string | null
+          pix_key?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sellers_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
         ]
@@ -912,6 +993,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
+      is_seller: { Args: { p_user_id: string }; Returns: boolean }
       mark_booking_payment_failed: {
         Args: {
           p_amount_cents: number
@@ -924,6 +1006,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      seller_id_for: { Args: { p_user_id: string }; Returns: string }
     }
     Enums: {
       booking_status:
