@@ -225,6 +225,7 @@ export type Database = {
           payment_link_token: string | null
           pickup_address: string | null
           pickup_room: string | null
+          reminder_sent_at: string | null
           seller_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_cents: number
@@ -256,6 +257,7 @@ export type Database = {
           payment_link_token?: string | null
           pickup_address?: string | null
           pickup_room?: string | null
+          reminder_sent_at?: string | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents: number
@@ -287,6 +289,7 @@ export type Database = {
           payment_link_token?: string | null
           pickup_address?: string | null
           pickup_room?: string | null
+          reminder_sent_at?: string | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents?: number
