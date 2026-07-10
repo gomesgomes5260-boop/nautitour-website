@@ -6,6 +6,7 @@ import BlockScheduleButton from './BlockScheduleButton';
 import PierSelect from './PierSelect';
 import EditScheduleForm from './EditScheduleForm';
 import DeleteScheduleButton from './DeleteScheduleButton';
+import CheckInButton from './CheckInButton';
 import type { Pier } from '@/lib/piers';
 
 export const dynamic = 'force-dynamic';
@@ -77,12 +78,14 @@ export default async function ManifestoSchedulePage({
       booking_code,
       passenger_count,
       status,
+      checked_in_at,
       customer:customers ( full_name, email, phone ),
+      seller:sellers ( full_name ),
       passengers:booking_passengers ( full_name, document, is_child )
     `
     )
     .eq('tour_schedule_id', scheduleId)
-    .eq('status', 'confirmed')
+    .in('status', ['confirmed', 'completed'])
     .order('booking_code', { ascending: true });
 
   type BookingRow = {
@@ -90,10 +93,12 @@ export default async function ManifestoSchedulePage({
     booking_code: string;
     passenger_count: number;
     status: string;
+    checked_in_at: string | null;
     customer:
       | { full_name: string | null; email: string; phone: string | null }
       | { full_name: string | null; email: string; phone: string | null }[]
       | null;
+    seller: { full_name: string } | { full_name: string }[] | null;
     passengers: Array<{
       full_name: string;
       document: string | null;
@@ -103,6 +108,11 @@ export default async function ManifestoSchedulePage({
   const rows = (bookings ?? []) as unknown as BookingRow[];
 
   const totalPax = rows.reduce((acc, r) => acc + r.passenger_count, 0);
+  const boardedPax = rows
+    .filter((r) => r.status === 'completed')
+    .reduce((acc, r) => acc + r.passenger_count, 0);
+  // Bloquear/deletar saída só considera reservas ainda não embarcadas
+  const confirmedRows = rows.filter((r) => r.status === 'confirmed');
 
   return (
     <div className="print:bg-white">
@@ -117,12 +127,12 @@ export default async function ManifestoSchedulePage({
           {s.status !== 'cancelled' && (
             <BlockScheduleButton
               scheduleId={s.id}
-              confirmedBookings={rows.length}
+              confirmedBookings={confirmedRows.length}
             />
           )}
           <DeleteScheduleButton
             scheduleId={s.id}
-            activeBookings={rows.length}
+            activeBookings={confirmedRows.length}
           />
           <PrintButton />
         </div>
@@ -167,6 +177,11 @@ export default async function ManifestoSchedulePage({
           </p>
           <p className="text-sm text-gray-600 mt-1">
             Passageiros confirmados: <strong>{totalPax}</strong> de {s.capacity}
+            {boardedPax > 0 && (
+              <span className="ml-2 text-emerald-700">
+                · embarcados: <strong>{boardedPax}</strong>
+              </span>
+            )}
           </p>
           {currentPier && (
             <p className="text-sm text-gray-700 mt-2">
@@ -197,11 +212,13 @@ export default async function ManifestoSchedulePage({
                 <th className="py-2 pr-4">Documento</th>
                 <th className="py-2 pr-4">Tipo</th>
                 <th className="py-2 pr-4">Contato</th>
+                <th className="py-2 pr-4">Embarque</th>
               </tr>
             </thead>
             <tbody>
               {rows.flatMap((b, bi) => {
                 const cust = Array.isArray(b.customer) ? b.customer[0] : b.customer;
+                const seller = Array.isArray(b.seller) ? b.seller[0] : b.seller;
                 return b.passengers.map((p, pi) => (
                   <tr key={`${b.id}-${pi}`} className="border-b border-gray-100">
                     <td className="py-2 pr-4 text-gray-500">
@@ -209,6 +226,11 @@ export default async function ManifestoSchedulePage({
                     </td>
                     <td className="py-2 pr-4 font-mono text-xs">
                       {b.booking_code}
+                      {pi === 0 && seller && (
+                        <span className="block text-[10px] text-gray-500 font-sans">
+                          vend.: {seller.full_name}
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 pr-4">{p.full_name}</td>
                     <td className="py-2 pr-4 text-gray-700">
@@ -221,6 +243,16 @@ export default async function ManifestoSchedulePage({
                       {pi === 0
                         ? `${cust?.full_name ?? ''} · ${cust?.phone ?? cust?.email ?? ''}`
                         : ''}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {pi === 0 &&
+                        (b.status === 'completed' ? (
+                          <span className="inline-block rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                            Embarcado
+                          </span>
+                        ) : (
+                          <CheckInButton bookingCode={b.booking_code} />
+                        ))}
                     </td>
                   </tr>
                 ));
