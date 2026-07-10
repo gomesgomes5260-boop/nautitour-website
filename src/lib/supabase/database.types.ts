@@ -607,6 +607,63 @@ export type Database = {
           },
         ]
       }
+      seller_payouts: {
+        Row: {
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          e2e_id: string | null
+          error: string | null
+          id: string
+          pix_key: string | null
+          seller_id: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          e2e_id?: string | null
+          error?: string | null
+          id?: string
+          pix_key?: string | null
+          seller_id: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          e2e_id?: string | null
+          error?: string | null
+          id?: string
+          pix_key?: string | null
+          seller_id?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payouts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sellers: {
         Row: {
           active: boolean
@@ -900,6 +957,15 @@ export type Database = {
       block_schedule: {
         Args: { p_reason: string; p_schedule_id: string }
         Returns: number
+      }
+      claim_seller_payout: {
+        Args: {
+          p_amount_cents: number
+          p_booking_id: string
+          p_pix_key?: string
+          p_seller_id: string
+        }
+        Returns: boolean
       }
       confirm_booking_payment: {
         Args: {
