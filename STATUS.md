@@ -1,6 +1,18 @@
 # Nautitour — Status do Projeto
 
-Última atualização: **17/maio/2026** — **Sessão 15-17/maio**: PR-AUDIT-1/2/3 (CI + tests + DB hygiene + legacy cleanup + trust signals), **fundação LGPD** (cookie consent + GA gated + Microsoft Clarity), **lead recapture** (RPC + onBlur), **galeria de fotos** (carousel + lightbox em 4 páginas), **2 hotfixes críticos** corrigidos no mesmo dia (loop infinito useSyncExternalStore + lightbox close handler). Stack agora tem CI no GitHub Actions, 22 testes unitários, e DB advisor 100% limpo.
+Última atualização: **10/jul/2026** — **Sessão 10/jul: FUSÃO nautitour-reservas → nautitour-website (PRs #88–#94, todas mergeadas)**. O painel externo webreservas.xyz foi absorvido: ticket/QR interno (`/ticket/[code]`), sync via API removido, vendedores/agências (`sellers` + RLS user-scoped), painel `/vendedor` com reserva manual (RPC com o mesmo lock do checkout), check-in QR em `/admin/scan` (idempotente), payout PIX de comissão via EFÍ com claim atômico anti-duplicação (`/admin/comissoes`) e lembrete D-1 via Vercel Cron. Migrations 024–028 aplicadas; 029 (drop `nautitour_*`) preparada aguardando confirmação. 40 testes unitários. Pendências: smoke tests manuais, envs `CRON_SECRET`/`EFI_*` no Vercel, validação EFÍ em sandbox e aposentadoria do repo/banco antigos. Detalhes no CLAUDE.md, seção "Fusão nautitour-reservas".
+
+| PR (10/jul) | Frente |
+|---|---|
+| #88 | Fases 1-2: ticket interno + QR do booking_code; sync externo removido |
+| #89 | Fase 3: migration 024 — sellers/agências + colunas bookings + RLS |
+| #90 | Fase 4: /admin/vendedores (CRUD com conta auth + soft delete) |
+| #91 | Fase 5: painel /vendedor + RPC seller_create_booking (migration 025) |
+| #92 | Fase 6: check-in QR /admin/scan + manifesto com embarcados (migration 026) |
+| #93 | Fase 7: payout EFÍ + /admin/comissoes + fórmula em centavos testada (migration 027) |
+| #94 | Fase 8: lembrete D-1 via Vercel Cron + Resend (migration 028) |
+
+Estado anterior (**17/maio/2026** — Sessão 15-17/maio): PR-AUDIT-1/2/3 (CI + tests + DB hygiene + legacy cleanup + trust signals), **fundação LGPD** (cookie consent + GA gated + Microsoft Clarity), **lead recapture** (RPC + onBlur), **galeria de fotos** (carousel + lightbox em 4 páginas), **2 hotfixes críticos** corrigidos no mesmo dia (loop infinito useSyncExternalStore + lightbox close handler). Stack agora tem CI no GitHub Actions, 22 testes unitários, e DB advisor 100% limpo.
 
 Estado prévio mantido: site em produção vendendo, Tier 3 backend 5/5, rebrand visual 100%, balão WhatsApp global. Única frente externa pendente continua sendo **PR-Final** (DNS mpjunior).
 

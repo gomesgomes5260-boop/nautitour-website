@@ -1,8 +1,10 @@
 # CLAUDE.md — Guia rápido pro próximo chat
 
-Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. Última atualização: **17/maio/2026**.
+Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. Última atualização: **10/jul/2026**.
 
 ## TL;DR
+
+- **🔀 FUSÃO CONCLUÍDA (10/jul, PRs #88–#94)**: o painel externo `nautitour-reservas` (webreservas.xyz, Next 14 + Prisma + NextAuth) foi absorvido por este projeto. Sync via API morto; ticket/QR interno (`/ticket/[code]`, QR = `booking_code`); vendedores/agências (tabela `sellers` + RLS), painel `/vendedor` com reserva manual, check-in QR em `/admin/scan`, payout de comissão via EFÍ (`/admin/comissoes`) e lembrete D-1 via Vercel Cron. Detalhes na seção "Fusão nautitour-reservas".
 
 - Site de reservas de **passeios de barco em Armação dos Búzios** vendendo em produção
 - **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres, `us-west-2`) + Pagar.me v5 + Resend + Vitest (22 testes) + GitHub Actions CI
@@ -34,12 +36,18 @@ nautitour-website/
 │   ├── app/                      # Next.js App Router
 │   │   ├── admin/                # Painel (sidebar dark, gate via isAdminUser)
 │   │   │   ├── overview/         # Dashboard com KPIs + saídas hoje + receita 14d + atividade
-│   │   │   ├── reservas/         # CRUD reservas + export CSV
-│   │   │   ├── manifesto/        # Calendário mensal + detalhe por saída (edit/delete/pier)
+│   │   │   ├── reservas/         # CRUD reservas + export CSV (mostra vendedor/sinal/pickup)
+│   │   │   ├── manifesto/        # Calendário mensal + detalhe por saída (edit/delete/pier/check-in)
+│   │   │   ├── scan/             # 🆕 Check-in QR (html5-qrcode + código manual) → dispara payout
+│   │   │   ├── vendedores/       # 🆕 CRUD vendedores/agências (cria conta auth + sellers)
+│   │   │   ├── comissoes/        # 🆕 Payouts PIX EFÍ (sent/pending/failed + retry)
 │   │   │   ├── inquiries/        # Leads de lancha privativa
 │   │   │   ├── clientes/         # CRM-light
 │   │   │   ├── financeiro/       # Receita / refunds
 │   │   │   └── config/           # Templates + admins + pricing
+│   │   ├── vendedor/             # 🆕 Painel do vendedor (gate getSellerForUser, client USER-SCOPED — RLS isola)
+│   │   │   └── reservas/         # listagem + nova (RPC seller_create_booking) + detalhe
+│   │   ├── ticket/[code]/        # 🆕 Ticket público de embarque (QR = booking_code, sem PII)
 │   │   ├── checkout/[scheduleId]/
 │   │   ├── reserva/[code]/       # Página pós-booking
 │   │   ├── passeio-escuna/       # Calendário interativo
@@ -48,6 +56,7 @@ nautitour-website/
 │   │   ├── login | signup | esqueci-senha | minha-conta | minhas-reservas
 │   │   └── api/
 │   │       ├── webhooks/pagarme/ # Webhook de pagamento
+│   │       ├── cron/reminders/   # 🆕 Lembrete D-1 (Vercel Cron + Bearer CRON_SECRET)
 │   │       ├── auth/signout/
 │   │       └── monitoring/       # Sentry tunnel (CSP-friendly)
 │   ├── components/
@@ -76,7 +85,11 @@ nautitour-website/
 │       ├── turnstile.ts          # Cloudflare
 │       ├── sentry-scrub.ts       # PII scrub
 │       ├── whatsapp.ts           # WHATSAPP_NUMBER + buildWaUrl(text) — canônico
-│       └── admin.ts              # isAdminUser / isOwnerUser
+│       ├── admin.ts              # isAdminUser / isOwnerUser (NÃO adicionar callers de seller aqui)
+│       ├── staff.ts              # 🆕 getSellerForUser / getUserRole (owner>admin>agency>seller)
+│       ├── efi/client.ts         # 🆕 EFÍ Bank — SÓ pix saída (payout) + devolução. mTLS via EFI_CERTIFICATE
+│       ├── seller-payout.ts      # 🆕 triggerSellerPayout (claim atômico, nunca lança) + retry
+│       └── seller-payout-calc.ts # 🆕 fórmula de comissão em CENTAVOS (testada)
 ├── public/
 │   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
 │   ├── design-docs/              # HTMLs de pesquisa hostados em /design-docs/*
@@ -188,6 +201,33 @@ Todas no-op se ausentes (Turnstile, Upstash, Sentry) — dev local funciona sem.
 - **`design/brand-guide/README.md`** — Brand guide oficial (canônico)
 - **`design/research/`** — HTMLs de pesquisa UI/UX (também hostados em `/design-docs/`)
 - **`db/migrations/README.md`** — Convenção de migrations
+
+## 🔀 Fusão nautitour-reservas (concluída 10/jul/2026 — PRs #88–#94)
+
+O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, NextAuth, banco Supabase separado "Reservas Escuna" sa-east-1) foi **absorvido por este projeto**. Ele nunca entrou em uso ativo, então não houve migração de dados. Plano completo em `/root/.claude/plans/quero-unir-esses-dois-spicy-pancake.md`.
+
+### O que mudou
+| Área | Como funciona agora |
+|---|---|
+| Ticket/QR | `/ticket/[code]` público, QR codifica o **booking_code** (email + página da reserva apontam pra ele). Só renderiza confirmed/completed; dados mínimos sem PII |
+| Sync externo | **Morto** (PR #88). Colunas `nautitour_*` ainda existem — drop preparado em `029_drop_nautitour_columns.sql` (não aplicado) |
+| Vendedores | Tabela `sellers` (roles `agency`/`seller`, `agency_id` self-ref, `neto_value_cents`, `pix_key`) **separada de `admins`** de propósito — `is_admin`/`isAdminUser` não ganharam callers novos. Guards `is_seller()`/`seller_id_for()` |
+| Painel vendedor | `/vendedor` — client **user-scoped**: a RLS `bookings_seller_select` é a barreira de isolamento (agência vê os sellers dela). Reserva manual via RPC `seller_create_booking` (mesmo lock FOR UPDATE do checkout, status confirmed direto, `expires_at` NULL, sinal em `amount_paid_cents`) |
+| Cliente sem email | Placeholder `sem-email+...@no-email.invalid` (RFC 2606) — fluxos de email pulam `.invalid` |
+| Check-in | `/admin/scan` (html5-qrcode + código manual) → RPC `admin_check_in_booking` (idempotente, retorna `first_checkin`). Manifesto mantém embarcados na lista (badge) + check-in manual |
+| Comissão | No 1º check-in: `payout = min(sinal, max(0, total − neto×inteiras − floor(neto/2)×meias))` → PIX via EFÍ. Duplicação impossível: `seller_payouts.booking_id UNIQUE` + claim atômico. Falha → `pending`/`failed` com retry em `/admin/comissoes`. **Erro EFÍ nunca bloqueia check-in** |
+| EFÍ | SÓ pix saída (payout) — cobrança segue 100% Pagar.me. Envs `EFI_*` (ver `.env.example`). ⚠️ endpoint de envio corrigido na portagem (`PUT /v2/gn/pix/:idEnvio`); **validar em sandbox antes de produção** |
+| Lembrete D-1 | Vercel Cron 18:00 UTC → `/api/cron/reminders` (Bearer `CRON_SECRET`), idempotente via `bookings.reminder_sent_at` |
+| Login | Vendedor sem redirect explícito cai em `/vendedor` |
+
+### Migrations da fusão
+024 sellers+RLS · 025 seller_create_booking · 026 check-in RPC · 027 seller_payouts+claim · 028 reminder_sent_at · **029 (drop nautitour_*) PREPARADA, NÃO APLICADA**
+
+### Pendências pós-fusão
+1. **Smoke tests manuais** (nunca rodados): criar vendedor → logar → reserva manual → isolamento com 2 sellers → scan do QR → payout em **sandbox EFÍ** (`EFI_SANDBOX=true`) → cron com `curl -H "Authorization: Bearer $CRON_SECRET"`.
+2. **Envs no Vercel**: setar `CRON_SECRET` e `EFI_*` (quando ativar payout); **remover** `NAUTITOUR_API_URL/KEY/SYNC_ENABLED`.
+3. **Aposentadoria (destrutivo — só com confirmação do user)**: aplicar migration 029; arquivar repo `nautitour-reservas`; pausar projeto Supabase "Reservas Escuna" (`zkvoergsfratdkhsgefg`); desativar deploy/domínio webreservas.xyz.
+4. **Backlog V2 da fusão**: cobrança de sinal PIX via EFÍ (webhook + `/pay`), white-label de agência, PWA, lembrete 30min, ledger de comissão manual, PDF do ticket.
 
 ## 🎯 Próximos passos
 

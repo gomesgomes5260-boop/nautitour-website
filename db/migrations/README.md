@@ -23,3 +23,12 @@ Ou via Supabase Dashboard → Database → Migrations.
 ## Convenção de nomes
 
 `NNN_descricao_curta.sql` — NNN começa em `001` e segue a sequência.
+
+⚠️ **Colisão histórica**: existem dois arquivos com prefixo `023`
+(`023_blog_foundation` e `023_nautitour_panel_integration`) — criados em
+sessões paralelas. A sequência retomou em `024`. **Antes de criar uma
+migration nova, confira o maior número existente na pasta E rode
+`list_migrations` no MCP** pra não repetir prefixo.
+
+⚠️ `029_drop_nautitour_columns.sql` está **preparada mas não aplicada** —
+ver cabeçalho do arquivo.
