@@ -87,8 +87,7 @@ nautitour-website/
 │       ├── whatsapp.ts           # WHATSAPP_NUMBER + buildWaUrl(text) — canônico
 │       ├── admin.ts              # isAdminUser / isOwnerUser (NÃO adicionar callers de seller aqui)
 │       ├── staff.ts              # 🆕 getSellerForUser / getUserRole (owner>admin>agency>seller)
-│       ├── efi/client.ts         # 🆕 EFÍ Bank — SÓ pix saída (payout) + devolução. mTLS via EFI_CERTIFICATE
-│       ├── seller-payout.ts      # 🆕 triggerSellerPayout (claim atômico, nunca lança) + retry
+│       ├── seller-payout.ts      # 🆕 registra comissão no 1º check-in (claim atômico) + markPayoutPaid manual
 │       └── seller-payout-calc.ts # 🆕 fórmula de comissão em CENTAVOS (testada)
 ├── public/
 │   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
@@ -215,8 +214,8 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 | Painel vendedor | `/vendedor` — client **user-scoped**: a RLS `bookings_seller_select` é a barreira de isolamento (agência vê os sellers dela). Reserva manual via RPC `seller_create_booking` (mesmo lock FOR UPDATE do checkout, status confirmed direto, `expires_at` NULL, sinal em `amount_paid_cents`) |
 | Cliente sem email | Placeholder `sem-email+...@no-email.invalid` (RFC 2606) — fluxos de email pulam `.invalid` |
 | Check-in | `/admin/scan` (html5-qrcode + código manual) → RPC `admin_check_in_booking` (idempotente, retorna `first_checkin`). Manifesto mantém embarcados na lista (badge) + check-in manual |
-| Comissão | No 1º check-in: `payout = min(sinal, max(0, total − neto×inteiras − floor(neto/2)×meias))` → PIX via EFÍ. Duplicação impossível: `seller_payouts.booking_id UNIQUE` + claim atômico. Falha → `pending`/`failed` com retry em `/admin/comissoes`. **Erro EFÍ nunca bloqueia check-in** |
-| EFÍ | SÓ pix saída (payout) — cobrança segue 100% Pagar.me. Envs `EFI_*` (ver `.env.example`). ⚠️ endpoint de envio corrigido na portagem (`PUT /v2/gn/pix/:idEnvio`); **validar em sandbox antes de produção** |
+| Comissão | No 1º check-in a comissão é **registrada** em `seller_payouts` (status `pending`): `valor = min(sinal, max(0, total − neto×inteiras − floor(neto/2)×meias))`. Duplicação impossível: `booking_id UNIQUE` + claim atômico. **Pagamento é MANUAL** (decisão 10/jul): admin faz o PIX por fora e clica "Marcar como pago" em `/admin/comissoes` (mostra a chave PIX do vendedor). Registro nunca bloqueia check-in |
+| EFÍ | **REMOVIDO do V1** (decisão 10/jul, junto com o split). O código do client (pix saída corrigido pra `PUT /v2/gn/pix/:idEnvio` + mTLS) está no histórico do git (PR #93, arquivo `src/lib/efi/client.ts`) — recuperar de lá na PR futura de implementações complementares. Cobrança segue 100% Pagar.me; se um dia gerar PIX de sinal pelo site, gerar pelo **Pagar.me**, não EFÍ |
 | Lembrete D-1 | Vercel Cron 18:00 UTC → `/api/cron/reminders` (Bearer `CRON_SECRET`), idempotente via `bookings.reminder_sent_at` |
 | Login | Vendedor sem redirect explícito cai em `/vendedor` |
 
@@ -224,10 +223,10 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 024 sellers+RLS · 025 seller_create_booking · 026 check-in RPC · 027 seller_payouts+claim · 028 reminder_sent_at · **029 (drop nautitour_*) PREPARADA, NÃO APLICADA**
 
 ### Pendências pós-fusão
-1. **Smoke tests manuais** (nunca rodados): criar vendedor → logar → reserva manual → isolamento com 2 sellers → scan do QR → payout em **sandbox EFÍ** (`EFI_SANDBOX=true`) → cron com `curl -H "Authorization: Bearer $CRON_SECRET"`.
-2. **Envs no Vercel**: setar `CRON_SECRET` e `EFI_*` (quando ativar payout); **remover** `NAUTITOUR_API_URL/KEY/SYNC_ENABLED`.
+1. **Smoke tests manuais** (nunca rodados): criar vendedor → logar → reserva manual → isolamento com 2 sellers → scan do QR → comissão registrada em `/admin/comissoes` → marcar como paga → cron com `curl -H "Authorization: Bearer $CRON_SECRET"`.
+2. **Envs no Vercel**: setar `CRON_SECRET` e `BOOKING_SESSION_SECRET`; **remover** `NAUTITOUR_API_URL/KEY/SYNC_ENABLED`. (Envs `EFI_*` NÃO são mais necessárias.)
 3. **Aposentadoria (destrutivo — só com confirmação do user)**: aplicar migration 029; arquivar repo `nautitour-reservas`; pausar projeto Supabase "Reservas Escuna" (`zkvoergsfratdkhsgefg`); desativar deploy/domínio webreservas.xyz.
-4. **Backlog V2 da fusão**: cobrança de sinal PIX via EFÍ (webhook + `/pay`), white-label de agência, PWA, lembrete 30min, ledger de comissão manual, PDF do ticket.
+4. **Backlog — PR futura de implementações complementares**: payout automático de comissão + split PIX via EFÍ (client pronto no histórico, PR #93); cobrança de sinal PIX de reserva de vendedor **via Pagar.me** (nunca EFÍ); white-label de agência; PWA; lembrete 30min; PDF do ticket.
 
 ## 🎯 Próximos passos
 

@@ -3,27 +3,29 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { calcSellerPayoutCents } from '@/lib/seller-payout-calc';
-import { sendPixOut, generateIdEnvio, isEfiConfigured } from '@/lib/efi/client';
 
 type UserClient = SupabaseClient<Database>;
 
+// Pagamento da comissão é MANUAL (decisão de 10/jul): o 1º check-in só
+// REGISTRA o valor devido em seller_payouts (status 'pending'); o admin
+// paga por fora e marca como pago em /admin/comissoes. O envio automático
+// via EFÍ (Pix Saída) foi removido — volta numa PR futura de
+// implementações complementares (código no histórico do git, PR #93).
+
 export type PayoutResult =
-  | { status: 'sent'; amountCents: number }
-  | { status: 'pending'; amountCents: number; reason: string }
-  | { status: 'failed'; amountCents: number; error: string }
+  | { status: 'pending'; amountCents: number }
   | { status: 'skipped'; reason: string };
 
 /**
- * Dispara o payout de comissão após o PRIMEIRO check-in de uma reserva de
+ * Registra a comissão devida após o PRIMEIRO check-in de uma reserva de
  * vendedor. Chame apenas quando admin_check_in_booking retornou
  * first_checkin=true; ainda assim o claim atômico (booking_id UNIQUE +
- * ON CONFLICT DO NOTHING) garante no máximo 1 payout por reserva.
+ * ON CONFLICT DO NOTHING) garante no máximo 1 registro por reserva.
  *
  * `supabase` precisa ser o client user-scoped da sessão do admin — o claim
  * RPC valida is_admin(auth.uid()).
  *
- * NUNCA lança: erro EFÍ vira row 'failed' com retry manual em
- * /admin/comissoes. O check-in jamais é bloqueado por payout.
+ * NUNCA lança: o check-in jamais é bloqueado pelo registro de comissão.
  */
 export async function triggerSellerPayout(
   supabase: UserClient,
@@ -87,139 +89,68 @@ export async function triggerSellerPayout(
     }
     if (!claimed) return { status: 'skipped', reason: 'already claimed' };
 
-    const logEvent = (kind: string, payload: Record<string, string | number | boolean | null>) =>
-      admin
-        .from('booking_events')
-        .insert({ booking_id: b.id, kind, payload })
-        .then(({ error }) => {
-          if (error) console.error('[seller-payout] event log error', error);
-        });
-
     if (amountCents <= 0) {
       await admin
         .from('seller_payouts')
         .update({ status: 'skipped', error: 'comissão zero', updated_at: new Date().toISOString() })
         .eq('booking_id', b.id);
-      await logEvent('payout_skipped', { reason: 'comissão zero' });
       return { status: 'skipped', reason: 'comissão zero' };
     }
 
-    if (!seller.pix_key || !isEfiConfigured()) {
-      const reason = !seller.pix_key
-        ? 'vendedor sem chave PIX cadastrada'
-        : 'EFÍ não configurado';
-      await admin
-        .from('seller_payouts')
-        .update({ error: reason, updated_at: new Date().toISOString() })
-        .eq('booking_id', b.id);
-      await logEvent('payout_pending', { reason, amount_cents: amountCents });
-      return { status: 'pending', amountCents, reason };
-    }
-
-    try {
-      const { e2eId } = await sendPixOut({
-        pixKey: seller.pix_key,
-        amountCents,
-        idEnvio: generateIdEnvio(b.booking_code),
-      });
-      await admin
-        .from('seller_payouts')
-        .update({
-          status: 'sent',
-          e2e_id: e2eId,
-          error: null,
-          sent_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('booking_id', b.id);
-      await logEvent('payout_sent', { amount_cents: amountCents, e2e_id: e2eId });
-      return { status: 'sent', amountCents };
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error('[seller-payout] sendPixOut failed', err);
-      await admin
-        .from('seller_payouts')
-        .update({ status: 'failed', error: msg.slice(0, 500), updated_at: new Date().toISOString() })
-        .eq('booking_id', b.id);
-      await logEvent('payout_failed', { amount_cents: amountCents, error: msg.slice(0, 500) });
-      return { status: 'failed', amountCents, error: msg };
-    }
+    // Fica 'pending' — pagamento manual pelo admin em /admin/comissoes.
+    const { error: evErr } = await admin.from('booking_events').insert({
+      booking_id: b.id,
+      kind: 'payout_pending',
+      payload: { amount_cents: amountCents, manual: true },
+    });
+    if (evErr) console.error('[seller-payout] event log error', evErr);
+    return { status: 'pending', amountCents };
   } catch (err) {
-    // Barreira final: payout nunca derruba o check-in.
+    // Barreira final: registro de comissão nunca derruba o check-in.
     console.error('[seller-payout] unexpected error', err);
     return { status: 'skipped', reason: 'unexpected error' };
   }
 }
 
 /**
- * Retry manual (admin/comissoes) de payout pending/failed. Reusa a row já
- * clamada — não insere nova, então continua impossível duplicar.
+ * Marca um payout como pago manualmente (transferência feita por fora —
+ * PIX do banco, dinheiro etc). Reusa a row clamada; não cria nova.
  */
-export async function retrySellerPayout(payoutId: string): Promise<PayoutResult> {
+export async function markPayoutPaid(
+  payoutId: string,
+  actorUserId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const admin = createAdminClient();
   const { data: payout } = await admin
     .from('seller_payouts')
-    .select(
-      'id, booking_id, seller_id, amount_cents, status, seller:sellers ( pix_key ), booking:bookings ( booking_code )'
-    )
+    .select('id, booking_id, status, amount_cents')
     .eq('id', payoutId)
     .maybeSingle();
 
-  if (!payout) return { status: 'skipped', reason: 'payout não encontrado' };
+  if (!payout) return { ok: false, error: 'Payout não encontrado' };
+  if (payout.status === 'sent') return { ok: false, error: 'Já está marcado como pago' };
+  if (payout.amount_cents <= 0) return { ok: false, error: 'Comissão zero — nada a pagar' };
 
-  type Row = {
-    id: string;
-    booking_id: string;
-    seller_id: string;
-    amount_cents: number;
-    status: string;
-    seller: { pix_key: string | null } | { pix_key: string | null }[] | null;
-    booking: { booking_code: string } | { booking_code: string }[] | null;
-  };
-  const p = payout as unknown as Row;
-  if (p.status === 'sent') return { status: 'skipped', reason: 'já enviado' };
-  if (p.amount_cents <= 0) return { status: 'skipped', reason: 'comissão zero' };
-
-  const seller = Array.isArray(p.seller) ? p.seller[0] : p.seller;
-  const booking = Array.isArray(p.booking) ? p.booking[0] : p.booking;
-  const pixKey = seller?.pix_key ?? null;
-
-  if (!pixKey) {
-    return { status: 'pending', amountCents: p.amount_cents, reason: 'vendedor sem chave PIX' };
-  }
-  if (!isEfiConfigured()) {
-    return { status: 'pending', amountCents: p.amount_cents, reason: 'EFÍ não configurado' };
+  const { error } = await admin
+    .from('seller_payouts')
+    .update({
+      status: 'sent',
+      error: null,
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', payout.id);
+  if (error) {
+    console.error('[seller-payout] markPayoutPaid error', error);
+    return { ok: false, error: error.message };
   }
 
-  try {
-    const { e2eId } = await sendPixOut({
-      pixKey,
-      amountCents: p.amount_cents,
-      idEnvio: generateIdEnvio(booking?.booking_code ?? p.booking_id),
-    });
-    await admin
-      .from('seller_payouts')
-      .update({
-        status: 'sent',
-        pix_key: pixKey,
-        e2e_id: e2eId,
-        error: null,
-        sent_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', p.id);
-    await admin.from('booking_events').insert({
-      booking_id: p.booking_id,
-      kind: 'payout_sent',
-      payload: { amount_cents: p.amount_cents, e2e_id: e2eId, retry: true },
-    });
-    return { status: 'sent', amountCents: p.amount_cents };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    await admin
-      .from('seller_payouts')
-      .update({ status: 'failed', error: msg.slice(0, 500), updated_at: new Date().toISOString() })
-      .eq('id', p.id);
-    return { status: 'failed', amountCents: p.amount_cents, error: msg };
-  }
+  const { error: evErr } = await admin.from('booking_events').insert({
+    booking_id: payout.booking_id,
+    kind: 'payout_paid_manual',
+    actor_user_id: actorUserId,
+    payload: { amount_cents: payout.amount_cents },
+  });
+  if (evErr) console.error('[seller-payout] event log error', evErr);
+  return { ok: true };
 }
