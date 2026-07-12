@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Wallet, Send, AlertTriangle } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import KpiCard from '@/components/KpiCard';
-import RetryButton from './RetryButton';
+import MarkPaidButton from './MarkPaidButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +18,9 @@ const DATE_TIME = new Intl.DateTimeFormat('pt-BR', {
 });
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  sent: { label: 'Enviado', cls: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
+  sent: { label: 'Pago', cls: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
   pending: {
-    label: 'Pendente',
+    label: 'A pagar',
     cls: 'bg-amber-50 border-amber-200 text-amber-800',
   },
   failed: {
@@ -40,7 +40,7 @@ export default async function AdminComissoesPage() {
     .select(
       `
       id, amount_cents, status, e2e_id, error, sent_at, created_at, pix_key,
-      seller:sellers ( full_name ),
+      seller:sellers ( full_name, pix_key ),
       booking:bookings ( booking_code )
       `
     )
@@ -56,7 +56,10 @@ export default async function AdminComissoesPage() {
     sent_at: string | null;
     created_at: string;
     pix_key: string | null;
-    seller: { full_name: string } | { full_name: string }[] | null;
+    seller:
+      | { full_name: string; pix_key: string | null }
+      | { full_name: string; pix_key: string | null }[]
+      | null;
     booking: { booking_code: string } | { booking_code: string }[] | null;
   };
   const rows = (payouts ?? []) as unknown as Row[];
@@ -72,19 +75,20 @@ export default async function AdminComissoesPage() {
       <div>
         <h1 className="text-xl font-bold text-[var(--color-charcoal-900)]">Comissões</h1>
         <p className="text-sm text-[var(--color-charcoal-500)] mt-1">
-          Payouts PIX de comissão aos vendedores, disparados no primeiro
-          check-in de cada reserva. Falhas ficam aqui pra reenvio manual.
+          Comissão registrada automaticamente no primeiro check-in de cada
+          reserva de vendedor. <strong>O pagamento é manual</strong>: faça o
+          PIX pela chave do vendedor e marque como pago aqui.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           Icon={Send}
-          label="Comissão enviada"
+          label="Comissão paga"
           value={PRICE.format(sentTotal / 100)}
-          sub="últimos 200 payouts"
+          sub="últimos 200 registros"
         />
-        <KpiCard Icon={Wallet} label="Pendentes" value={String(pendingCount)} />
+        <KpiCard Icon={Wallet} label="A pagar" value={String(pendingCount)} />
         <KpiCard
           Icon={AlertTriangle}
           label="Falharam"
@@ -119,6 +123,7 @@ export default async function AdminComissoesPage() {
                 const seller = Array.isArray(r.seller) ? r.seller[0] : r.seller;
                 const booking = Array.isArray(r.booking) ? r.booking[0] : r.booking;
                 const st = STATUS[r.status] ?? STATUS.skipped;
+                const payKey = seller?.pix_key ?? r.pix_key;
                 return (
                   <tr key={r.id} className="border-t border-[var(--color-charcoal-100)]">
                     <td className="px-4 py-3">
@@ -135,6 +140,11 @@ export default async function AdminComissoesPage() {
                     </td>
                     <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
                       {seller?.full_name ?? '—'}
+                      {payKey && (r.status === 'pending' || r.status === 'failed') && (
+                        <span className="block font-mono text-[11px] text-[var(--color-charcoal-500)]">
+                          PIX: {payKey}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 font-semibold text-[var(--color-charcoal-900)]">
                       {PRICE.format(r.amount_cents / 100)}
@@ -154,7 +164,13 @@ export default async function AdminComissoesPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {(r.status === 'failed' || r.status === 'pending') &&
-                        r.amount_cents > 0 && <RetryButton payoutId={r.id} />}
+                        r.amount_cents > 0 && (
+                          <MarkPaidButton
+                            payoutId={r.id}
+                            sellerName={seller?.full_name ?? 'vendedor'}
+                            amountLabel={PRICE.format(r.amount_cents / 100)}
+                          />
+                        )}
                     </td>
                   </tr>
                 );
