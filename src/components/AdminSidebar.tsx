@@ -14,6 +14,7 @@ import {
   Banknote,
   Settings,
   Newspaper,
+  Image as ImageIcon,
   Search,
   Bell,
   LogOut,
@@ -37,6 +38,7 @@ const NAV: Array<{ href: string; label: string; Icon: typeof LayoutDashboard }> 
   { href: '/admin/comissoes', label: 'Comissões', Icon: Banknote },
   { href: '/admin/financeiro', label: 'Financeiro', Icon: Banknote },
   { href: '/admin/blog', label: 'Blog', Icon: Newspaper },
+  { href: '/admin/imagens', label: 'Imagens', Icon: ImageIcon },
   { href: '/admin/config', label: 'Configurações', Icon: Settings },
 ];
 
