@@ -171,6 +171,9 @@ export default function ImageLibrary({
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [uploads, setUploads] = useState<UploadItem[]>([]);
+  // Progresso geral do lote (fotos concluídas / total). Soltar mais fotos
+  // no meio do envio SOMA ao total em vez de resetar a barra.
+  const [batch, setBatch] = useState<{ total: number; done: number } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [newFolder, setNewFolder] = useState('');
@@ -210,6 +213,12 @@ export default function ImageLibrary({
       return;
     }
 
+    setBatch((prev) =>
+      prev && prev.done < prev.total
+        ? { total: prev.total + valid.length, done: prev.done }
+        : { total: valid.length, done: 0 }
+    );
+
     const perFolder = new Map<string, number>();
     const currentFolderAtStart = folder;
     let anyToCurrent = false;
@@ -243,6 +252,9 @@ export default function ImageLibrary({
             : u
         )
       );
+      // Conta no progresso geral tanto sucesso quanto erro — a barra mede
+      // "quanto falta processar", não "quantas deram certo".
+      setBatch((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
       if (res.ok) {
         perFolder.set(target, (perFolder.get(target) ?? 0) + 1);
         if (target === currentFolderAtStart) {
@@ -272,6 +284,8 @@ export default function ImageLibrary({
 
     setTimeout(() => {
       setUploads((prev) => prev.filter((u) => u.status === 'error'));
+      // Só some com a barra se nenhum lote novo entrou no meio tempo.
+      setBatch((prev) => (prev && prev.done >= prev.total ? null : prev));
     }, 4000);
   }
 
@@ -468,6 +482,40 @@ export default function ImageLibrary({
               e.target.value = '';
             }}
           />
+        </div>
+      )}
+
+      {/* Barra de progresso geral do lote */}
+      {batch && (
+        <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white px-5 py-4">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <p className="text-sm font-semibold text-[var(--color-charcoal-900)]">
+              {batch.done >= batch.total ? (
+                <span className="text-emerald-700">Concluído ✓</span>
+              ) : (
+                <>
+                  Enviando {batch.done + 1} de {batch.total} foto{batch.total === 1 ? '' : 's'}…
+                </>
+              )}
+            </p>
+            <p className="text-xs font-bold text-[var(--color-charcoal-500)] tabular-nums">
+              {Math.round((batch.done / batch.total) * 100)}%
+            </p>
+          </div>
+          <div
+            className="h-2 rounded-full bg-[var(--color-charcoal-100)] overflow-hidden"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={batch.total}
+            aria-valuenow={batch.done}
+          >
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                batch.done >= batch.total ? 'bg-emerald-500' : 'bg-[var(--color-red-600)]'
+              }`}
+              style={{ width: `${Math.max(3, (batch.done / batch.total) * 100)}%` }}
+            />
+          </div>
         </div>
       )}
 
