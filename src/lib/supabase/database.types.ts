@@ -610,6 +610,24 @@ export type Database = {
           },
         ]
       }
+      site_image_usage: {
+        Row: {
+          last_used_at: string
+          path: string
+          times_used: number
+        }
+        Insert: {
+          last_used_at?: string
+          path: string
+          times_used?: number
+        }
+        Update: {
+          last_used_at?: string
+          path?: string
+          times_used?: number
+        }
+        Relationships: []
+      }
       seller_payouts: {
         Row: {
           amount_cents: number

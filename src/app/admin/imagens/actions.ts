@@ -46,33 +46,31 @@ async function requireOwnerId(): Promise<string> {
   return userId;
 }
 
+// Sentinela da aba "Todas" — lista todas as pastas do bucket de uma vez.
+const ALL_FOLDERS = '__all__';
+
 export type SiteImage = {
   path: string;
   name: string;
+  folder: string;
   url: string;
   sizeBytes: number | null;
   createdAt: string | null;
+  lastUsedAt: string | null;
 };
 
-export async function listSiteImagesAction(
-  folder: string
-): Promise<{ ok: true; images: SiteImage[] } | { ok: false; error: string }> {
-  if (!FOLDER_RE.test(folder)) return { ok: false, error: 'Pasta inválida' };
-  await requireAdminId();
+type AdminClient = ReturnType<typeof createAdminClient>;
 
-  const admin = createAdminClient();
+async function listFolderImages(admin: AdminClient, folder: string): Promise<SiteImage[]> {
   const { data, error } = await admin.storage
     .from(SITE_IMAGES_BUCKET)
     .list(folder, {
       limit: 1000,
       sortBy: { column: 'created_at', order: 'desc' },
     });
-  if (error) {
-    console.error('[listSiteImagesAction]', error);
-    return { ok: false, error: error.message };
-  }
+  if (error) throw new Error(error.message);
 
-  const images: SiteImage[] = (data ?? [])
+  return (data ?? [])
     // Entradas com id null são "subpastas" — só arquivos aqui.
     .filter((item) => item.id != null)
     .map((item) => {
@@ -82,13 +80,94 @@ export async function listSiteImagesAction(
       return {
         path,
         name: item.name,
+        folder,
         url: pub.publicUrl,
         sizeBytes: typeof meta.size === 'number' ? meta.size : null,
         createdAt: item.created_at ?? null,
+        lastUsedAt: null,
       };
     });
+}
+
+export async function listSiteImagesAction(
+  folder: string
+): Promise<{ ok: true; images: SiteImage[] } | { ok: false; error: string }> {
+  const isAll = folder === ALL_FOLDERS;
+  if (!isAll && !FOLDER_RE.test(folder)) return { ok: false, error: 'Pasta inválida' };
+  await requireAdminId();
+
+  const admin = createAdminClient();
+  let images: SiteImage[];
+  try {
+    if (isAll) {
+      const { data: rootItems, error } = await admin.storage
+        .from(SITE_IMAGES_BUCKET)
+        .list('', { limit: 200 });
+      if (error) throw new Error(error.message);
+      const folders = (rootItems ?? [])
+        .filter((item) => item.id == null)
+        .map((item) => item.name)
+        .filter((name) => FOLDER_RE.test(name));
+      const perFolder = await Promise.all(
+        folders.map((f) => listFolderImages(admin, f))
+      );
+      images = perFolder
+        .flat()
+        .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+    } else {
+      images = await listFolderImages(admin, folder);
+    }
+  } catch (e) {
+    console.error('[listSiteImagesAction]', e);
+    return { ok: false, error: e instanceof Error ? e.message : 'Falha ao listar' };
+  }
+
+  // Anexa last_used_at (ordenação "usadas recentemente") — 1 query em lote.
+  if (images.length > 0) {
+    const { data: usage } = await admin
+      .from('site_image_usage')
+      .select('path, last_used_at')
+      .in('path', images.map((i) => i.path));
+    if (usage && usage.length > 0) {
+      const byPath = new Map(usage.map((u) => [u.path, u.last_used_at]));
+      images = images.map((img) => ({
+        ...img,
+        lastUsedAt: byPath.get(img.path) ?? null,
+      }));
+    }
+  }
 
   return { ok: true, images };
+}
+
+/**
+ * Marca uma imagem como "usada" (URL copiada). Fire-and-forget no client —
+ * nunca bloqueia o clipboard.
+ */
+export async function markImageUsedAction(
+  path: string
+): Promise<{ ok: boolean }> {
+  if (typeof path !== 'string' || !/^[a-z0-9][a-z0-9-]*\/[^/]+$/.test(path)) {
+    return { ok: false };
+  }
+  await requireAdminId();
+
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from('site_image_usage')
+    .select('times_used')
+    .eq('path', path)
+    .maybeSingle();
+  const { error } = await admin.from('site_image_usage').upsert({
+    path,
+    last_used_at: new Date().toISOString(),
+    times_used: (existing?.times_used ?? 0) + 1,
+  });
+  if (error) {
+    console.error('[markImageUsedAction]', error);
+    return { ok: false };
+  }
+  return { ok: true };
 }
 
 export async function listFoldersAction(): Promise<
@@ -162,9 +241,11 @@ export async function uploadSiteImageAction(
     image: {
       path,
       name: path.split('/').pop() ?? path,
+      folder,
       url: pub.publicUrl,
       sizeBytes: file.size,
       createdAt: new Date().toISOString(),
+      lastUsedAt: null,
     },
   };
 }

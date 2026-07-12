@@ -7,7 +7,7 @@ import { listSiteImagesAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
-const INITIAL_FOLDER = 'escuna';
+const INITIAL_FOLDER = '__all__';
 
 export default async function AdminImagensPage() {
   const supabase = await createClient();

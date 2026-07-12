@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, useTransition } from 'react';
+import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
 import type { SiteImage } from './actions';
 import Image from 'next/image';
 import {
@@ -15,7 +15,12 @@ import {
   listSiteImagesAction,
   uploadSiteImageAction,
   deleteSiteImagesAction,
+  markImageUsedAction,
 } from './actions';
+
+const ALL = '__all__';
+
+type SortMode = 'recent-upload' | 'recent-used';
 
 // Pastas padrão espelham public/images/photos + destinos novos.
 const DEFAULT_FOLDERS = [
@@ -168,6 +173,7 @@ export default function ImageLibrary({
   );
   const [folder, setFolder] = useState<string>(initialFolder);
   const [images, setImages] = useState<SiteImage[]>(initialImages);
+  const [sortMode, setSortMode] = useState<SortMode>('recent-upload');
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -221,6 +227,7 @@ export default function ImageLibrary({
 
     const perFolder = new Map<string, number>();
     const currentFolderAtStart = folder;
+    const viewingAll = currentFolderAtStart === ALL;
     let anyToCurrent = false;
 
     for (const { file, folder: target } of valid) {
@@ -257,7 +264,7 @@ export default function ImageLibrary({
       setBatch((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
       if (res.ok) {
         perFolder.set(target, (perFolder.get(target) ?? 0) + 1);
-        if (target === currentFolderAtStart) {
+        if (viewingAll || target === currentFolderAtStart) {
           anyToCurrent = true;
           setImages((prev) => [res.image, ...prev]);
         }
@@ -289,14 +296,17 @@ export default function ImageLibrary({
     }, 4000);
   }
 
+  // Na aba "Todas" não existe pasta concreta — arquivo solto cai em misc.
+  const looseTarget = folder === ALL ? 'misc' : folder;
+
   function handleLooseFiles(fileList: FileList) {
-    void uploadQueue(Array.from(fileList).map((file) => ({ file, folder })));
+    void uploadQueue(Array.from(fileList).map((file) => ({ file, folder: looseTarget })));
   }
 
   function handleDirectoryInput(fileList: FileList) {
     const queue = Array.from(fileList).map((file) => {
       const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-      return { file, folder: folderFromRelativePath(rel, folder) };
+      return { file, folder: folderFromRelativePath(rel, looseTarget) };
     });
     void uploadQueue(queue);
   }
@@ -312,7 +322,7 @@ export default function ImageLibrary({
         void uploadQueue(
           collected.map(({ file, relPath }) => ({
             file,
-            folder: folderFromRelativePath(relPath, folder),
+            folder: folderFromRelativePath(relPath, looseTarget),
           }))
         );
         return;
@@ -354,7 +364,31 @@ export default function ImageLibrary({
     await navigator.clipboard.writeText(img.url);
     setNotice('URL copiada!');
     setTimeout(() => setNotice(null), 2500);
+    // Copiar = "usar" — alimenta a ordenação "usadas recentemente".
+    const usedAt = new Date().toISOString();
+    setImages((prev) =>
+      prev.map((i) => (i.path === path ? { ...i, lastUsedAt: usedAt } : i))
+    );
+    markImageUsedAction(path).catch(() => {
+      // best-effort: falha no registro não atrapalha o clipboard
+    });
   }
+
+  // Ordenação client-side sobre a lista carregada. "Usadas recentemente"
+  // coloca as nunca usadas por último (registro começou na migration 031).
+  const displayImages = useMemo(() => {
+    if (sortMode === 'recent-used') {
+      return [...images].sort((a, b) => {
+        if (a.lastUsedAt && b.lastUsedAt) return b.lastUsedAt.localeCompare(a.lastUsedAt);
+        if (a.lastUsedAt) return -1;
+        if (b.lastUsedAt) return 1;
+        return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
+      });
+    }
+    return [...images].sort((a, b) =>
+      (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
+    );
+  }, [images, sortMode]);
 
   function addFolder() {
     const name = sanitizeFolderName(newFolder);
@@ -370,8 +404,20 @@ export default function ImageLibrary({
 
   return (
     <div className="space-y-5">
-      {/* Abas de pasta */}
+      {/* Abas de pasta + ordenação */}
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => changeFolder(ALL)}
+          className={`rounded-full px-3.5 py-1.5 text-xs font-bold border transition-colors ${
+            folder === ALL
+              ? 'bg-[var(--color-red-600)] text-white border-[var(--color-red-600)]'
+              : 'bg-white text-[var(--color-charcoal-700)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-400)]'
+          }`}
+        >
+          todas
+        </button>
+        <span className="w-px h-5 bg-[var(--color-charcoal-200)]" aria-hidden />
         {folders.map((f) => (
           <button
             key={f}
@@ -414,6 +460,17 @@ export default function ImageLibrary({
               <FolderPlus size={13} /> pasta
             </button>
           ))}
+        <label className="ml-auto inline-flex items-center gap-2 text-xs text-[var(--color-charcoal-500)]">
+          Ordenar:
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            className="border border-[var(--color-charcoal-200)] rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--color-charcoal-900)] bg-white focus:outline-none focus:border-[var(--color-red-600)]"
+          >
+            <option value="recent-upload">Upload recente</option>
+            <option value="recent-used">Usadas recentemente</option>
+          </select>
+        </label>
       </div>
 
       {/* Dropzone (só owner) */}
@@ -438,8 +495,8 @@ export default function ImageLibrary({
           <p className="text-xs text-[var(--color-charcoal-500)] mt-1 max-w-md mx-auto">
             Pastas são organizadas automaticamente pelo nome (ex.:{' '}
             <span className="font-mono">escuna/foto.jpg</span> → álbum{' '}
-            <strong>escuna</strong>). Arquivos soltos vão pra pasta atual (
-            <strong>{folder}</strong>). Tudo é redimensionado pra 2560px e
+            <strong>escuna</strong>). Arquivos soltos vão pra pasta{' '}
+            <strong>{looseTarget}</strong>. Tudo é redimensionado pra 2560px e
             convertido pra WebP antes de subir.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -588,13 +645,19 @@ export default function ImageLibrary({
         <div className="py-16 text-center">
           <Loader2 size={22} className="animate-spin mx-auto text-[var(--color-charcoal-400)]" />
         </div>
-      ) : images.length === 0 ? (
+      ) : displayImages.length === 0 ? (
         <p className="py-16 text-center text-sm text-[var(--color-charcoal-500)]">
-          Nenhuma imagem na pasta <strong>{folder}</strong> ainda.
+          {folder === ALL ? (
+            <>Nenhuma imagem na biblioteca ainda.</>
+          ) : (
+            <>
+              Nenhuma imagem na pasta <strong>{folder}</strong> ainda.
+            </>
+          )}
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-          {images.map((img) => {
+          {displayImages.map((img) => {
             const isSelected = selected.has(img.path);
             return (
               <div
@@ -627,6 +690,11 @@ export default function ImageLibrary({
                   >
                     {isSelected ? '✓' : ''}
                   </span>
+                  {folder === ALL && (
+                    <span className="absolute top-2 right-2 rounded-full bg-black/60 text-white text-[9px] font-bold px-2 py-0.5">
+                      {img.folder}
+                    </span>
+                  )}
                 </button>
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <p className="text-[10px] text-white truncate">{img.name}</p>
