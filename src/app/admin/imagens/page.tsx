@@ -3,8 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isOwnerUser } from '@/lib/admin';
 import ImageLibrary from './ImageLibrary';
+import { listSiteImagesAction } from './actions';
 
 export const dynamic = 'force-dynamic';
+
+const INITIAL_FOLDER = 'escuna';
 
 export default async function AdminImagensPage() {
   const supabase = await createClient();
@@ -22,6 +25,11 @@ export default async function AdminImagensPage() {
     .filter((item) => item.id == null)
     .map((item) => item.name);
 
+  // Carga inicial server-side — o client só refaz fetch ao trocar de pasta
+  // (evita setState em effect, regra react-hooks/set-state-in-effect).
+  const initialList = await listSiteImagesAction(INITIAL_FOLDER);
+  const initialImages = initialList.ok ? initialList.images : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -33,7 +41,12 @@ export default async function AdminImagensPage() {
           {!canManage && ' Upload e exclusão são restritos ao admin master.'}
         </p>
       </div>
-      <ImageLibrary canManage={canManage} initialFolders={initialFolders} />
+      <ImageLibrary
+        canManage={canManage}
+        initialFolders={initialFolders}
+        initialFolder={INITIAL_FOLDER}
+        initialImages={initialImages}
+      />
     </div>
   );
 }
