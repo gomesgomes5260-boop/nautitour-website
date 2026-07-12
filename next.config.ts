@@ -34,9 +34,11 @@ const securityHeaders = [
   // Don't leak the full URL when navigating to other origins.
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   // Lock down legacy / sensitive browser features.
+  // camera=(self) libera a câmera pro scanner de check-in em /admin/scan
+  // (html5-qrcode); demais features seguem bloqueadas.
   {
     key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+    value: 'camera=(self), microphone=(), geolocation=(), interest-cohort=()',
   },
   // HSTS: enforce HTTPS once the site is on a real domain. 2-year max-age,
   // includeSubDomains and preload satisfy the hstspreload.org submission
@@ -58,7 +60,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'nautitour.com.br' },
+      // Supabase Storage (buckets blog-images e site-images) via next/image.
+      { protocol: 'https', hostname: 'uydvnjcqrfjacwburvuo.supabase.co' },
     ],
+  },
+  experimental: {
+    serverActions: {
+      // Uploads de imagem via server action (blog + biblioteca /admin/imagens).
+      // O browser comprime antes de enviar; 25mb cobre o fallback de original.
+      bodySizeLimit: '25mb',
+    },
   },
   async headers() {
     return [
