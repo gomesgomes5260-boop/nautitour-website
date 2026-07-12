@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
+import type { SiteImage } from './actions';
 import Image from 'next/image';
 import { UploadCloud, Trash2, Link as LinkIcon, Loader2, FolderPlus } from 'lucide-react';
 import {
   listSiteImagesAction,
   uploadSiteImageAction,
   deleteSiteImagesAction,
-  type SiteImage,
 } from './actions';
 
 // Pastas padrão espelham public/images/photos + destinos novos.
@@ -72,16 +72,20 @@ async function optimizeImage(file: File): Promise<File> {
 export default function ImageLibrary({
   canManage,
   initialFolders,
+  initialFolder,
+  initialImages,
 }: {
   canManage: boolean;
   initialFolders: string[];
+  initialFolder: string;
+  initialImages: SiteImage[];
 }) {
   const [folders, setFolders] = useState<string[]>(() =>
     Array.from(new Set([...DEFAULT_FOLDERS, ...initialFolders]))
   );
-  const [folder, setFolder] = useState<string>(folders[0] ?? 'misc');
-  const [images, setImages] = useState<SiteImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [folder, setFolder] = useState<string>(initialFolder);
+  const [images, setImages] = useState<SiteImage[]>(initialImages);
+  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -92,7 +96,10 @@ export default function ImageLibrary({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
-  const refresh = useCallback((f: string) => {
+  // Carga inicial vem do servidor (initialImages); troca de pasta é event
+  // handler — nada de setState em effect (regra react-hooks/set-state-in-effect).
+  const changeFolder = useCallback((f: string) => {
+    setFolder(f);
     setLoading(true);
     setSelected(new Set());
     startTransition(async () => {
@@ -106,11 +113,6 @@ export default function ImageLibrary({
       setLoading(false);
     });
   }, []);
-
-  useEffect(() => {
-    refresh(folder);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folder]);
 
   async function handleFiles(fileList: FileList | File[]) {
     if (!canManage) return;
@@ -201,7 +203,7 @@ export default function ImageLibrary({
       return;
     }
     setFolders((prev) => Array.from(new Set([...prev, name])));
-    setFolder(name);
+    changeFolder(name);
     setNewFolder('');
     setShowNewFolder(false);
   }
@@ -214,7 +216,7 @@ export default function ImageLibrary({
           <button
             key={f}
             type="button"
-            onClick={() => setFolder(f)}
+            onClick={() => changeFolder(f)}
             className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-colors ${
               f === folder
                 ? 'bg-[var(--color-charcoal-900)] text-white border-[var(--color-charcoal-900)]'
