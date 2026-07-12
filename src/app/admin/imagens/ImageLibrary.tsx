@@ -3,7 +3,14 @@
 import { useCallback, useRef, useState, useTransition } from 'react';
 import type { SiteImage } from './actions';
 import Image from 'next/image';
-import { UploadCloud, Trash2, Link as LinkIcon, Loader2, FolderPlus } from 'lucide-react';
+import {
+  UploadCloud,
+  Trash2,
+  Link as LinkIcon,
+  Loader2,
+  FolderPlus,
+  FolderUp,
+} from 'lucide-react';
 import {
   listSiteImagesAction,
   uploadSiteImageAction,
@@ -27,13 +34,46 @@ const DEFAULT_FOLDERS = [
 
 const MAX_SIDE = 2560;
 const WEBP_QUALITY = 0.82;
+const FOLDER_RE = /^[a-z0-9][a-z0-9-]{0,49}$/;
 
-type UploadItem = { name: string; status: 'processing' | 'sending' | 'done' | 'error'; info?: string };
+type UploadItem = {
+  key: string;
+  name: string;
+  folder: string;
+  status: 'processing' | 'sending' | 'done' | 'error';
+  info?: string;
+};
+
+type QueuedFile = { file: File; folder: string };
 
 function formatBytes(n: number | null): string {
   if (n == null) return '';
   if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Sanitiza nome de pasta pro padrão do bucket (minúsculas, sem acento, hífens). */
+function sanitizeFolderName(raw: string): string | null {
+  const name = raw
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50);
+  return FOLDER_RE.test(name) ? name : null;
+}
+
+/**
+ * Pasta destino a partir do caminho relativo do arquivo dentro da pasta
+ * enviada: usa o nome do diretório PAI imediato (ex.: "fotos/escuna/x.jpg"
+ * → "escuna"; "escuna/x.jpg" → "escuna"). Arquivo solto → pasta atual.
+ */
+function folderFromRelativePath(relPath: string, fallback: string): string {
+  const parts = relPath.split('/').filter(Boolean);
+  if (parts.length < 2) return fallback;
+  return sanitizeFolderName(parts[parts.length - 2]) ?? fallback;
 }
 
 /**
@@ -69,6 +109,49 @@ async function optimizeImage(file: File): Promise<File> {
   }
 }
 
+/**
+ * Percorre recursivamente entradas de um drop (arquivos E pastas) via
+ * webkitGetAsEntry, preservando o caminho relativo pra pré-organização.
+ */
+async function collectDroppedFiles(items: DataTransferItemList): Promise<
+  Array<{ file: File; relPath: string }>
+> {
+  const out: Array<{ file: File; relPath: string }> = [];
+
+  async function walk(entry: FileSystemEntry, prefix: string): Promise<void> {
+    if (entry.isFile) {
+      const file = await new Promise<File | null>((resolve) =>
+        (entry as FileSystemFileEntry).file(resolve, () => resolve(null))
+      );
+      if (file) out.push({ file, relPath: `${prefix}${file.name}` });
+      return;
+    }
+    if (entry.isDirectory) {
+      const reader = (entry as FileSystemDirectoryEntry).createReader();
+      // readEntries retorna em lotes — repetir até esvaziar.
+      for (;;) {
+        const batch = await new Promise<FileSystemEntry[]>((resolve) =>
+          reader.readEntries(resolve, () => resolve([]))
+        );
+        if (batch.length === 0) break;
+        for (const child of batch) {
+          await walk(child, `${prefix}${entry.name}/`);
+        }
+      }
+    }
+  }
+
+  const entries: FileSystemEntry[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const entry = items[i].webkitGetAsEntry?.();
+    if (entry) entries.push(entry);
+  }
+  for (const entry of entries) {
+    await walk(entry, '');
+  }
+  return out;
+}
+
 export default function ImageLibrary({
   canManage,
   initialFolders,
@@ -94,6 +177,7 @@ export default function ImageLibrary({
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [pending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dirInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
   // Carga inicial vem do servidor (initialImages); troca de pasta é event
@@ -114,36 +198,45 @@ export default function ImageLibrary({
     });
   }, []);
 
-  async function handleFiles(fileList: FileList | File[]) {
+  async function uploadQueue(queue: QueuedFile[]) {
     if (!canManage) return;
     setErr(null);
     setNotice(null);
-    const files = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
-    if (files.length === 0) {
+
+    const valid = queue.filter((q) => q.file.type.startsWith('image/'));
+    const skippedNonImage = queue.length - valid.length;
+    if (valid.length === 0) {
       setErr('Nenhuma imagem válida selecionada.');
       return;
     }
 
-    for (const file of files) {
-      setUploads((prev) => [...prev, { name: file.name, status: 'processing' }]);
+    const perFolder = new Map<string, number>();
+    const currentFolderAtStart = folder;
+    let anyToCurrent = false;
+
+    for (const { file, folder: target } of valid) {
+      const key = `${target}/${file.name}-${Date.now()}`;
+      setUploads((prev) => [
+        ...prev,
+        { key, name: file.name, folder: target, status: 'processing' },
+      ]);
+
       const optimized = await optimizeImage(file);
       const savedPct =
         optimized.size < file.size
           ? ` (${formatBytes(file.size)} → ${formatBytes(optimized.size)})`
           : '';
       setUploads((prev) =>
-        prev.map((u) =>
-          u.name === file.name ? { ...u, status: 'sending', info: savedPct } : u
-        )
+        prev.map((u) => (u.key === key ? { ...u, status: 'sending', info: savedPct } : u))
       );
 
       const fd = new FormData();
       fd.set('file', optimized);
-      fd.set('folder', folder);
+      fd.set('folder', target);
       const res = await uploadSiteImageAction(fd);
       setUploads((prev) =>
         prev.map((u) =>
-          u.name === file.name
+          u.key === key
             ? res.ok
               ? { ...u, status: 'done' }
               : { ...u, status: 'error', info: res.error }
@@ -151,14 +244,67 @@ export default function ImageLibrary({
         )
       );
       if (res.ok) {
-        setImages((prev) => [res.image, ...prev]);
+        perFolder.set(target, (perFolder.get(target) ?? 0) + 1);
+        if (target === currentFolderAtStart) {
+          anyToCurrent = true;
+          setImages((prev) => [res.image, ...prev]);
+        }
       }
     }
 
-    // Limpa a lista de progresso depois de um tempo.
+    // Pastas novas viram abas.
+    setFolders((prev) => Array.from(new Set([...prev, ...perFolder.keys()])));
+
+    const summary = Array.from(perFolder.entries())
+      .map(([f, n]) => `${f} (${n})`)
+      .join(', ');
+    if (summary) {
+      setNotice(
+        `Enviadas: ${summary}.${skippedNonImage > 0 ? ` ${skippedNonImage} arquivo(s) não-imagem ignorado(s).` : ''}`
+      );
+    }
+
+    // Se tudo foi pra UMA pasta diferente da atual, muda a visão pra ela.
+    const targets = Array.from(perFolder.keys());
+    if (!anyToCurrent && targets.length === 1) {
+      changeFolder(targets[0]);
+    }
+
     setTimeout(() => {
       setUploads((prev) => prev.filter((u) => u.status === 'error'));
     }, 4000);
+  }
+
+  function handleLooseFiles(fileList: FileList) {
+    void uploadQueue(Array.from(fileList).map((file) => ({ file, folder })));
+  }
+
+  function handleDirectoryInput(fileList: FileList) {
+    const queue = Array.from(fileList).map((file) => {
+      const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+      return { file, folder: folderFromRelativePath(rel, folder) };
+    });
+    void uploadQueue(queue);
+  }
+
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    if (!canManage) return;
+    // webkitGetAsEntry cobre pastas; fallback pra lista simples de arquivos.
+    if (e.dataTransfer.items?.length) {
+      const collected = await collectDroppedFiles(e.dataTransfer.items);
+      if (collected.length > 0) {
+        void uploadQueue(
+          collected.map(({ file, relPath }) => ({
+            file,
+            folder: folderFromRelativePath(relPath, folder),
+          }))
+        );
+        return;
+      }
+    }
+    if (e.dataTransfer.files?.length) handleLooseFiles(e.dataTransfer.files);
   }
 
   function toggleSelect(path: string) {
@@ -197,8 +343,8 @@ export default function ImageLibrary({
   }
 
   function addFolder() {
-    const name = newFolder.trim().toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]{0,49}$/.test(name)) {
+    const name = sanitizeFolderName(newFolder);
+    if (!name) {
       setErr('Nome de pasta inválido (letras minúsculas, números e hífen).');
       return;
     }
@@ -264,13 +410,8 @@ export default function ImageLibrary({
             setDragOver(true);
           }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            void handleFiles(e.dataTransfer.files);
-          }}
-          onClick={() => fileInputRef.current?.click()}
-          className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+          onDrop={handleDrop}
+          className={`rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
             dragOver
               ? 'border-[var(--color-red-600)] bg-[var(--color-red-50)]'
               : 'border-[var(--color-charcoal-200)] bg-white hover:border-[var(--color-charcoal-400)]'
@@ -278,12 +419,31 @@ export default function ImageLibrary({
         >
           <UploadCloud size={28} className="mx-auto mb-2 text-[var(--color-charcoal-400)]" />
           <p className="text-sm font-semibold text-[var(--color-charcoal-900)]">
-            Arraste fotos aqui ou clique pra escolher
+            Arraste fotos OU pastas inteiras aqui
           </p>
-          <p className="text-xs text-[var(--color-charcoal-500)] mt-1">
-            Pode mandar em alta resolução — a gente redimensiona pra 2560px e
-            converte pra WebP antes de subir (pasta: <strong>{folder}</strong>)
+          <p className="text-xs text-[var(--color-charcoal-500)] mt-1 max-w-md mx-auto">
+            Pastas são organizadas automaticamente pelo nome (ex.:{' '}
+            <span className="font-mono">escuna/foto.jpg</span> → álbum{' '}
+            <strong>escuna</strong>). Arquivos soltos vão pra pasta atual (
+            <strong>{folder}</strong>). Tudo é redimensionado pra 2560px e
+            convertido pra WebP antes de subir.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-xl bg-[var(--color-red-600)] text-white text-xs font-semibold py-2 px-4 hover:bg-[var(--color-red-700)] transition-colors"
+            >
+              Escolher fotos
+            </button>
+            <button
+              type="button"
+              onClick={() => dirInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-charcoal-300)] text-[var(--color-charcoal-700)] text-xs font-semibold py-2 px-4 hover:bg-[var(--color-charcoal-50)] transition-colors"
+            >
+              <FolderUp size={14} /> Enviar pasta
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
@@ -291,7 +451,20 @@ export default function ImageLibrary({
             multiple
             hidden
             onChange={(e) => {
-              if (e.target.files) void handleFiles(e.target.files);
+              if (e.target.files) handleLooseFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+          {/* webkitdirectory: seleciona uma pasta inteira (com subpastas) */}
+          <input
+            ref={dirInputRef}
+            type="file"
+            multiple
+            hidden
+            // @ts-expect-error webkitdirectory é não-padrão mas suportado nos browsers alvo
+            webkitdirectory=""
+            onChange={(e) => {
+              if (e.target.files) handleDirectoryInput(e.target.files);
               e.target.value = '';
             }}
           />
@@ -300,9 +473,9 @@ export default function ImageLibrary({
 
       {/* Progresso de uploads */}
       {uploads.length > 0 && (
-        <ul className="space-y-1">
-          {uploads.map((u, i) => (
-            <li key={`${u.name}-${i}`} className="flex items-center gap-2 text-xs">
+        <ul className="space-y-1 max-h-48 overflow-y-auto">
+          {uploads.map((u) => (
+            <li key={u.key} className="flex items-center gap-2 text-xs">
               {u.status === 'done' ? (
                 <span className="text-emerald-600 font-bold">✓</span>
               ) : u.status === 'error' ? (
@@ -310,6 +483,9 @@ export default function ImageLibrary({
               ) : (
                 <Loader2 size={12} className="animate-spin text-[var(--color-charcoal-400)]" />
               )}
+              <span className="rounded bg-[var(--color-charcoal-100)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--color-charcoal-600)]">
+                {u.folder}
+              </span>
               <span className="text-[var(--color-charcoal-700)] truncate">{u.name}</span>
               {u.info && <span className="text-[var(--color-charcoal-400)]">{u.info}</span>}
               {u.status === 'processing' && (
