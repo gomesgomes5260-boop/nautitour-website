@@ -49,6 +49,8 @@ export function renderBookingReminder(p: BookingReminderPayload): {
   const safeTour = escapeHtml(p.tourName);
   const safeDate = escapeHtml(date);
 
+  const site = p.siteUrl.replace(/\/$/, '');
+
   const subject = `Seu passeio é amanhã! — ${p.bookingCode}`;
 
   let pierHtml = '';
@@ -89,8 +91,8 @@ export function renderBookingReminder(p: BookingReminderPayload): {
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;">
         <tr>
           <td style="background:#096EAB;padding:24px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;">Nautitour</h1>
-            <p style="margin:8px 0 0;color:#cce7f5;font-size:14px;">Lembrete: seu passeio é amanhã!</p>
+            <img src="${site}/brand/logo-white.png" alt="Nautitour" width="60" height="44" style="display:block;margin:0 auto;border:0;outline:none;" />
+            <p style="margin:10px 0 0;color:#cce7f5;font-size:14px;">Lembrete: seu passeio é amanhã!</p>
           </td>
         </tr>
         <tr>
