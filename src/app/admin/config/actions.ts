@@ -51,7 +51,7 @@ export async function blockScheduleAction(
   scheduleId: string,
   reason: string
 ): Promise<
-  { ok: true; cancelledBookings: number } | { ok: false; error: string }
+  { ok: true; cancelledBookings: number; emailsSent: number } | { ok: false; error: string }
 > {
   if (!scheduleId) return { ok: false, error: 'schedule inválido' };
   if (!reason || reason.trim().length < 3) {
@@ -59,6 +59,11 @@ export async function blockScheduleAction(
   }
   await requireAdmin();
   const c = createAdminClient();
+
+  // Snapshot das reservas ativas ANTES do bloqueio — depois da RPC elas já
+  // estão cancelled e não dá mais pra saber quem foi afetado.
+  const affected = await loadActiveBookingsForSchedule(c, scheduleId);
+
   const { data, error } = await c.rpc('block_schedule', {
     p_schedule_id: scheduleId,
     p_reason: reason.trim(),
@@ -67,9 +72,115 @@ export async function blockScheduleAction(
     console.error('[blockScheduleAction]', error);
     return { ok: false, error: error.message };
   }
+
+  // Aviso de cancelamento (clima/Marinha) com CTA de reagendamento —
+  // best-effort: falha de e-mail nunca desfaz o bloqueio.
+  const emailsSent = await sendScheduleCancelledEmails(affected, reason.trim()).catch(
+    (e) => {
+      console.error('[blockScheduleAction] emails', e);
+      return 0;
+    }
+  );
+
   revalidatePath('/admin/manifesto');
   revalidatePath(`/admin/manifesto/${scheduleId}`);
-  return { ok: true, cancelledBookings: data ?? 0 };
+  return { ok: true, cancelledBookings: data ?? 0, emailsSent };
+}
+
+type AffectedBooking = {
+  booking_code: string;
+  customerEmail: string | null;
+  customerName: string | null;
+  tourName: string;
+  departureAt: string | null;
+  sellerName: string | null;
+  sellerPhone: string | null;
+};
+
+async function loadActiveBookingsForSchedule(
+  c: ReturnType<typeof createAdminClient>,
+  scheduleId: string
+): Promise<AffectedBooking[]> {
+  const { data } = await c
+    .from('bookings')
+    .select(
+      `
+      booking_code,
+      customer:customers ( email, full_name ),
+      seller:sellers ( full_name, phone ),
+      tour:tours ( name ),
+      schedule:tour_schedules ( departure_at )
+      `
+    )
+    .eq('tour_schedule_id', scheduleId)
+    .in('status', ['pending_payment', 'confirmed']);
+
+  type Row = {
+    booking_code: string;
+    customer: { email: string; full_name: string | null } | { email: string; full_name: string | null }[] | null;
+    seller: { full_name: string; phone: string | null } | { full_name: string; phone: string | null }[] | null;
+    tour: { name: string } | { name: string }[] | null;
+    schedule: { departure_at: string } | { departure_at: string }[] | null;
+  };
+  return ((data ?? []) as unknown as Row[]).map((r) => {
+    const customer = Array.isArray(r.customer) ? r.customer[0] : r.customer;
+    const seller = Array.isArray(r.seller) ? r.seller[0] : r.seller;
+    const tour = Array.isArray(r.tour) ? r.tour[0] : r.tour;
+    const schedule = Array.isArray(r.schedule) ? r.schedule[0] : r.schedule;
+    return {
+      booking_code: r.booking_code,
+      customerEmail: customer?.email ?? null,
+      customerName: customer?.full_name ?? null,
+      tourName: tour?.name ?? 'Passeio Nautitour',
+      departureAt: schedule?.departure_at ?? null,
+      sellerName: seller?.full_name ?? null,
+      sellerPhone: seller?.phone ?? null,
+    };
+  });
+}
+
+async function sendScheduleCancelledEmails(
+  affected: AffectedBooking[],
+  reason: string
+): Promise<number> {
+  if (affected.length === 0) return 0;
+
+  const { renderScheduleCancelled } = await import(
+    '@/lib/email-templates/schedule-cancelled'
+  );
+  const { buildWaUrl } = await import('@/lib/whatsapp');
+  const { sendEmail } = await import('@/lib/email');
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
+
+  let sent = 0;
+  for (const b of affected) {
+    // Placeholder .invalid = venda de vendedor sem e-mail — inentregável.
+    if (!b.customerEmail || b.customerEmail.endsWith('.invalid')) continue;
+
+    // Reserva de vendedor com telefone → contato direto com o vendedor;
+    // senão, WhatsApp canônico da empresa.
+    const sellerDigits = (b.sellerPhone ?? '').replace(/\D/g, '');
+    const hasSellerWa = b.sellerName && sellerDigits.length >= 10;
+    const waMsg = `Olá! Minha reserva ${b.booking_code} foi cancelada (clima/Marinha) e quero reagendar.`;
+    const waUrl = hasSellerWa
+      ? `https://wa.me/${sellerDigits.length <= 11 ? `55${sellerDigits}` : sellerDigits}?text=${encodeURIComponent(waMsg)}`
+      : buildWaUrl(waMsg);
+
+    const { subject, html, text } = renderScheduleCancelled({
+      bookingCode: b.booking_code,
+      customerName: b.customerName ?? '',
+      tourName: b.tourName,
+      departureAt: b.departureAt,
+      reason,
+      siteUrl,
+      waUrl,
+      contactLabel: hasSellerWa ? `${b.sellerName} (seu vendedor)` : 'nossa equipe',
+    });
+    const res = await sendEmail({ to: b.customerEmail, subject, html, text });
+    if (res.ok) sent++;
+  }
+  return sent;
 }
 
 // ============================================================
