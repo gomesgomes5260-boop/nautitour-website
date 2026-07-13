@@ -68,9 +68,9 @@ export function renderBookingCancelled(p: BookingCancelledPayload): {
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;">
         <tr>
-          <td style="background:#404040;padding:24px;text-align:center;">
-            <h1 style="margin:0;color:#ffffff;font-size:22px;">Nautitour</h1>
-            <p style="margin:8px 0 0;color:#d4d4d4;font-size:14px;">Cancelamento confirmado</p>
+          <td style="background:#C00010;padding:24px;text-align:center;">
+            <img src="${site}/brand/logo-white.png" alt="Nautitour" width="60" height="44" style="display:block;margin:0 auto;border:0;outline:none;" />
+            <p style="margin:10px 0 0;color:#ffd6d9;font-size:14px;">Cancelamento confirmado</p>
           </td>
         </tr>
         <tr>

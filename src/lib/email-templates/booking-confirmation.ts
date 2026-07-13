@@ -69,7 +69,8 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 
   const displayCode = p.bookingCode;
   const safeCode = escapeHtml(displayCode);
-  const bookingUrl = `${p.siteUrl.replace(/\/$/, '')}/reserva/${encodeURIComponent(p.bookingCode)}`;
+  const site = p.siteUrl.replace(/\/$/, '');
+  const bookingUrl = `${site}/reserva/${encodeURIComponent(p.bookingCode)}`;
 
   const subject = `Reserva confirmada — ${displayCode}`;
 
@@ -85,9 +86,9 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;">
           <tr>
-            <td style="background:#096EAB;padding:24px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:22px;">Nautitour</h1>
-              <p style="margin:8px 0 0;color:#cce7f5;font-size:14px;">Sua reserva está confirmada</p>
+            <td style="background:#059669;padding:24px;text-align:center;">
+              <img src="${site}/brand/logo-white.png" alt="Nautitour" width="60" height="44" style="display:block;margin:0 auto;border:0;outline:none;" />
+              <p style="margin:10px 0 0;color:#d1fae5;font-size:14px;">Sua reserva está confirmada</p>
             </td>
           </tr>
           <tr>
@@ -96,7 +97,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
               <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">
                 Recebemos seu pagamento. Sua reserva está confirmada. Guarde este e-mail e mostre o código abaixo no embarque.
               </p>
-              <div style="background:#f0f9ff;border:1px solid #096EAB;border-radius:6px;padding:16px;text-align:center;margin:16px 0;">
+              <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:6px;padding:16px;text-align:center;margin:16px 0;">
                 <p style="margin:0;font-size:13px;color:#555;">Código da reserva</p>
                 <p style="margin:6px 0 0;font-size:24px;font-weight:bold;color:#D90006;letter-spacing:1px;">${safeCode}</p>
               </div>
@@ -122,7 +123,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 
               ${p.pier ? renderPierBlock(p.pier, p.passengerCount) : ''}
               <p style="margin:24px 0 8px;font-size:14px;">
-                <a href="${bookingUrl}" style="background:#096EAB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Ver detalhes da reserva</a>
+                <a href="${bookingUrl}" style="background:#059669;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Ver detalhes da reserva</a>
               </p>
               <p style="margin:24px 0 0;font-size:13px;color:#555;line-height:1.5;">
                 Dúvidas? Responda este e-mail ou fale com a gente pelo WhatsApp.
@@ -189,7 +190,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
 function renderQrBlock(qrDataUri: string, ticketUrl: string | null): string {
   const ticketCta = ticketUrl
     ? `<p style="margin:12px 0 0;font-size:13px;">
-         <a href="${ticketUrl}" style="color:#096EAB;text-decoration:underline;font-weight:bold;">Ver ticket de embarque</a>
+         <a href="${ticketUrl}" style="color:#059669;text-decoration:underline;font-weight:bold;">Ver ticket de embarque</a>
        </p>`
     : '';
   return `

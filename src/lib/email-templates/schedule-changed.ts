@@ -45,7 +45,8 @@ export function renderScheduleChanged(p: ScheduleChangedPayload): {
   const safeName = escapeHtml(p.customerName || 'Cliente');
   const safeTour = escapeHtml(p.tourName);
   const safeCode = escapeHtml(p.bookingCode);
-  const bookingUrl = `${p.siteUrl.replace(/\/$/, '')}/reserva/${encodeURIComponent(p.bookingCode)}`;
+  const site = p.siteUrl.replace(/\/$/, '');
+  const bookingUrl = `${site}/reserva/${encodeURIComponent(p.bookingCode)}`;
   const subject = `Mudança de horário — ${p.bookingCode}`;
 
   const html = `<!DOCTYPE html>
@@ -55,8 +56,9 @@ export function renderScheduleChanged(p: ScheduleChangedPayload): {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 0;">
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;">
-        <tr><td style="background:#C00010;padding:24px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:22px;">Mudança no seu passeio</h1>
+        <tr><td style="background:#096EAB;padding:24px;text-align:center;">
+          <img src="${site}/brand/logo-white.png" alt="Nautitour" width="60" height="44" style="display:block;margin:0 auto;border:0;outline:none;" />
+          <p style="margin:10px 0 0;color:#cce7f5;font-size:14px;">Mudança no seu passeio</p>
         </td></tr>
         <tr><td style="padding:24px;">
           <p style="margin:0 0 16px;font-size:16px;">Olá, ${safeName}!</p>
@@ -71,14 +73,14 @@ export function renderScheduleChanged(p: ScheduleChangedPayload): {
               <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:4px;text-decoration:none;">Horário anterior</strong>
               ${escapeHtml(oldDep)}
             </td></tr>
-            <tr><td style="padding:14px;background:#FCEAEC;border:1px solid #F8C6CB;border-radius:6px;font-size:15px;color:#6E0000;font-weight:bold;margin-top:8px;">
-              <span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#980010;font-weight:bold;margin-bottom:6px;">Novo horário</span>
+            <tr><td style="padding:14px;background:#f0f9ff;border:1px solid #b3daf0;border-radius:6px;font-size:15px;color:#053f61;font-weight:bold;margin-top:8px;">
+              <span style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#096EAB;font-weight:bold;margin-bottom:6px;">Novo horário</span>
               ${escapeHtml(newDep)}
             </td></tr>
           </table>
 
           <p style="margin:24px 0 8px;font-size:14px;">
-            <a href="${bookingUrl}" style="background:#404040;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Ver reserva atualizada</a>
+            <a href="${bookingUrl}" style="background:#096EAB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Ver reserva atualizada</a>
           </p>
           <p style="margin:24px 0 0;font-size:13px;color:#555;line-height:1.5;">
             Não consegue na nova data? Avise a gente assim que puder.
