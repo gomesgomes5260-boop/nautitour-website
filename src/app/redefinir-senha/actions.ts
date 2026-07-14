@@ -1,13 +1,21 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { authLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type ResetPasswordResult = { ok: true } | { ok: false; error: string };
 
 export async function resetPasswordAction(input: {
   password: string;
 }): Promise<ResetPasswordResult> {
+  const ip = getClientIp(await headers());
+  const limit = await authLimiter.limit(`ip:${ip}`);
+  if (!limit.success) {
+    return { ok: false, error: 'Muitas tentativas. Aguarde alguns minutos.' };
+  }
+
   const supabase = await createClient();
 
   // The reset link from the email lands on /auth/callback, which exchanges
