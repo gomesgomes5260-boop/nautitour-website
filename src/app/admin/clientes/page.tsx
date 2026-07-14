@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Users, Repeat, BarChart3, UserX } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sanitizePostgrestPattern } from '@/lib/postgrest-safe';
 import Pagination from '@/components/Pagination';
 import KpiCard from '@/components/KpiCard';
 
@@ -136,8 +137,9 @@ export default async function AdminClientesPage({
       .from('customers')
       .select('id, full_name, email, phone, is_guest')
       .in('id', customerIds);
-    if (q) {
-      cq = cq.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+    const safeQ = sanitizePostgrestPattern(q);
+    if (safeQ) {
+      cq = cq.or(`full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%`);
     }
     const { data } = await cq;
     customers = data ?? [];

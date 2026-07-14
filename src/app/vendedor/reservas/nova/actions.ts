@@ -1,6 +1,8 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
 
 export type SellerBookingInput = {
   scheduleId: string;
@@ -21,6 +23,12 @@ export async function createSellerBookingAction(
 ): Promise<
   { ok: true; bookingCode: string; totalCents: number } | { ok: false; error: string }
 > {
+  const ip = getClientIp(await headers());
+  const limit = await bookingLimiter.limit(`ip:${ip}`);
+  if (!limit.success) {
+    return { ok: false, error: 'Muitas reservas em sequência. Aguarde um momento.' };
+  }
+
   if (!input.scheduleId) return { ok: false, error: 'Escolha uma saída.' };
   if (input.customerName.trim().length < 3) {
     return { ok: false, error: 'Informe o nome do cliente.' };
