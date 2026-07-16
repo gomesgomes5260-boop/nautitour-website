@@ -1,5 +1,5 @@
 export const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '5522998479728';
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '5522992467880';
 
 export function buildWaUrl(text?: string): string {
   const base = `https://wa.me/${WHATSAPP_NUMBER}`;

@@ -13,7 +13,7 @@ Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. �
 - **Rebrand visual 100% completo** (customer-facing + admin). Tier 3 backend 5/5 (captcha, Sentry, CSP, refund parcial, paginação). DB advisor 100% limpo (migration 021). Componentes compartilhados: `KpiCard`, `Pagination`, `WhatsAppFab`, `PhotoGallery`, `CookieBanner`.
 - **Schedule da escuna**: sáb/dom 09:30+12:00, seg-sex 11:30, capacidade 120, 2h30 de duração
 - **Píeres de embarque**: 3 opções, Rua das Pedras default sem taxa, Porto Veleiro e Pescador R$ 10/pax presencial
-- **WhatsApp canônico**: `5522998479728` em `src/lib/whatsapp.ts`. FAB global aparece em todas customer-facing pages (esconde em `/admin`, `/checkout`, `/reserva`)
+- **WhatsApp canônico**: `5522992467880` em `src/lib/whatsapp.ts` (trocado 14/jul — antes era 5522998479728). FAB global aparece em todas customer-facing pages (esconde em `/admin`, `/checkout`, `/reserva`)
 - **LGPD compliant**: cookie consent banner gating GA4 + Microsoft Clarity (consent.analytics). Lead recapture infrastructure pronta (PR #68), envio aguarda Resend domain (PR-Final)
 - **Galeria de fotos**: `PhotoGallery` em home + 3 tour pages com lightbox custom, curadorias em `src/lib/photo-gallery.ts`
 

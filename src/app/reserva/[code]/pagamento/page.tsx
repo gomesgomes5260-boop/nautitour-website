@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { canPay, getMode } from '@/lib/pagarme/config';
+import { buildWaUrl } from '@/lib/whatsapp';
 import PaymentMethodPicker from './PaymentMethodPicker';
 
 export const dynamic = 'force-dynamic';
@@ -111,9 +112,7 @@ export default async function PagamentoPage({
                 <strong className="text-[var(--color-charcoal-900)]">{b.booking_code}</strong>.
               </p>
               <a
-                href={`https://wa.me/5522998479728?text=${encodeURIComponent(
-                  `Olá! Quero finalizar a reserva ${b.booking_code}.`
-                )}`}
+                href={buildWaUrl(`Olá! Quero finalizar a reserva ${b.booking_code}.`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block mt-5 px-6 py-3 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold rounded-full transition-colors"
