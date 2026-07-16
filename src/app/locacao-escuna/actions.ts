@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { inquiryLimiter, getClientIp } from '@/lib/rate-limit';
+import { WHATSAPP_NUMBER } from '@/lib/whatsapp';
 
 export type CreateInquiryInput = {
   email: string;
@@ -22,8 +23,6 @@ export type CreateInquiryInput = {
 export type CreateInquiryResult =
   | { ok: true; whatsappUrl: string }
   | { ok: false; error: string };
-
-const WHATSAPP_NUMBER = '5522998479728';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',

@@ -11,6 +11,7 @@ import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
+import { buildWaUrl } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,11 +34,9 @@ const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
-const WHATSAPP_NUMBER = '5522998479728';
-const WHATSAPP_MESSAGE = encodeURIComponent(
+const WHATSAPP_URL = buildWaUrl(
   'Olá! Gostaria de consultar um horário diferente para a lancha privativa.'
 );
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
 
 function formatPrice(cents: number | null | undefined) {
   if (cents == null) return null;
