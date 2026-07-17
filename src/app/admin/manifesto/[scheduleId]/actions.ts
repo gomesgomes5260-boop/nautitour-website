@@ -7,6 +7,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { isAdminUser } from '@/lib/admin';
 import { sendEmail } from '@/lib/email';
 import { renderScheduleChanged } from '@/lib/email-templates/schedule-changed';
+import { sendSms, toSmsReceiver } from '@/lib/sms';
+import { buildScheduleChangedSms } from '@/lib/sms-messages';
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -55,7 +57,7 @@ export type EditScheduleInput = {
 };
 
 export type EditScheduleResult =
-  | { ok: true; notified: number; skipped: number }
+  | { ok: true; notified: number; skipped: number; smsSent: number }
   | { ok: false; error: string };
 
 export async function editScheduleAction(
@@ -80,6 +82,7 @@ export async function editScheduleAction(
 
   let notified = 0;
   let skipped = 0;
+  let smsSent = 0;
 
   // Notificação: só faz sentido se a data/hora mudou + admin pediu pra notificar
   if (
@@ -102,49 +105,82 @@ export async function editScheduleAction(
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
 
-    // Carrega nomes dos customers em batch
+    // Carrega nomes/telefones dos customers em batch (+ id pro booking_events)
     const { data: bookings } = await admin
       .from('bookings')
-      .select('booking_code, customer:customers(full_name)')
+      .select('id, booking_code, customer:customers(full_name, phone)')
       .in('booking_code', affected.map((a) => a.affected_booking_code));
-    type CustJ = { full_name: string | null } | { full_name: string | null }[] | null;
+    type CustJ =
+      | { full_name: string | null; phone: string | null }
+      | { full_name: string | null; phone: string | null }[]
+      | null;
     const nameByCode = new Map<string, string>();
+    const phoneByCode = new Map<string, string | null>();
+    const idByCode = new Map<string, string>();
     for (const b of bookings ?? []) {
       const c = (b as { customer?: CustJ }).customer;
       const cu = Array.isArray(c) ? c[0] : c;
       nameByCode.set(b.booking_code, cu?.full_name ?? '');
+      phoneByCode.set(b.booking_code, cu?.phone ?? null);
+      idByCode.set(b.booking_code, (b as { id: string }).id);
     }
 
     for (const a of affected) {
-      if (!a.customer_email) {
+      // Canal e-mail (reserva de vendedor pode ter placeholder .invalid)
+      if (!a.customer_email || a.customer_email.endsWith('.invalid')) {
         skipped++;
-        continue;
+      } else {
+        const { subject, html, text } = renderScheduleChanged({
+          bookingCode: a.affected_booking_code,
+          customerName: nameByCode.get(a.affected_booking_code) ?? '',
+          tourName,
+          oldDepartureAt: a.old_departure_at,
+          newDepartureAt: a.new_departure_at,
+          siteUrl,
+        });
+        const r = await sendEmail({
+          to: a.customer_email,
+          subject,
+          html,
+          text,
+        });
+        if (r.ok) notified++;
+        else {
+          console.error('[editScheduleAction] email fail', a.customer_email, r);
+          skipped++;
+        }
       }
-      const { subject, html, text } = renderScheduleChanged({
-        bookingCode: a.affected_booking_code,
-        customerName: nameByCode.get(a.affected_booking_code) ?? '',
-        tourName,
-        oldDepartureAt: a.old_departure_at,
-        newDepartureAt: a.new_departure_at,
-        siteUrl,
-      });
-      const r = await sendEmail({
-        to: a.customer_email,
-        subject,
-        html,
-        text,
-      });
-      if (r.ok) notified++;
-      else {
-        console.error('[editScheduleAction] email fail', a.customer_email, r);
-        skipped++;
+
+      // Canal SMS — best-effort, independente do e-mail
+      const receiver = toSmsReceiver(phoneByCode.get(a.affected_booking_code));
+      if (receiver) {
+        const content = buildScheduleChangedSms({
+          newDepartureAt: a.new_departure_at,
+          bookingCode: a.affected_booking_code,
+          bookingUrl: `${siteUrl.replace(/\/$/, '')}/reserva/${encodeURIComponent(a.affected_booking_code)}`,
+        });
+        const smsRes = await sendSms({ to: receiver, content });
+        if (smsRes.ok) {
+          smsSent++;
+          const bookingId = idByCode.get(a.affected_booking_code);
+          if (bookingId) {
+            const { error: evErr } = await admin.from('booking_events').insert({
+              booking_id: bookingId,
+              kind: 'sms_sent',
+              payload: { template: 'schedule_changed', request_id: smsRes.id ?? null },
+            });
+            if (evErr) console.error('[editScheduleAction] event insert', evErr);
+          }
+        } else if ('error' in smsRes) {
+          console.error('[editScheduleAction] sms fail', a.affected_booking_code, smsRes.error);
+        }
       }
     }
   }
 
   revalidatePath(`/admin/manifesto/${input.scheduleId}`);
   revalidatePath('/admin/manifesto');
-  return { ok: true, notified, skipped };
+  return { ok: true, notified, skipped, smsSent };
 }
 
 // ============================================================
