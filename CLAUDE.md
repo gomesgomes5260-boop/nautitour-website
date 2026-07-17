@@ -137,10 +137,10 @@ nautitour-website/
 - **PIX `expiresInSeconds: 600`** alinhado ao soft-hold de 10min
 - **Webhook** valida basic auth + chama `confirm_booking_payment_v2`
 
-### Email (Resend)
-- **Sender atual**: `Nautitour <onboarding@resend.dev>` (free tier — só entrega pra emails da conta Resend)
-- **Pendente** trocar pra domínio próprio (PR-Final, aguarda DNS)
-- **Templates**: `booking-confirmation.ts` (compra), `schedule-changed.ts` (admin muda data/hora)
+### Notificações — Email (Resend) + SMS (Comtele)
+- **Email/Resend**: sender atual `Nautitour <onboarding@resend.dev>` (free tier — só entrega pra emails da conta Resend). **Pendente** trocar pra domínio próprio (PR-Final, aguarda DNS). 5 templates em `src/lib/email-templates/` (confirmation/changed/reminder/cancelled ×2), rebrandados PR #103 (logo branca + verde/azul/vermelho por categoria).
+- **SMS/Comtele (PRs #106-#108, 17/jul)**: canal ativo pra "atualizações e lembretes" — lembrete D-1 (cron, idempotência própria `reminder_sms_sent_at`, migration 032), mudança de horário (`editScheduleAction`) e cancelamento de saída (`blockScheduleAction`). Sender em `src/lib/sms.ts` (no-op sem `COMTELE_API_KEY`, nunca lança), mensagens em `src/lib/sms-messages.ts` (**sem acento + ≤160 chars** — fora do GSM-7 o SMS custa 2-3×; testes garantem). Receiver = nacional via `toSmsReceiver`. Auditoria: `booking_events.kind='sms_sent'`. Confirmação de compra segue SÓ por e-mail (decisão 16/jul). Bônus: reservas de vendedor sem e-mail (`.invalid`) recebem os avisos por SMS.
+- **WhatsApp Cloud API**: `src/lib/whatsapp-cloud.ts` está **ADORMECIDO** (Meta travou o onboarding do número, erro #2388002; decisão 16/jul de migrar pra SMS). Sem custo; retomável setando `WHATSAPP_ACCESS_TOKEN`/`WHATSAPP_PHONE_NUMBER_ID` e religando os fluxos.
 
 ## 🛠️ Como rodar
 
@@ -162,6 +162,8 @@ PAGARME_WEBHOOK_USER=
 PAGARME_WEBHOOK_PASSWORD=
 RESEND_API_KEY=
 RESEND_SENDER='Nautitour <onboarding@resend.dev>'
+COMTELE_API_KEY=
+CRON_SECRET=
 NEXT_PUBLIC_SITE_URL=https://nautitour-website.vercel.app
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
