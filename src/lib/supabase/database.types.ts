@@ -226,6 +226,7 @@ export type Database = {
           pickup_address: string | null
           pickup_room: string | null
           reminder_sent_at: string | null
+          reminder_sms_sent_at: string | null
           seller_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_cents: number
@@ -258,6 +259,7 @@ export type Database = {
           pickup_address?: string | null
           pickup_room?: string | null
           reminder_sent_at?: string | null
+          reminder_sms_sent_at?: string | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents: number
@@ -290,6 +292,7 @@ export type Database = {
           pickup_address?: string | null
           pickup_room?: string | null
           reminder_sent_at?: string | null
+          reminder_sms_sent_at?: string | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_cents?: number
