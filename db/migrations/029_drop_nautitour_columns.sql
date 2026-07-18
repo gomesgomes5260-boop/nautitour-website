@@ -1,5 +1,6 @@
 -- 029_drop_nautitour_columns.sql
--- ⚠️ PREPARADA, AINDA NÃO APLICADA (10/jul/2026).
+-- ✅ APLICADA via MCP em 18/jul/2026 (autorização do user: "desligar o app
+-- reservas"). Aplicada FORA de ordem (depois da 033).
 --
 -- Fase 9 da fusão: remove as colunas de sync com o painel externo
 -- webreservas.xyz (nautitour-reservas), morto desde o PR #88. As colunas

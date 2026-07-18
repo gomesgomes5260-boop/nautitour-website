@@ -213,12 +213,6 @@ export type Database = {
           expires_at: string | null
           id: string
           manual_payment_method: string | null
-          nautitour_booking_id: string | null
-          nautitour_code: string | null
-          nautitour_sync_error: string | null
-          nautitour_sync_failed_at: string | null
-          nautitour_synced_at: string | null
-          nautitour_ticket_url: string | null
           needs_pickup: boolean
           notes: string | null
           passenger_count: number
@@ -245,12 +239,6 @@ export type Database = {
           expires_at?: string | null
           id?: string
           manual_payment_method?: string | null
-          nautitour_booking_id?: string | null
-          nautitour_code?: string | null
-          nautitour_sync_error?: string | null
-          nautitour_sync_failed_at?: string | null
-          nautitour_synced_at?: string | null
-          nautitour_ticket_url?: string | null
           needs_pickup?: boolean
           notes?: string | null
           passenger_count: number
@@ -277,12 +265,6 @@ export type Database = {
           expires_at?: string | null
           id?: string
           manual_payment_method?: string | null
-          nautitour_booking_id?: string | null
-          nautitour_code?: string | null
-          nautitour_sync_error?: string | null
-          nautitour_sync_failed_at?: string | null
-          nautitour_synced_at?: string | null
-          nautitour_ticket_url?: string | null
           needs_pickup?: boolean
           notes?: string | null
           passenger_count?: number

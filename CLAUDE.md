@@ -223,7 +223,7 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 ### Pendências pós-fusão
 1. **Smoke tests manuais** (nunca rodados): criar vendedor → logar → reserva manual → isolamento com 2 sellers → scan do QR → comissão registrada em `/admin/comissoes` → marcar como paga → cron com `curl -H "Authorization: Bearer $CRON_SECRET"`.
 2. **Envs no Vercel**: setar `CRON_SECRET` e `BOOKING_SESSION_SECRET`; **remover** `NAUTITOUR_API_URL/KEY/SYNC_ENABLED`. (Envs `EFI_*` NÃO são mais necessárias.)
-3. **Aposentadoria (destrutivo — só com confirmação do user)**: aplicar migration 029; arquivar repo `nautitour-reservas`; pausar projeto Supabase "Reservas Escuna" (`zkvoergsfratdkhsgefg`); desativar deploy/domínio webreservas.xyz.
+3. **Aposentadoria — EXECUTADA 18/jul** (autorizada pelo user): ✅ migration 029 aplicada (colunas `nautitour_*` dropadas); ✅ projeto Supabase "Reservas Escuna" (`zkvoergsfratdkhsgefg`) pausado. **Falta (manual, user)**: arquivar o repo GitHub `nautitour-reservas` (Settings → Archive this repository) e desativar o deploy/domínio webreservas.xyz no Vercel.
 4. **Backlog — PR futura de implementações complementares**: payout automático de comissão + split PIX via EFÍ (client pronto no histórico, PR #93); cobrança de sinal PIX de reserva de vendedor **via Pagar.me** (nunca EFÍ); white-label de agência; PWA; lembrete 30min; PDF do ticket.
 
 ## 🎯 Próximos passos
