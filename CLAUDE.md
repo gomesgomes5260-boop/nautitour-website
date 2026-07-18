@@ -90,14 +90,12 @@ nautitour-website/
 │       ├── seller-payout.ts      # 🆕 registra comissão no 1º check-in (claim atômico) + markPayoutPaid manual
 │       └── seller-payout-calc.ts # 🆕 fórmula de comissão em CENTAVOS (testada)
 ├── public/
-│   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
-│   ├── design-docs/              # HTMLs de pesquisa hostados em /design-docs/*
-│   └── images/photos/            # escuna/, ilhas/, aerea/, misc/
+│   ├── brand/                    # logo-charcoal.png + logo-white.png (só os usados)
+│   └── images/photos/            # escuna/, ilhas/, aerea/, misc/ (só fotos referenciadas; originais no Google Drive / bucket site-images)
 ├── design/                       # Material interno (não vai pra produção)
-│   ├── brand-guide/              # PNGs oficiais do cliente
-│   ├── inspirations/             # Prints de referência
-│   ├── icons/coolicons/SVG/      # 442 SVGs de ícones
+│   ├── brand-guide/              # PNGs oficiais do cliente (CANÔNICO — não apagar)
 │   └── research/                 # HTMLs gerados durante UI/UX
+│   # (inspirations/ e icons/coolicons/ removidos na faxina 17/jul — histórico git)
 ├── db/migrations/                # SQL files (rastreamento, aplicação via MCP)
 │   ├── 017_escuna_schedule_factory.sql
 │   ├── 018_embarkation_piers.sql
@@ -198,7 +196,7 @@ Todas no-op se ausentes (Turnstile, Upstash, Sentry) — dev local funciona sem.
 - **`admin-dashboard.md`** — Spec do painel admin (parcialmente implementado)
 - **`docs/design-system/README.md`** — Design system docs
 - **`design/brand-guide/README.md`** — Brand guide oficial (canônico)
-- **`design/research/`** — HTMLs de pesquisa UI/UX (também hostados em `/design-docs/`)
+- **`design/research/`** — HTMLs de pesquisa UI/UX
 - **`db/migrations/README.md`** — Convenção de migrations
 
 ## 🔀 Fusão nautitour-reservas (concluída 10/jul/2026 — PRs #88–#94)

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Pague fácil">
-  <rect x="8" y="18" width="48" height="32" rx="4"></rect>
-  <path d="M8 28 L 56 28"></path>
-  <path d="M16 40 L 24 40"></path>
-  <circle cx="46" cy="42" r="2.2" fill="currentColor"></circle>
-  <circle cx="38" cy="42" r="2.2"></circle>
-</svg>

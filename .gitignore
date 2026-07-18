@@ -16,8 +16,15 @@
 
 # misc
 .DS_Store
-*.pem
 *.zip
+
+# certificados / chaves — NUNCA versionar
+*.pem
+*.p12
+*.key
+*.pfx
+*.crt
+*.cert
 
 # debug
 npm-debug.log*
