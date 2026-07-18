@@ -1,6 +1,18 @@
 # Nautitour — Status do Projeto
 
-Última atualização: **10/jul/2026** — **Sessão 10/jul: FUSÃO nautitour-reservas → nautitour-website (PRs #88–#94, todas mergeadas)**. O painel externo webreservas.xyz foi absorvido: ticket/QR interno (`/ticket/[code]`), sync via API removido, vendedores/agências (`sellers` + RLS user-scoped), painel `/vendedor` com reserva manual (RPC com o mesmo lock do checkout), check-in QR em `/admin/scan` (idempotente), payout PIX de comissão via EFÍ com claim atômico anti-duplicação (`/admin/comissoes`) e lembrete D-1 via Vercel Cron. Migrations 024–028 aplicadas; 029 (drop `nautitour_*`) preparada aguardando confirmação. 40 testes unitários. Pendências: smoke tests manuais, envs `CRON_SECRET`/`EFI_*` no Vercel, validação EFÍ em sandbox e aposentadoria do repo/banco antigos. Detalhes no CLAUDE.md, seção "Fusão nautitour-reservas".
+Última atualização: **17/jul/2026** — **Sessão 12-17/jul (PRs #95-#108, todas mergeadas)**: biblioteca de imagens `/admin/imagens` (Supabase Storage, otimização client-side WebP, upload de pastas, barra de progresso, aba Todas + ordenação por uso — migrations 030-031); e-mails de cancelamento (cliente 48h + saída por clima/Marinha) e rebrand dos 5 templates (logo branca + verde/azul/vermelho por categoria); hardening de pentest (rate limit por conta + alerta Sentry, anti-enumeração no signup, sanitize PostgREST); WhatsApp canônico do site trocado pra (22) 99246-7880 com hardcodes centralizados; e **canal SMS via Comtele** (PRs #106-#108, migration 032) pra lembrete D-1 + mudança de horário + cancelamento de saída — mensagens ≤160 chars sem acento, idempotência por canal, `booking_events sms_sent`; WhatsApp Cloud API adormecido (`whatsapp-cloud.ts`, Meta travou onboarding). Pendente: env `COMTELE_API_KEY` no Vercel + SMS de teste real.
+
+| PR (12-17/jul) | Frente |
+|---|---|
+| #95-#96 | Fusão: ajustes finais + EFÍ removido do V1 (comissão manual) |
+| #97-#101 | Biblioteca de imagens completa (migrations 030-031) |
+| #102 | E-mails de cancelamento + análise DDoS |
+| #103 | Rebrand e-mails: logo branca + cores por categoria |
+| #104 | WhatsApp Cloud API fundação (adormecida) + hardening de segurança |
+| #105 | WhatsApp canônico → (22) 99246-7880 |
+| #106-#108 | SMS Comtele: fundação + lembrete D-1 (migration 032) + atualizações |
+
+Estado anterior (**10/jul/2026** — FUSÃO nautitour-reservas → nautitour-website, PRs #88–#94, todas mergeadas). O painel externo webreservas.xyz foi absorvido: ticket/QR interno (`/ticket/[code]`), sync via API removido, vendedores/agências (`sellers` + RLS user-scoped), painel `/vendedor` com reserva manual (RPC com o mesmo lock do checkout), check-in QR em `/admin/scan` (idempotente), payout PIX de comissão via EFÍ com claim atômico anti-duplicação (`/admin/comissoes`) e lembrete D-1 via Vercel Cron. Migrations 024–028 aplicadas; 029 (drop `nautitour_*`) preparada aguardando confirmação. 40 testes unitários. Pendências: smoke tests manuais, envs `CRON_SECRET`/`EFI_*` no Vercel, validação EFÍ em sandbox e aposentadoria do repo/banco antigos. Detalhes no CLAUDE.md, seção "Fusão nautitour-reservas".
 
 | PR (10/jul) | Frente |
 |---|---|
