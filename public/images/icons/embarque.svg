@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Embarque">
-  <path d="M8 46 Q 32 56 56 46"></path>
-  <path d="M14 46 L 18 32 L 46 32 L 50 46"></path>
-  <path d="M32 12 L 32 32"></path>
-  <path d="M22 22 L 32 12 L 42 22"></path>
-  <path d="M28 32 L 28 22 L 36 22 L 36 32"></path>
-</svg>

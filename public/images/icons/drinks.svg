@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Drinks tropicais">
-  <path d="M14 14 L 50 14 L 38 36 L 38 52 L 26 52 L 26 36 Z"></path>
-  <path d="M22 22 L 42 22"></path>
-  <circle cx="44" cy="10" r="2"></circle>
-  <path d="M44 12 L 44 18"></path>
-  <path d="M50 14 Q 56 8 54 4"></path>
-</svg>

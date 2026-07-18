@@ -90,14 +90,12 @@ nautitour-website/
 │       ├── seller-payout.ts      # 🆕 registra comissão no 1º check-in (claim atômico) + markPayoutPaid manual
 │       └── seller-payout-calc.ts # 🆕 fórmula de comissão em CENTAVOS (testada)
 ├── public/
-│   ├── brand/                    # logo-charcoal.png + logo-white.png + logo-knockout.png
-│   ├── design-docs/              # HTMLs de pesquisa hostados em /design-docs/*
-│   └── images/photos/            # escuna/, ilhas/, aerea/, misc/
+│   ├── brand/                    # logo-charcoal.png + logo-white.png (só os usados)
+│   └── images/photos/            # escuna/, ilhas/, aerea/, misc/ (só fotos referenciadas; originais no Google Drive / bucket site-images)
 ├── design/                       # Material interno (não vai pra produção)
-│   ├── brand-guide/              # PNGs oficiais do cliente
-│   ├── inspirations/             # Prints de referência
-│   ├── icons/coolicons/SVG/      # 442 SVGs de ícones
+│   ├── brand-guide/              # PNGs oficiais do cliente (CANÔNICO — não apagar)
 │   └── research/                 # HTMLs gerados durante UI/UX
+│   # (inspirations/ e icons/coolicons/ removidos na faxina 17/jul — histórico git)
 ├── db/migrations/                # SQL files (rastreamento, aplicação via MCP)
 │   ├── 017_escuna_schedule_factory.sql
 │   ├── 018_embarkation_piers.sql
@@ -137,10 +135,9 @@ nautitour-website/
 - **PIX `expiresInSeconds: 600`** alinhado ao soft-hold de 10min
 - **Webhook** valida basic auth + chama `confirm_booking_payment_v2`
 
-### Notificações — Email (Resend) + SMS (Comtele)
-- **Email/Resend**: sender atual `Nautitour <onboarding@resend.dev>` (free tier — só entrega pra emails da conta Resend). **Pendente** trocar pra domínio próprio (PR-Final, aguarda DNS). 5 templates em `src/lib/email-templates/` (confirmation/changed/reminder/cancelled ×2), rebrandados PR #103 (logo branca + verde/azul/vermelho por categoria).
-- **SMS/Comtele (PRs #106-#108, 17/jul)**: canal ativo pra "atualizações e lembretes" — lembrete D-1 (cron, idempotência própria `reminder_sms_sent_at`, migration 032), mudança de horário (`editScheduleAction`) e cancelamento de saída (`blockScheduleAction`). Sender em `src/lib/sms.ts` (no-op sem `COMTELE_API_KEY`, nunca lança), mensagens em `src/lib/sms-messages.ts` (**sem acento + ≤160 chars** — fora do GSM-7 o SMS custa 2-3×; testes garantem). Receiver = nacional via `toSmsReceiver`. Auditoria: `booking_events.kind='sms_sent'`. Confirmação de compra segue SÓ por e-mail (decisão 16/jul). Bônus: reservas de vendedor sem e-mail (`.invalid`) recebem os avisos por SMS.
-- **WhatsApp Cloud API**: `src/lib/whatsapp-cloud.ts` está **ADORMECIDO** (Meta travou o onboarding do número, erro #2388002; decisão 16/jul de migrar pra SMS). Sem custo; retomável setando `WHATSAPP_ACCESS_TOKEN`/`WHATSAPP_PHONE_NUMBER_ID` e religando os fluxos.
+### Notificações — SÓ Email (Resend)
+- **Decisão 17/jul: e-mail é o ÚNICO canal ativo de notificação.** Os canais SMS/Comtele (PRs #106-#108) e WhatsApp Cloud API (PR #104) foram **REMOVIDOS do código** pra simplificar — recuperáveis no histórico git dessas PRs se um dia voltarem (migrations 032/033 documentam o vai-e-volta da coluna `reminder_sms_sent_at`).
+- **Email/Resend**: sender atual `Nautitour <onboarding@resend.dev>` (free tier — só entrega pra emails da conta Resend). **Pendente** trocar pra domínio próprio (PR-Final, aguarda DNS). 5 templates em `src/lib/email-templates/` (confirmation/changed/reminder/cancelled ×2), rebrandados PR #103 (logo branca + verde/azul/vermelho por categoria). Fluxos pulam placeholder `.invalid` (venda de vendedor sem e-mail).
 
 ## 🛠️ Como rodar
 
@@ -162,7 +159,6 @@ PAGARME_WEBHOOK_USER=
 PAGARME_WEBHOOK_PASSWORD=
 RESEND_API_KEY=
 RESEND_SENDER='Nautitour <onboarding@resend.dev>'
-COMTELE_API_KEY=
 CRON_SECRET=
 NEXT_PUBLIC_SITE_URL=https://nautitour-website.vercel.app
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
@@ -200,7 +196,7 @@ Todas no-op se ausentes (Turnstile, Upstash, Sentry) — dev local funciona sem.
 - **`admin-dashboard.md`** — Spec do painel admin (parcialmente implementado)
 - **`docs/design-system/README.md`** — Design system docs
 - **`design/brand-guide/README.md`** — Brand guide oficial (canônico)
-- **`design/research/`** — HTMLs de pesquisa UI/UX (também hostados em `/design-docs/`)
+- **`design/research/`** — HTMLs de pesquisa UI/UX
 - **`db/migrations/README.md`** — Convenção de migrations
 
 ## 🔀 Fusão nautitour-reservas (concluída 10/jul/2026 — PRs #88–#94)

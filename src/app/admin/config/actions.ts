@@ -88,11 +88,9 @@ export async function blockScheduleAction(
 }
 
 type AffectedBooking = {
-  bookingId: string;
   booking_code: string;
   customerEmail: string | null;
   customerName: string | null;
-  customerPhone: string | null;
   tourName: string;
   departureAt: string | null;
   sellerName: string | null;
@@ -107,8 +105,8 @@ async function loadActiveBookingsForSchedule(
     .from('bookings')
     .select(
       `
-      id, booking_code,
-      customer:customers ( email, full_name, phone ),
+      booking_code,
+      customer:customers ( email, full_name ),
       seller:sellers ( full_name, phone ),
       tour:tours ( name ),
       schedule:tour_schedules ( departure_at )
@@ -117,11 +115,9 @@ async function loadActiveBookingsForSchedule(
     .eq('tour_schedule_id', scheduleId)
     .in('status', ['pending_payment', 'confirmed']);
 
-  type CustomerJoined = { email: string; full_name: string | null; phone: string | null };
   type Row = {
-    id: string;
     booking_code: string;
-    customer: CustomerJoined | CustomerJoined[] | null;
+    customer: { email: string; full_name: string | null } | { email: string; full_name: string | null }[] | null;
     seller: { full_name: string; phone: string | null } | { full_name: string; phone: string | null }[] | null;
     tour: { name: string } | { name: string }[] | null;
     schedule: { departure_at: string } | { departure_at: string }[] | null;
@@ -132,11 +128,9 @@ async function loadActiveBookingsForSchedule(
     const tour = Array.isArray(r.tour) ? r.tour[0] : r.tour;
     const schedule = Array.isArray(r.schedule) ? r.schedule[0] : r.schedule;
     return {
-      bookingId: r.id,
       booking_code: r.booking_code,
       customerEmail: customer?.email ?? null,
       customerName: customer?.full_name ?? null,
-      customerPhone: customer?.phone ?? null,
       tourName: tour?.name ?? 'Passeio Nautitour',
       departureAt: schedule?.departure_at ?? null,
       sellerName: seller?.full_name ?? null,
@@ -156,61 +150,35 @@ async function sendScheduleCancelledEmails(
   );
   const { buildWaUrl } = await import('@/lib/whatsapp');
   const { sendEmail } = await import('@/lib/email');
-  const { sendSms, toSmsReceiver } = await import('@/lib/sms');
-  const { buildScheduleCancelledSms } = await import('@/lib/sms-messages');
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
-  const rebookUrl = `${siteUrl.replace(/\/$/, '')}/passeio-escuna`;
-  const c = createAdminClient();
 
   let sent = 0;
   for (const b of affected) {
-    // Canal e-mail — placeholder .invalid = venda de vendedor sem e-mail.
-    if (b.customerEmail && !b.customerEmail.endsWith('.invalid')) {
-      // Reserva de vendedor com telefone → contato direto com o vendedor;
-      // senão, WhatsApp canônico da empresa.
-      const sellerDigits = (b.sellerPhone ?? '').replace(/\D/g, '');
-      const hasSellerWa = b.sellerName && sellerDigits.length >= 10;
-      const waMsg = `Olá! Minha reserva ${b.booking_code} foi cancelada (clima/Marinha) e quero reagendar.`;
-      const waUrl = hasSellerWa
-        ? `https://wa.me/${sellerDigits.length <= 11 ? `55${sellerDigits}` : sellerDigits}?text=${encodeURIComponent(waMsg)}`
-        : buildWaUrl(waMsg);
+    // Placeholder .invalid = venda de vendedor sem e-mail — inentregável.
+    if (!b.customerEmail || b.customerEmail.endsWith('.invalid')) continue;
 
-      const { subject, html, text } = renderScheduleCancelled({
-        bookingCode: b.booking_code,
-        customerName: b.customerName ?? '',
-        tourName: b.tourName,
-        departureAt: b.departureAt,
-        reason,
-        siteUrl,
-        waUrl,
-        contactLabel: hasSellerWa ? `${b.sellerName} (seu vendedor)` : 'nossa equipe',
-      });
-      const res = await sendEmail({ to: b.customerEmail, subject, html, text });
-      if (res.ok) sent++;
-    }
+    // Reserva de vendedor com telefone → contato direto com o vendedor;
+    // senão, WhatsApp canônico da empresa.
+    const sellerDigits = (b.sellerPhone ?? '').replace(/\D/g, '');
+    const hasSellerWa = b.sellerName && sellerDigits.length >= 10;
+    const waMsg = `Olá! Minha reserva ${b.booking_code} foi cancelada (clima/Marinha) e quero reagendar.`;
+    const waUrl = hasSellerWa
+      ? `https://wa.me/${sellerDigits.length <= 11 ? `55${sellerDigits}` : sellerDigits}?text=${encodeURIComponent(waMsg)}`
+      : buildWaUrl(waMsg);
 
-    // Canal SMS — best-effort, independente do e-mail (cobre inclusive
-    // reservas de vendedor sem e-mail, que têm telefone).
-    const receiver = toSmsReceiver(b.customerPhone);
-    if (receiver) {
-      const content = buildScheduleCancelledSms({
-        departureAt: b.departureAt,
-        bookingCode: b.booking_code,
-        rebookUrl,
-      });
-      const smsRes = await sendSms({ to: receiver, content });
-      if (smsRes.ok) {
-        const { error: evErr } = await c.from('booking_events').insert({
-          booking_id: b.bookingId,
-          kind: 'sms_sent',
-          payload: { template: 'schedule_cancelled', request_id: smsRes.id ?? null },
-        });
-        if (evErr) console.error('[sendScheduleCancelledEmails] event insert', evErr);
-      } else if ('error' in smsRes) {
-        console.error('[sendScheduleCancelledEmails] sms fail', b.booking_code, smsRes.error);
-      }
-    }
+    const { subject, html, text } = renderScheduleCancelled({
+      bookingCode: b.booking_code,
+      customerName: b.customerName ?? '',
+      tourName: b.tourName,
+      departureAt: b.departureAt,
+      reason,
+      siteUrl,
+      waUrl,
+      contactLabel: hasSellerWa ? `${b.sellerName} (seu vendedor)` : 'nossa equipe',
+    });
+    const res = await sendEmail({ to: b.customerEmail, subject, html, text });
+    if (res.ok) sent++;
   }
   return sent;
 }
