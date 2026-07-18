@@ -61,6 +61,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'nautitour.com.br' },
       // Supabase Storage (buckets blog-images e site-images) via next/image.
+      // Projeto atual: Nautitour BR (sa-east-1).
+      { protocol: 'https', hostname: 'hpinfkvfzezuizmeqsfm.supabase.co' },
+      // Projeto antigo (us-west-2), mantido durante a janela de rollback da
+      // migração de região — remover após aposentar o projeto Nutitour.
       { protocol: 'https', hostname: 'uydvnjcqrfjacwburvuo.supabase.co' },
     ],
   },

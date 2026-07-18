@@ -7,7 +7,7 @@ Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. �
 - **🔀 FUSÃO CONCLUÍDA (10/jul, PRs #88–#94)**: o painel externo `nautitour-reservas` (webreservas.xyz, Next 14 + Prisma + NextAuth) foi absorvido por este projeto. Sync via API morto; ticket/QR interno (`/ticket/[code]`, QR = `booking_code`); vendedores/agências (tabela `sellers` + RLS), painel `/vendedor` com reserva manual, check-in QR em `/admin/scan`, payout de comissão via EFÍ (`/admin/comissoes`) e lembrete D-1 via Vercel Cron. Detalhes na seção "Fusão nautitour-reservas".
 
 - Site de reservas de **passeios de barco em Armação dos Búzios** vendendo em produção
-- **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres, `us-west-2`) + Pagar.me v5 + Resend + Vitest (22 testes) + GitHub Actions CI
+- **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres, `sa-east-1` desde 18/jul) + Pagar.me v5 + Resend + Vitest (22 testes) + GitHub Actions CI
 - **Modo Pagar.me `live`** desde 11/maio. Bookings reais com PIX e cartão funcionando.
 - **Brand visual**: charcoal (`#404040`) + red (`#C00010`), Fraunces serif + Montserrat sans + JetBrains Mono. Logo PNG em `public/brand/`.
 - **Rebrand visual 100% completo** (customer-facing + admin). Tier 3 backend 5/5 (captcha, Sentry, CSP, refund parcial, paginação). DB advisor 100% limpo (migration 021). Componentes compartilhados: `KpiCard`, `Pagination`, `WhatsAppFab`, `PhotoGallery`, `CookieBanner`.
@@ -108,7 +108,8 @@ nautitour-website/
 
 ## 🔑 Decisões técnicas chave
 
-### Banco (Supabase project `uydvnjcqrfjacwburvuo` = Nutitour)
+### Banco (Supabase project `hpinfkvfzezuizmeqsfm` = "Nautitour BR", **sa-east-1**)
+- **Migração de região executada 18/jul/2026** (100% via MCP/API — schema replicado pelas 45 entradas de `supabase_migrations.schema_migrations`, dados via `json_agg`→`json_populate_recordset`, auth preservando hash de senha, 1100 fotos do bucket `site-images` recopiadas). O projeto antigo `uydvnjcqrfjacwburvuo` ("Nutitour", us-west-2) fica **pausado ~1 semana como rollback** e depois é aposentado.
 - **RLS habilitado** em todas tabelas. Public reads: `tours`, `tour_schedules`, `embarkation_piers`
 - **Soft-hold**: `bookings.expires_at` + `pg_cron` cancela pending_payment expirado
 - **Schedule factory**: `ensure_escuna_schedules(N)` roda 06:00 UTC, mantém 90 dias à frente
@@ -238,7 +239,7 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 
 2. **PR-Final** (swap apex `nautitour.com.br` + Resend verificado + envio efetivo do email lead-recovery) — aguarda DNS mpjunior. Infra de lead capture já implementada na PR #68 (RPC + onBlur + storage); só falta o disparo do email quando Resend domain ficar verificado.
 
-3. **Migração Supabase pra `sa-east-1`** — adiada. Plano completo em `/root/.claude/plans/merge-feito-fluxo-de-goofy-valley.md` (inventário, fases, riscos). **Pré-requisito imediato**: setar `BOOKING_SESSION_SECRET` no Vercel agora (evita invalidar sessions ao trocar service key).
+3. **Migração Supabase pra `sa-east-1` — EXECUTADA 18/jul** (projeto novo `hpinfkvfzezuizmeqsfm` "Nautitour BR"). Falta só o cutover do lado do user no Vercel: trocar `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY` pros valores do projeto novo + redeploy (e remover envs mortas `NAUTITOUR_*`). Depois: delta re-sync de reservas feitas entre a cópia e o cutover + smoke de R$ 1. Projeto antigo pausado ~1 semana como rollback; remover o host antigo de `next.config.ts` na aposentadoria final.
 
 ### Follow-ups menores (qualidade de vida, sem urgência)
 - **Setar `NEXT_PUBLIC_CLARITY_ID`** no Vercel (criar conta free em clarity.microsoft.com) — infra da PR #67 já pronta
