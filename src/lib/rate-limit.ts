@@ -44,12 +44,31 @@ function buildLimiter(
     }
     return noopLimiter;
   }
-  return new Ratelimit({
+  const ratelimit = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(limit, window),
     prefix: `nautitour:${prefix}`,
     analytics: false,
   });
+  // Fail-open também em erro de RUNTIME (Redis fora do ar, DNS morto, token
+  // inválido): sem isso, um Upstash deletado derruba login/checkout inteiros
+  // — aconteceu em produção em 18/jul (ENOTFOUND após migração). Mesma
+  // decisão de 13/jul: nunca travar o fluxo, mas alertar no Sentry.
+  return {
+    async limit(key: string) {
+      try {
+        return await ratelimit.limit(key);
+      } catch (err) {
+        console.error(`[rate-limit] falha no Upstash (${prefix}) — fail-open`, err);
+        if (process.env.NODE_ENV === 'production') {
+          Sentry.captureException(err, {
+            tags: { module: 'rate-limit', limiter: prefix },
+          });
+        }
+        return { success: true, remaining: 999, reset: 0 };
+      }
+    },
+  };
 }
 
 const redis = buildRedis();
