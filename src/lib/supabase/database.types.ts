@@ -548,6 +548,24 @@ export type Database = {
           },
         ]
       }
+      rate_limit_hits: {
+        Row: {
+          hits: number
+          key: string
+          window_started_at: string
+        }
+        Insert: {
+          hits?: number
+          key: string
+          window_started_at?: string
+        }
+        Update: {
+          hits?: number
+          key?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       schedule_templates: {
         Row: {
           active: boolean
@@ -1070,6 +1088,10 @@ export type Database = {
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_seller: { Args: { p_user_id: string }; Returns: boolean }
+      rate_limit_check: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       mark_booking_payment_failed: {
         Args: {
           p_amount_cents: number

@@ -2,11 +2,18 @@ import 'server-only';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import * as Sentry from '@sentry/nextjs';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-// Rate limit IP-based via Upstash Redis.
-// Em dev sem UPSTASH_REDIS_REST_URL retorna no-op (sempre permite).
+// Rate limit IP-based com dois backends:
+//   1. Upstash Redis (preferencial) — se UPSTASH_REDIS_REST_* estiverem setadas.
+//   2. Postgres/Supabase (padrão desde 18/jul) — RPC `rate_limit_check`
+//      (migration 034, fixed window) via service role. Zero serviço externo;
+//      com o banco em sa-east-1 o roundtrip é desprezível.
+// Sem NENHUM backend (dev local sem service key): no-op.
 // Decisão (13/jul): fail-open MAS com alerta no Sentry se rodar sem
-// proteção em produção — visibilidade sem travar o fluxo.
+// proteção em produção — visibilidade sem travar o fluxo. Vale também pra
+// erro de RUNTIME de qualquer backend (18/jul: Upstash deletado derrubou
+// o login porque o throw não era capturado).
 
 type Limiter = {
   limit: (key: string) => Promise<{ success: boolean; remaining: number; reset: number }>;
@@ -25,20 +32,65 @@ function buildRedis(): Redis | null {
   return new Redis({ url, token });
 }
 
+const WINDOW_UNIT_SECONDS = { s: 1, m: 60, h: 3600, d: 86400 } as const;
+
+type Window = `${number} ${'s' | 'm' | 'h' | 'd'}`;
+
+function windowToSeconds(window: Window): number {
+  const [amount, unit] = window.split(' ') as [string, keyof typeof WINDOW_UNIT_SECONDS];
+  return Number(amount) * WINDOW_UNIT_SECONDS[unit];
+}
+
+function failOpen(prefix: string, err: unknown) {
+  console.error(`[rate-limit] falha no backend (${prefix}) — fail-open`, err);
+  if (process.env.NODE_ENV === 'production') {
+    Sentry.captureException(err, {
+      tags: { module: 'rate-limit', limiter: prefix },
+    });
+  }
+  return { success: true, remaining: 999, reset: 0 };
+}
+
+/** Fixed window no Postgres via RPC `rate_limit_check` (migration 034). */
+function buildPostgresLimiter(prefix: string, limit: number, window: Window): Limiter {
+  const windowSeconds = windowToSeconds(window);
+  return {
+    async limit(key: string) {
+      try {
+        const supabase = createAdminClient();
+        const { data, error } = await supabase.rpc('rate_limit_check', {
+          p_key: `${prefix}:${key}`,
+          p_limit: limit,
+          p_window_seconds: windowSeconds,
+        });
+        if (error) throw error;
+        return { success: data === true, remaining: 0, reset: 0 };
+      } catch (err) {
+        return failOpen(prefix, err);
+      }
+    },
+  };
+}
+
 function buildLimiter(
   redis: Redis | null,
   prefix: string,
   limit: number,
-  window: `${number} ${'s' | 'm' | 'h' | 'd'}`
+  window: Window
 ): Limiter {
   if (!redis) {
-    const msg = `[rate-limit] UPSTASH_REDIS_* ausente — no-op para ${prefix}`;
+    // Sem Upstash, o Postgres assume — desde que a service key exista
+    // (em produção sempre existe; dev local sem ela cai no no-op).
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return buildPostgresLimiter(prefix, limit, window);
+    }
+    const msg = `[rate-limit] nenhum backend disponível — no-op para ${prefix}`;
     console.warn(msg);
     // Em produção, rodar sem rate limit é um risco silencioso: sinaliza no
     // Sentry (fail-open observável). Em dev/preview segue só o warn.
     if (process.env.NODE_ENV === 'production') {
       Sentry.captureMessage(
-        `Rate limit desativado em produção (Upstash ausente) — limiter "${prefix}"`,
+        `Rate limit desativado em produção (sem Upstash e sem service key) — limiter "${prefix}"`,
         'warning'
       );
     }
@@ -59,13 +111,7 @@ function buildLimiter(
       try {
         return await ratelimit.limit(key);
       } catch (err) {
-        console.error(`[rate-limit] falha no Upstash (${prefix}) — fail-open`, err);
-        if (process.env.NODE_ENV === 'production') {
-          Sentry.captureException(err, {
-            tags: { module: 'rate-limit', limiter: prefix },
-          });
-        }
-        return { success: true, remaining: 999, reset: 0 };
+        return failOpen(prefix, err);
       }
     },
   };
