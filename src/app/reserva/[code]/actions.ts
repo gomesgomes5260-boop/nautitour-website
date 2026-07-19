@@ -50,6 +50,12 @@ export async function cancelOwnBookingAction(
     console.error('[cancelOwnBookingAction] email', e)
   );
 
+  // Aviso interno (reservas@) — a equipe precisa saber que o cliente
+  // cancelou pra ajustar a recepção. Best-effort.
+  await notifyTeamOfCancellation(admin, booking.id).catch((e) =>
+    console.error('[cancelOwnBookingAction] team notify', e)
+  );
+
   revalidatePath('/minhas-reservas');
   revalidatePath(`/reserva/${bookingCode}`);
   return { ok: true };
@@ -106,4 +112,65 @@ async function sendCancellationEmail(
     waUrl: `${siteUrl}/api/wa?s=email-cancel&code=${encodeURIComponent(b.booking_code)}`,
   });
   await sendEmail({ to: customer.email, subject, html, text });
+}
+
+async function notifyTeamOfCancellation(
+  admin: ReturnType<typeof createAdminClient>,
+  bookingId: string
+): Promise<void> {
+  const { data } = await admin
+    .from('bookings')
+    .select(
+      `
+      booking_code,
+      passenger_count,
+      total_cents,
+      tour:tours ( name ),
+      schedule:tour_schedules ( departure_at ),
+      customer:customers ( email, full_name, phone ),
+      payments:payments ( status )
+      `
+    )
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!data) return;
+
+  type Row = {
+    booking_code: string;
+    passenger_count: number;
+    total_cents: number;
+    tour: { name: string } | { name: string }[] | null;
+    schedule: { departure_at: string } | { departure_at: string }[] | null;
+    customer:
+      | { email: string; full_name: string | null; phone: string | null }
+      | { email: string; full_name: string | null; phone: string | null }[]
+      | null;
+    payments: { status: string }[] | null;
+  };
+  const b = data as unknown as Row;
+  const tour = Array.isArray(b.tour) ? b.tour[0] : b.tour;
+  const schedule = Array.isArray(b.schedule) ? b.schedule[0] : b.schedule;
+  const customer = Array.isArray(b.customer) ? b.customer[0] : b.customer;
+  const hadPaid = (b.payments ?? []).some((p) => p.status === 'paid');
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
+
+  const { notifyTeam, formatBrtDateTime, formatPriceCents } = await import(
+    '@/lib/team-notify'
+  );
+  await notifyTeam(
+    `Cliente cancelou a reserva — ${b.booking_code}`,
+    [
+      ['Código', b.booking_code],
+      ['Passeio', tour?.name ?? '—'],
+      ['Saída', formatBrtDateTime(schedule?.departure_at ?? null)],
+      ['Passageiros', String(b.passenger_count)],
+      ['Valor', formatPriceCents(b.total_cents)],
+      ['Reembolso', hadPaid ? 'Sim — havia pagamento aprovado' : 'Não havia pagamento'],
+      ['Cliente', customer?.full_name],
+      ['E-mail', customer?.email?.endsWith('.invalid') ? null : customer?.email],
+      ['Telefone', customer?.phone],
+    ],
+    `${siteUrl.replace(/\/$/, '')}/admin/reservas/${encodeURIComponent(b.booking_code)}`
+  );
 }
