@@ -107,7 +107,7 @@ export async function createInquiryAction(
   }
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `${buildWhatsAppMessage(input)} #locacao`
+    buildWhatsAppMessage(input)
   )}`;
   return { ok: true, whatsappUrl };
 }

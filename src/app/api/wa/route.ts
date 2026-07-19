@@ -4,8 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 // Redireciona pro WhatsApp registrando o clique em `whatsapp_clicks` — a
 // contagem do KPI do admin só inclui redirects de fato servidos por aqui.
-// Cada origem tem texto pré-preenchido com um marcador discreto (#site,
-// #lancha…) pro atendimento identificar de onde a pessoa veio.
+// A origem fica na coluna `source` (decisão 19/jul: sem marcador visível
+// no texto pro cliente — confundia).
 //
 // O log é best-effort: falha de banco nunca bloqueia o redirect (o cliente
 // indo pro WhatsApp é mais importante que a métrica). `/api/` já está no
@@ -19,25 +19,25 @@ const TITLE_RE = /[^\p{L}\p{N}\s\-.,!?']/gu;
 function messageFor(source: string, req: NextRequest): string | null {
   switch (source) {
     case 'fab':
-      return 'Olá! Gostaria de saber mais sobre os passeios. #site';
+      return 'Olá! Gostaria de saber mais sobre os passeios.';
     case 'lancha':
-      return 'Olá! Gostaria de consultar um horário diferente para a lancha privativa. #lancha';
+      return 'Olá! Gostaria de consultar um horário diferente para a lancha privativa.';
     case 'blog': {
       const raw = req.nextUrl.searchParams.get('t') ?? '';
       const title = raw.replace(TITLE_RE, '').trim().slice(0, 80);
       return title
-        ? `Oi! Vim do post "${title}" e quero um orçamento da lancha privativa. #blog`
-        : 'Oi! Vim do blog e quero um orçamento da lancha privativa. #blog';
+        ? `Oi! Vim do post "${title}" e quero um orçamento da lancha privativa.`
+        : 'Oi! Vim do blog e quero um orçamento da lancha privativa.';
     }
     case 'pagamento': {
       const code = req.nextUrl.searchParams.get('code') ?? '';
       if (!BOOKING_CODE_RE.test(code)) return null;
-      return `Olá! Quero finalizar a reserva ${code}. #pgto`;
+      return `Olá! Quero finalizar a reserva ${code}.`;
     }
     case 'email-cancel': {
       const code = req.nextUrl.searchParams.get('code') ?? '';
       if (!BOOKING_CODE_RE.test(code)) return null;
-      return `Olá! Cancelei a reserva ${code} pelo site e tenho uma dúvida. #email`;
+      return `Olá! Cancelei a reserva ${code} pelo site e tenho uma dúvida.`;
     }
     default:
       return null;
