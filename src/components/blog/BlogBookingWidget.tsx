@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Sailboat, Ship, MessageCircle, Star } from 'lucide-react';
 import DateScheduleSelector from '../DateScheduleSelector';
-import { buildWaUrl } from '@/lib/whatsapp';
 
 type Schedule = {
   id: string;
@@ -121,9 +120,7 @@ export default function BlogBookingWidget({
             Te respondemos no WhatsApp com horários e orçamento.
           </p>
           <a
-            href={buildWaUrl(
-              `Oi! Vim do post "${postTitle}" e quero um orçamento da lancha privativa.`,
-            )}
+            href={`/api/wa?s=blog&t=${encodeURIComponent(postTitle)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full rounded-xl bg-[var(--color-red-600)] text-white text-sm font-semibold py-3 hover:bg-[var(--color-red-700)] transition-colors"

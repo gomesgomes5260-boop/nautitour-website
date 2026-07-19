@@ -93,7 +93,6 @@ async function sendCancellationEmail(
   const { renderBookingCancelled } = await import(
     '@/lib/email-templates/booking-cancelled'
   );
-  const { buildWaUrl } = await import('@/lib/whatsapp');
   const { sendEmail } = await import('@/lib/email');
 
   const { subject, html, text } = renderBookingCancelled({
@@ -103,9 +102,8 @@ async function sendCancellationEmail(
     departureAt: schedule?.departure_at ?? null,
     hadPaidPayment: (b.payments ?? []).some((p) => p.status === 'paid'),
     siteUrl,
-    waUrl: buildWaUrl(
-      `Olá! Cancelei a reserva ${b.booking_code} pelo site e tenho uma dúvida.`
-    ),
+    // Passa pela rota interna: conta o clique no KPI e redireciona pro wa.me.
+    waUrl: `${siteUrl}/api/wa?s=email-cancel&code=${encodeURIComponent(b.booking_code)}`,
   });
   await sendEmail({ to: customer.email, subject, html, text });
 }
