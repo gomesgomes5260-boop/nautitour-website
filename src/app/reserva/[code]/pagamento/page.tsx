@@ -54,7 +54,12 @@ export default async function PagamentoPage({
   const b = booking as unknown as Joined;
 
   if (b.status !== 'pending_payment') {
-    redirect(`/reserva/${code}`);
+    // `?paid=1` alimenta o PurchaseTracker (evento GA4 purchase). Sem isso o
+    // PIX — confirmado via polling desta página — nunca era medido; só o
+    // cartão (CardCheckout anexa o param no próprio redirect). Cancelada/
+    // expirada segue sem o param.
+    const paid = b.status === 'confirmed' || b.status === 'completed';
+    redirect(`/reserva/${code}${paid ? '?paid=1' : ''}`);
   }
   if (b.expires_at && new Date(b.expires_at) < new Date()) {
     redirect(`/reserva/${code}?expired=1`);

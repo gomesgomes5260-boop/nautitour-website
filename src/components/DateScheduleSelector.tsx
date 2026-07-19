@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin } from 'lucide-react';
+import { analytics } from '@/lib/analytics';
 
 type SchedulePier = {
   slug: string;
@@ -25,6 +26,8 @@ type Props = {
   fallbackPriceCents: number | null;
   pricingMode?: 'per_passenger' | 'per_slot';
   soldOutLabel?: string;
+  /** Slug do tour pro evento select_item do GA4 (item_list_id). */
+  analyticsListId?: string;
 };
 
 const TZ = 'America/Sao_Paulo';
@@ -72,6 +75,7 @@ export default function DateScheduleSelector({
   fallbackPriceCents,
   pricingMode = 'per_passenger',
   soldOutLabel = 'Esgotado',
+  analyticsListId,
 }: Props) {
   // === Agrupa schedules por dia (key 'YYYY-MM-DD' em BRT) ===
   const byDay = useMemo(() => {
@@ -331,6 +335,15 @@ export default function DateScheduleSelector({
                     ) : (
                       <Link
                         href={`/checkout/${s.id}`}
+                        onClick={() =>
+                          analytics.selectItem(
+                            s.id,
+                            analyticsListId ?? 'tour',
+                            (s.price_cents ?? fallbackPriceCents) != null
+                              ? (s.price_cents ?? fallbackPriceCents)! / 100
+                              : null
+                          )
+                        }
                         className="inline-flex items-center gap-1 bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white font-bold text-xs px-3 py-2 rounded-full transition-colors shrink-0"
                       >
                         Reservar

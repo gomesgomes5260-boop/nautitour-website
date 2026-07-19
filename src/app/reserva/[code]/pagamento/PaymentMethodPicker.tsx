@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QrCode, CreditCard } from 'lucide-react';
 import PixCheckout from './PixCheckout';
 import CardCheckout from './CardCheckout';
+import { analytics } from '@/lib/analytics';
 
 type Method = 'pix' | 'card';
 
@@ -15,6 +16,12 @@ type Props = {
 
 export default function PaymentMethodPicker({ bookingCode, totalCents, maxInstallments = 1 }: Props) {
   const [method, setMethod] = useState<Method>('pix');
+
+  // add_payment_info a cada método visto (mount = pix default; troca de aba
+  // re-dispara com o novo payment_type). Só evento — sem setState no effect.
+  useEffect(() => {
+    analytics.addPaymentInfo(method, totalCents / 100);
+  }, [method, totalCents]);
 
   return (
     <div>
