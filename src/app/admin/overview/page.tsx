@@ -11,6 +11,7 @@ import {
   PlusCircle,
   RefreshCcw,
   Ban,
+  MessageCircle,
 } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import KpiCard from '@/components/KpiCard';
@@ -192,6 +193,19 @@ export default async function AdminOverviewPage() {
     0
   );
 
+  // Chats WhatsApp — só redirects de fato servidos (rota /api/wa + form de
+  // locação). Mesmas janelas BRT dos demais KPIs: mês corrente + hoje.
+  const { count: waChatsMonth } = await admin
+    .from('whatsapp_clicks')
+    .select('id', { count: 'exact', head: true })
+    .gte('clicked_at', monthFrom)
+    .lt('clicked_at', monthTo);
+  const { count: waChatsToday } = await admin
+    .from('whatsapp_clicks')
+    .select('id', { count: 'exact', head: true })
+    .gte('clicked_at', todayFrom)
+    .lt('clicked_at', todayTo);
+
   // ===== Bar chart 14 dias =====
   const { fromIso: fourteenAgoFrom } = dayBoundsBRT(-13);
   const { data: paymentsLast14 } = await admin
@@ -270,7 +284,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8 md:mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 mb-8 md:mb-10">
         <KpiCard
           Icon={DollarSign}
           iconTone="bg-emerald-100 text-emerald-700"
@@ -298,6 +312,13 @@ export default async function AdminOverviewPage() {
           label="Reembolsos do mês"
           value={String(refundsCount)}
           sub={refundsTotalCents > 0 ? PRICE.format(refundsTotalCents / 100) : '—'}
+        />
+        <KpiCard
+          Icon={MessageCircle}
+          iconTone="bg-green-100 text-green-700"
+          label="Chats WhatsApp no mês"
+          value={String(waChatsMonth ?? 0)}
+          sub={`${waChatsToday ?? 0} hoje`}
         />
       </div>
 

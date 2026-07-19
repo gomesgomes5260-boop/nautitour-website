@@ -89,8 +89,8 @@ export async function createInquiryAction(
   // Marca whatsapp_contacted_at — cliente sai daqui pro WhatsApp agora.
   // Service-role bypassa RLS (inquiry_requests não permite UPDATE direto).
   const inquiryId = (data?.[0] as { inquiry_id?: string } | undefined)?.inquiry_id;
+  const admin = createAdminClient();
   if (inquiryId) {
-    const admin = createAdminClient();
     await admin
       .from('inquiry_requests')
       .update({ whatsapp_contacted_at: new Date().toISOString() })
@@ -98,8 +98,16 @@ export async function createInquiryAction(
       .is('whatsapp_contacted_at', null);
   }
 
+  // Conta no KPI de chats do admin — aqui o texto é dinâmico (dados do form),
+  // então o registro é feito na action em vez da rota /api/wa. Best-effort.
+  try {
+    await admin.from('whatsapp_clicks').insert({ source: 'locacao' });
+  } catch (err) {
+    console.error('[locacao] falha ao registrar clique de WhatsApp', err);
+  }
+
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    buildWhatsAppMessage(input)
+    `${buildWhatsAppMessage(input)} #locacao`
   )}`;
   return { ok: true, whatsappUrl };
 }

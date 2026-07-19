@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { buildWaUrl } from '@/lib/whatsapp';
 import { analytics } from '@/lib/analytics';
 
 const HIDDEN_PREFIXES = ['/admin', '/checkout', '/reserva', '/blog/'];
-const DEFAULT_MESSAGE = 'Olá! Gostaria de saber mais sobre os passeios.';
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -42,7 +40,7 @@ export default function WhatsAppFab() {
         Fale com a gente
       </span>
       <a
-        href={buildWaUrl(DEFAULT_MESSAGE)}
+        href="/api/wa?s=fab"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Abrir conversa no WhatsApp"

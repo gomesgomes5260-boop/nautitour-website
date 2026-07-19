@@ -13,7 +13,6 @@ import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
-import { buildWaUrl } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,9 +35,8 @@ const PRICE_FORMATTER = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
-const WHATSAPP_URL = buildWaUrl(
-  'Olá! Gostaria de consultar um horário diferente para a lancha privativa.'
-);
+// Rota interna que registra o clique (KPI do admin) e redireciona pro wa.me.
+const WHATSAPP_URL = '/api/wa?s=lancha';
 
 function formatPrice(cents: number | null | undefined) {
   if (cents == null) return null;

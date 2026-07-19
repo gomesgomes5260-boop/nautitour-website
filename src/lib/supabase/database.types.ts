@@ -846,6 +846,24 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          source: string
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          source: string
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          source?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       admins_with_email: {
