@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import { createInquiryAction } from './actions';
 import TurnstileWidget from '@/components/TurnstileWidget';
+import { analytics } from '@/lib/analytics';
 
 const MIN_HOURS = 3;
 const MAX_PASSENGERS = 120;
@@ -91,6 +92,7 @@ export default function InquiryForm() {
         return;
       }
       setSuccess({ url: result.whatsappUrl });
+      analytics.generateLead('locacao-escuna');
       // Open WhatsApp in a new tab automatically
       window.open(result.whatsappUrl, '_blank', 'noopener,noreferrer');
     });

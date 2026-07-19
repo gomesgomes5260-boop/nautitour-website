@@ -6,6 +6,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import ViewItemTracker from '@/components/ViewItemTracker';
+import WhatsAppLeadLink from '@/components/WhatsAppLeadLink';
 import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
@@ -94,6 +96,11 @@ export default async function PasseioLanchaPage() {
   return (
     <>
       <Header />
+      <ViewItemTracker
+        itemId="lancha-privativa"
+        itemName={tour.name}
+        valueBRL={tour.base_price_cents != null ? tour.base_price_cents / 100 : null}
+      />
       <TourJsonLd
         name={tour.name}
         description={tour.description ?? 'Lancha privativa em Armação dos Búzios.'}
@@ -236,13 +243,13 @@ export default async function PasseioLanchaPage() {
                       fallbackPriceCents={tour.base_price_cents ?? null}
                       pricingMode="per_slot"
                       soldOutLabel="Reservado"
+                      analyticsListId="lancha-privativa"
                     />
 
                     {/* WhatsApp inquiry card */}
-                    <a
+                    <WhatsAppLeadLink
                       href={WHATSAPP_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      source="lancha-whatsapp"
                       className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-dashed border-[var(--color-charcoal-200)] hover:border-[var(--color-red-600)] hover:bg-[var(--color-red-50)] p-4 transition-colors"
                     >
                       <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[var(--color-success)] text-white shrink-0">
@@ -256,7 +263,7 @@ export default async function PasseioLanchaPage() {
                           Consulte disponibilidade direto no WhatsApp.
                         </p>
                       </div>
-                    </a>
+                    </WhatsAppLeadLink>
                   </div>
                 </div>
               </aside>

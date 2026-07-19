@@ -56,6 +56,7 @@ export default function CheckoutForm({
     if (!EMAIL_RE.test(email)) return;
     if (capturedEmailRef.current === email) return;
     capturedEmailRef.current = email;
+    analytics.generateLead('checkout_recapture');
     // Fire-and-forget — não bloqueia o submit nem mostra feedback.
     void captureLeadAction({
       email,

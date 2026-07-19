@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
+import ViewItemTracker from '@/components/ViewItemTracker';
 import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_ESCUNA_GALLERY } from '@/lib/photo-gallery';
@@ -89,6 +90,11 @@ export default async function PasseioEscunaPage() {
   return (
     <>
       <Header />
+      <ViewItemTracker
+        itemId="escuna-publica"
+        itemName={tour.name}
+        valueBRL={tour.base_price_cents != null ? tour.base_price_cents / 100 : null}
+      />
       <TourJsonLd
         name={tour.name}
         description={tour.description ?? 'Passeio de escuna em Armação dos Búzios.'}
@@ -240,6 +246,7 @@ export default async function PasseioEscunaPage() {
                       fallbackPriceCents={tour.base_price_cents ?? null}
                       pricingMode="per_passenger"
                       soldOutLabel="Esgotado"
+                      analyticsListId="escuna-publica"
                     />
                   </div>
                 </div>
