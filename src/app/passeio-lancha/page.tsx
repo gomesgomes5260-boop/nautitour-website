@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 // JSON-LD. Antes o herói caía num fallback de "cruzeiro" e o OG/JSON-LD
 // usavam foto de escuna. O host do Supabase já está liberado em next.config.
 const LANCHA_COVER =
-  'https://hpinfkvfzezuizmeqsfm.supabase.co/storage/v1/object/public/site-images/ilhas/lancha-praia-002-1bba7642.webp';
+  'https://hpinfkvfzezuizmeqsfm.supabase.co/storage/v1/object/public/site-images/misc/seq-0002-f334831e.webp';
 
 export const metadata: Metadata = {
   title: 'Lancha Privativa em Búzios — passeio exclusivo até 12 pessoas',
