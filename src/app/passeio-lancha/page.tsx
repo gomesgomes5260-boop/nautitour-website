@@ -235,7 +235,7 @@ export default async function PasseioLanchaPage() {
                       {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-charcoal-500)] mt-1">
-                      Parcele em até 6× sem juros
+                      Pagamento à vista — PIX ou cartão
                     </p>
                   </div>
                   <div className="p-5 sm:p-6">

@@ -13,7 +13,7 @@ const faqs: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Quais formas de pagamento vocês aceitam?',
-    a: 'PIX e cartão de crédito (em breve). Para locação privativa, o pagamento é combinado diretamente com o representante.',
+    a: 'PIX ou cartão, sempre à vista (não trabalhamos com parcelamento). Para locação privativa, o pagamento é combinado diretamente com o representante.',
   },
   {
     q: 'Quanto tempo dura cada passeio?',

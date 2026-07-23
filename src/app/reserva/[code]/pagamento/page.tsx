@@ -70,8 +70,8 @@ export default async function PagamentoPage({
   const mode = getMode();
   const allowed = canPay(customer?.email ?? null);
 
-  // Parcelamento: lancha (private) até 6x sem juros; escuna 1x à vista.
-  const maxInstallments = tour?.tour_type === 'private' ? 6 : 1;
+  // Pagamento SEMPRE à vista (decisão 23/jul): sem parcelamento em nenhum
+  // tour — PaymentMethodPicker fica no default maxInstallments=1.
 
   return (
     <>
@@ -128,7 +128,6 @@ export default async function PagamentoPage({
             <PaymentMethodPicker
               bookingCode={b.booking_code}
               totalCents={b.total_cents}
-              maxInstallments={maxInstallments}
             />
           )}
         </Container>
