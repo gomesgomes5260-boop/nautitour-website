@@ -84,9 +84,9 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="mailto:passeiodeescuna.tx@gmail.com" className="flex items-start gap-2 text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">
+                <a href="mailto:contato@nautitour.com.br" className="flex items-start gap-2 text-white/85 text-sm hover:text-[var(--color-red-300)] transition-colors">
                   <Mail size={15} className="mt-0.5 shrink-0" />
-                  <span className="break-all">passeiodeescuna.tx@gmail.com</span>
+                  <span className="break-all">contato@nautitour.com.br</span>
                 </a>
               </li>
               <li className="flex items-start gap-2 text-white/85 text-sm">

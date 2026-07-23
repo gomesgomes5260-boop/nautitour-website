@@ -36,11 +36,11 @@ export default function ContatoPage() {
       <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-2">E-mail</h2>
       <p>
         <a
-          href="mailto:passeiodeescuna.tx@gmail.com"
+          href="mailto:contato@nautitour.com.br"
           className="hover:underline"
           style={{ color: 'rgb(9, 110, 171)' }}
         >
-          passeiodeescuna.tx@gmail.com
+          contato@nautitour.com.br
         </a>
       </p>
 
