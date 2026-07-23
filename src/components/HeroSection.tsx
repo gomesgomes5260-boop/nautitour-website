@@ -108,7 +108,7 @@ export default function HeroSection() {
               title="Lancha Privativa 3h"
               meta="Saída flexível · até 8 pessoas · roteiro custom"
               priceFrom="R$1.200"
-              imgSrc="https://hpinfkvfzezuizmeqsfm.supabase.co/storage/v1/object/public/site-images/misc/seq-0002-f334831e.webp"
+              imgSrc="https://hpinfkvfzezuizmeqsfm.supabase.co/storage/v1/object/public/site-images/misc/seq-0002-close-b73acd05.webp"
               imgAlt="Lancha privativa em Búzios"
               badge="Privativo"
               badgeStyle="red"
