@@ -21,7 +21,7 @@ const steps: Step[] = [
     Icon: CreditCard,
     title: 'Pague online',
     description:
-      'PIX, cartão de crédito (até 6x) ou direto pelo WhatsApp. Voucher chega no seu e-mail e WhatsApp na hora.',
+      'PIX ou cartão à vista, ou direto pelo WhatsApp. Voucher chega no seu e-mail e WhatsApp na hora.',
   },
   {
     num: '03',

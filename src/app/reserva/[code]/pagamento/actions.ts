@@ -233,14 +233,11 @@ export async function createCardForBookingAction(input: {
     };
   }
 
-  // Cap server-side de parcelamento: lancha (private) até 6x, escuna (scheduled) 1x.
-  // Cap adicional: cada parcela deve ter pelo menos R$ 100,00.
-  const tourMaxInstallments = tour.tour_type === 'private' ? 6 : 1;
-  const priceCap = Math.max(1, Math.floor(booking.total_cents / 10000));
-  const allowedMax = Math.max(1, Math.min(tourMaxInstallments, priceCap));
+  // Pagamento SEMPRE à vista (decisão 23/jul): sem parcelamento em nenhum
+  // tour. O client nem mostra o seletor; qualquer pedido >1x é rejeitado.
   const requestedInstallments = Math.max(1, Math.min(input.installments ?? 1, 12));
-  if (requestedInstallments > allowedMax) {
-    return { ok: false, error: `Parcelamento máximo permitido: ${allowedMax}x` };
+  if (requestedInstallments > 1) {
+    return { ok: false, error: 'Pagamento apenas à vista (sem parcelamento).' };
   }
 
   try {
