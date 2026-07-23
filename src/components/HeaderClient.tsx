@@ -39,11 +39,11 @@ export default function HeaderClient({ user, isAdmin = false }: Props) {
       <div className="hidden md:block bg-[var(--color-red-600)] text-white text-xs">
         <Container className="flex items-center justify-between py-2">
           <a
-            href="mailto:passeiodeescuna.tx@gmail.com"
+            href="mailto:contato@nautitour.com.br"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <Mail size={14} />
-            passeiodeescuna.tx@gmail.com
+            contato@nautitour.com.br
           </a>
           <div className="flex items-center gap-4">
             {phoneNumbers.map((p, i) => (

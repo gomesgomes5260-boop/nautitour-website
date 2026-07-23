@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getMode } from '@/lib/pagarme/config';
 import CheckoutForm from './CheckoutForm';
 
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,12 @@ export default async function CheckoutPage({
   if (!schedule || !schedule.tour) notFound();
 
   const tour = Array.isArray(schedule.tour) ? schedule.tour[0] : schedule.tour;
+
+  // Trava de segurança: em produção (modo `live`) o tour-de-teste (R$ 1) NÃO
+  // pode ser comprado por ninguém — mesmo com link direto pra saída. Fora do
+  // live (allowlist/off, usado em dev/staging) segue acessível pra E2E.
+  if (tour.is_test_only && getMode() === 'live') notFound();
+
   const pierRaw = (schedule as { pier?: unknown }).pier;
   const pier = Array.isArray(pierRaw) ? pierRaw[0] : pierRaw;
   const pierTyped = pier as
