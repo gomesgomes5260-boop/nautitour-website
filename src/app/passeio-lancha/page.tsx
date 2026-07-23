@@ -16,6 +16,12 @@ import { formatDuration } from '@/lib/format-duration';
 
 export const dynamic = 'force-dynamic';
 
+// Foto real da lancha (bucket site-images) — usada no herói, no OG e no
+// JSON-LD. Antes o herói caía num fallback de "cruzeiro" e o OG/JSON-LD
+// usavam foto de escuna. O host do Supabase já está liberado em next.config.
+const LANCHA_COVER =
+  'https://hpinfkvfzezuizmeqsfm.supabase.co/storage/v1/object/public/site-images/ilhas/lancha-praia-002-1bba7642.webp';
+
 export const metadata: Metadata = {
   title: 'Lancha Privativa em Búzios — passeio exclusivo até 12 pessoas',
   description:
@@ -26,7 +32,7 @@ export const metadata: Metadata = {
     description:
       'Passeio exclusivo de lancha privativa em Búzios. Grupos até 12 pessoas, roteiro flexível.',
     url: '/passeio-lancha',
-    images: ['/images/photos/escuna/escuna-pier-01.jpg'],
+    images: [LANCHA_COVER],
   },
 };
 
@@ -102,7 +108,7 @@ export default async function PasseioLanchaPage() {
       <TourJsonLd
         name={tour.name}
         description={tour.description ?? 'Lancha privativa em Armação dos Búzios.'}
-        imageUrl={tour.cover_image_url ?? '/images/photos/escuna/escuna-pier-01.jpg'}
+        imageUrl={tour.cover_image_url ?? LANCHA_COVER}
         priceCents={tour.base_price_cents}
         durationMinutes={tour.duration_minutes}
         maxCapacity={tour.max_capacity}
@@ -112,7 +118,7 @@ export default async function PasseioLanchaPage() {
         {/* === HERO === */}
         <section className="relative w-full overflow-hidden">
           <Image
-            src={tour.cover_image_url ?? '/images/photos/misc/cruzeiro-vista-01.jpg'}
+            src={tour.cover_image_url ?? LANCHA_COVER}
             alt={tour.name}
             fill
             className="object-cover"
