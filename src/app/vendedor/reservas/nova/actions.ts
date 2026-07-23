@@ -74,5 +74,35 @@ export async function createSellerBookingAction(
   }
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return { ok: false, error: 'Falha ao criar reserva.' };
+
+  // Aviso interno (reservas@) — reserva manual de vendedor também conta pra
+  // equipe se preparar. Best-effort, nunca desfaz a reserva.
+  try {
+    const [{ notifyTeam, formatPriceCents }, { getSellerForUser }] =
+      await Promise.all([import('@/lib/team-notify'), import('@/lib/staff')]);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const seller = user ? await getSellerForUser(user.id) : null;
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
+    await notifyTeam(
+      `Nova reserva de vendedor — ${row.booking_code}`,
+      [
+        ['Código', row.booking_code],
+        ['Vendedor', seller?.full_name],
+        ['Cliente', input.customerName.trim()],
+        ['Telefone', input.customerPhone.trim()],
+        ['Passageiros', String(passengers.length)],
+        ['Total', formatPriceCents(row.total_cents)],
+        ['Sinal pago', formatPriceCents(input.amountPaidCents)],
+        ['Pickup', input.needsPickup ? (input.pickupAddress?.trim() || 'Sim') : null],
+      ],
+      `${siteUrl.replace(/\/$/, '')}/admin/reservas/${encodeURIComponent(row.booking_code)}`
+    );
+  } catch (err) {
+    console.error('[createSellerBookingAction] team notify', err);
+  }
+
   return { ok: true, bookingCode: row.booking_code, totalCents: row.total_cents };
 }

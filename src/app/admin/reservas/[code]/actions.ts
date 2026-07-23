@@ -141,9 +141,10 @@ export async function resendConfirmationEmailAction(
     };
   }
 
-  // Import dinâmico — evita carregar Resend SDK em outras paths admin
+  // Import dinâmico — evita carregar Resend SDK em outras paths admin.
+  // notifyTeam: false — reenvio manual não é reserva nova, não avisa a equipe.
   const { sendBookingConfirmationFor } = await import('@/lib/email-flow');
-  const res = await sendBookingConfirmationFor(admin, booking.id);
+  const res = await sendBookingConfirmationFor(admin, booking.id, { notifyTeam: false });
 
   if (!res.ok) {
     if ('skipped' in res && res.skipped) {

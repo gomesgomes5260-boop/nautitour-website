@@ -8,7 +8,8 @@ type Admin = SupabaseClient<Database>;
 
 export async function sendBookingConfirmationFor(
   admin: Admin,
-  bookingId: string
+  bookingId: string,
+  opts?: { notifyTeam?: boolean }
 ): Promise<SendResult> {
   const { data, error } = await admin
     .from('bookings')
@@ -20,7 +21,7 @@ export async function sendBookingConfirmationFor(
       currency,
       tour:tours ( name ),
       schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
-      customer:customers ( email, full_name )
+      customer:customers ( email, full_name, phone )
       `
     )
     .eq('id', bookingId)
@@ -46,8 +47,8 @@ export async function sendBookingConfirmationFor(
       | { departure_at: string; pier: PierJoined | PierJoined[] | null }[]
       | null;
     customer:
-      | { email: string; full_name: string | null }
-      | { email: string; full_name: string | null }[]
+      | { email: string; full_name: string | null; phone: string | null }
+      | { email: string; full_name: string | null; phone: string | null }[]
       | null;
   };
   const b = data as unknown as Joined;
@@ -102,5 +103,30 @@ export async function sendBookingConfirmationFor(
     qrDataUri,
   });
 
-  return sendEmail({ to: customer.email, subject, html, text });
+  const result = await sendEmail({ to: customer.email, subject, html, text });
+
+  // Aviso interno pra caixa da equipe (reservas@) — toda confirmação nova.
+  // Reenvio manual do admin passa notifyTeam: false pra não duplicar.
+  if (opts?.notifyTeam !== false) {
+    const { notifyTeam, formatBrtDateTime, formatPriceCents } = await import(
+      '@/lib/team-notify'
+    );
+    await notifyTeam(
+      `Nova reserva confirmada — ${b.booking_code}`,
+      [
+        ['Código', b.booking_code],
+        ['Passeio', tour?.name ?? '—'],
+        ['Saída', formatBrtDateTime(schedule?.departure_at ?? null)],
+        ['Passageiros', String(b.passenger_count)],
+        ['Píer', pier?.name],
+        ['Total', formatPriceCents(b.total_cents)],
+        ['Cliente', customer.full_name],
+        ['E-mail', customer.email.endsWith('.invalid') ? null : customer.email],
+        ['Telefone', customer.phone],
+      ],
+      `${siteUrl.replace(/\/$/, '')}/admin/reservas/${encodeURIComponent(b.booking_code)}`
+    );
+  }
+
+  return result;
 }
