@@ -6,13 +6,14 @@ import { createClient } from '@/lib/supabase/server';
 import { cookieNameFor, signBookingCode } from '@/lib/booking-session';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
+import { isValidCpf, normalizeCpf } from '@/lib/cpf';
 
 export type CreateBookingInput = {
   scheduleId: string;
   email: string;
   fullName: string;
   phone: string;
-  cpf?: string;
+  cpf: string;
   notes?: string;
   passengers: Array<{
     full_name: string;
@@ -47,6 +48,12 @@ export async function createBookingAction(
     };
   }
 
+  // CPF obrigatório: a adquirente (Stone/Pagar.me) recusa qualquer cobrança
+  // sem o documento do cliente ("The customer Document is required").
+  if (!isValidCpf(input.cpf)) {
+    return { ok: false, error: 'CPF inválido. Confira os números digitados.' };
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc('create_booking_pending', {
@@ -54,7 +61,7 @@ export async function createBookingAction(
     p_email: input.email.trim(),
     p_full_name: input.fullName.trim(),
     p_phone: input.phone.trim(),
-    p_cpf: input.cpf?.trim() || undefined,
+    p_cpf: normalizeCpf(input.cpf),
     p_notes: input.notes?.trim() || undefined,
     p_passengers: input.passengers.map((p) => ({
       full_name: p.full_name.trim(),
