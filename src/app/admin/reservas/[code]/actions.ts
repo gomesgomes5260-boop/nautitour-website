@@ -45,6 +45,14 @@ export async function cancelBookingAction(
     console.error('[cancelBookingAction] rpc', error);
     return { ok: false, error: error.message };
   }
+
+  // Avisa o cliente — best-effort, nunca desfaz o cancelamento. Antes o
+  // cancelamento pelo admin era silencioso (só o feito pelo cliente enviava).
+  const { sendBookingCancelledEmail } = await import('@/lib/booking-emails');
+  await sendBookingCancelledEmail(admin, booking.id).catch((e) =>
+    console.error('[cancelBookingAction] email', e)
+  );
+
   revalidatePath('/admin/reservas');
   revalidatePath(`/admin/reservas/${bookingCode}`);
   return { ok: true };
@@ -70,7 +78,7 @@ export async function attemptRefundAction(
 
   const { data: payment } = await admin
     .from('payments')
-    .select('pagarme_charge_id, status, amount_cents')
+    .select('pagarme_charge_id, status, amount_cents, payment_method')
     .eq('booking_id', booking.id)
     .eq('status', 'paid')
     .order('paid_at', { ascending: false })
@@ -119,6 +127,15 @@ export async function attemptRefundAction(
       error: `Pagar.me recusou: ${result.error}. Faça manual no painel.`,
     };
   }
+
+  // Avisa o cliente do estorno (total ou parcial) — best-effort.
+  const { sendBookingRefundedEmail } = await import('@/lib/booking-emails');
+  await sendBookingRefundedEmail(admin, booking.id, {
+    amountRefundedCents: amountCents ?? payment.amount_cents,
+    totalPaidCents: payment.amount_cents,
+    paymentMethod: payment.payment_method,
+  }).catch((e) => console.error('[attemptRefundAction] email', e));
+
   return { ok: true, refundedAt: new Date().toISOString() };
 }
 

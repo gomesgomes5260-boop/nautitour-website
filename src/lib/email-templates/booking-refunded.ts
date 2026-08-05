@@ -1,28 +1,18 @@
-export type BookingCancelledPayload = {
+export type BookingRefundedPayload = {
   bookingCode: string;
   customerName: string;
   tourName: string;
-  departureAt: string | null;
-  hadPaidPayment: boolean;
+  /** Valor efetivamente estornado (pode ser parcial). */
+  amountRefundedCents: number;
+  /** Total que havia sido pago — pra sinalizar estorno parcial. */
+  totalPaidCents: number;
+  /** 'pix' | 'credit_card' | outro — muda a explicação do prazo. */
+  paymentMethod: string | null;
   siteUrl: string;
   waUrl: string;
 };
 
-function formatDeparture(iso: string | null): string {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleString('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
-}
+const PRICE = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function escapeHtml(s: string): string {
   return s
@@ -33,32 +23,39 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
+function refundTimingNote(method: string | null): string {
+  if (method === 'pix') {
+    return 'Como o pagamento foi por PIX, o valor volta pra conta de origem em instantes (no máximo algumas horas).';
+  }
+  if (method === 'credit_card') {
+    return 'Como o pagamento foi no cartão, o estorno aparece como crédito na sua fatura — dependendo do banco, na atual ou na próxima.';
+  }
+  return 'O valor volta pelo mesmo meio de pagamento usado na compra.';
+}
+
 /**
- * Confirmação de cancelamento de UMA reserva — enviado tanto quando o
- * próprio cliente cancela (janela de 48h) quanto quando o admin cancela
- * pela ficha da reserva. Cancelamento de SAÍDA inteira usa o template
- * schedule-cancelled.
+ * Aviso de estorno processado pelo admin (total ou parcial). Categoria
+ * "cancelamento" → header vermelho, padrão do booking-cancelled.
  */
-export function renderBookingCancelled(p: BookingCancelledPayload): {
+export function renderBookingRefunded(p: BookingRefundedPayload): {
   subject: string;
   html: string;
   text: string;
 } {
   const safeName = escapeHtml(p.customerName || 'Cliente');
   const safeTour = escapeHtml(p.tourName);
-  const departure = formatDeparture(p.departureAt);
   const site = p.siteUrl.replace(/\/$/, '');
+  const amount = PRICE.format(p.amountRefundedCents / 100);
+  const isPartial = p.amountRefundedCents < p.totalPaidCents;
+  const timing = refundTimingNote(p.paymentMethod);
 
-  const subject = `Cancelamento confirmado — ${p.bookingCode}`;
+  const subject = `Estorno realizado — ${p.bookingCode}`;
 
-  const refundHtml = p.hadPaidPayment
-    ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:14px 16px;margin:16px 0;">
-         <p style="margin:0;font-size:13px;line-height:1.5;color:#92400e;">
-           <strong>Sobre o reembolso:</strong> identificamos um pagamento nesta
-           reserva. Nossa equipe vai processar o estorno pelo mesmo meio de
-           pagamento. Se tiver qualquer dúvida, fale com a gente no WhatsApp.
-         </p>
-       </div>`
+  const partialHtml = isPartial
+    ? `<p style="margin:0 0 16px;font-size:13px;line-height:1.5;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:12px 14px;">
+         Este é um estorno parcial — o total pago na reserva foi ${escapeHtml(PRICE.format(p.totalPaidCents / 100))}.
+         Qualquer dúvida sobre o valor, fale com a gente no WhatsApp.
+       </p>`
     : '';
 
   const html = `<!DOCTYPE html>
@@ -71,22 +68,20 @@ export function renderBookingCancelled(p: BookingCancelledPayload): {
         <tr>
           <td style="background:#C00010;padding:24px;text-align:center;">
             <img src="${site}/brand/logo-white.png" alt="Nautitour" width="60" height="44" style="display:block;margin:0 auto;border:0;outline:none;" />
-            <p style="margin:10px 0 0;color:#ffd6d9;font-size:14px;">Cancelamento confirmado</p>
+            <p style="margin:10px 0 0;color:#ffd6d9;font-size:14px;">Estorno realizado</p>
           </td>
         </tr>
         <tr>
           <td style="padding:24px;">
             <p style="margin:0 0 16px;font-size:16px;">Olá, ${safeName}!</p>
             <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">
-              Confirmamos o cancelamento da sua reserva
-              <strong>${escapeHtml(p.bookingCode)}</strong> — ${safeTour}${
-                departure ? `, que sairia em <span style="text-transform:capitalize;">${escapeHtml(departure)}</span>` : ''
-              }.
+              Processamos o estorno de <strong>${escapeHtml(amount)}</strong> da sua reserva
+              <strong>${escapeHtml(p.bookingCode)}</strong> — ${safeTour}.
             </p>
-            ${refundHtml}
+            ${partialHtml}
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">${escapeHtml(timing)}</p>
             <p style="margin:16px 0;font-size:15px;line-height:1.5;">
-              Mudou de ideia ou quer escolher outra data? A gente adoraria te
-              levar pro mar. 🌊
+              Esperamos te ver no mar numa próxima oportunidade. 🌊
             </p>
             <p style="margin:24px 0 8px;font-size:14px;">
               <a href="${site}/passeio-escuna" style="background:#C00010;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">Reservar outra data</a>
@@ -109,13 +104,12 @@ export function renderBookingCancelled(p: BookingCancelledPayload): {
   const text = [
     `Olá, ${p.customerName || 'Cliente'}!`,
     '',
-    `Confirmamos o cancelamento da sua reserva ${p.bookingCode} — ${p.tourName}${departure ? ` (${departure})` : ''}.`,
-    ...(p.hadPaidPayment
-      ? [
-          '',
-          'Sobre o reembolso: identificamos um pagamento nesta reserva. Nossa equipe vai processar o estorno pelo mesmo meio de pagamento. Dúvidas? Fale no WhatsApp.',
-        ]
+    `Processamos o estorno de ${amount} da sua reserva ${p.bookingCode} — ${p.tourName}.`,
+    ...(isPartial
+      ? ['', `Estorno parcial — o total pago foi ${PRICE.format(p.totalPaidCents / 100)}.`]
       : []),
+    '',
+    timing,
     '',
     `Reservar outra data: ${site}/passeio-escuna`,
     `WhatsApp: ${p.waUrl}`,
