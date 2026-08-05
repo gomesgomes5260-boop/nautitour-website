@@ -49,6 +49,9 @@ function messageFor(source: string, req: NextRequest): string | null {
       if (!BOOKING_CODE_RE.test(code)) return null;
       return `Olá! Cancelei a reserva ${code} pelo site e tenho uma dúvida.`;
     }
+    case 'email-lead':
+      // Link do e-mail de recuperação de checkout abandonado.
+      return 'Olá! Estava fazendo uma reserva no site e fiquei com uma dúvida.';
     case 'email-review': {
       // Link "algo não saiu como esperado?" do e-mail pós-passeio.
       const code = req.nextUrl.searchParams.get('code') ?? '';

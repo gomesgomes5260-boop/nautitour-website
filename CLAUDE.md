@@ -222,6 +222,7 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 | EFÍ | **REMOVIDO do V1** (decisão 10/jul, junto com o split). O código do client (pix saída corrigido pra `PUT /v2/gn/pix/:idEnvio` + mTLS) está no histórico do git (PR #93, arquivo `src/lib/efi/client.ts`) — recuperar de lá na PR futura de implementações complementares. Cobrança segue 100% Pagar.me; se um dia gerar PIX de sinal pelo site, gerar pelo **Pagar.me**, não EFÍ |
 | Lembrete D-1 | Vercel Cron 18:00 UTC → `/api/cron/reminders` (Bearer `CRON_SECRET`), idempotente via `bookings.reminder_sent_at` |
 | Pós-passeio (avaliação Google) | Vercel Cron 13:00 UTC → `/api/cron/reviews` — pede review no Google (confirmed/completed, saída nos últimos 3 dias, idempotente via `review_request_sent_at`, migration 038). **Adormecido sem env `GOOGLE_REVIEW_URL`** |
+| Recuperação de lead | Vercel Cron horário (min 30) → `/api/cron/lead-recovery` — e-mail ÚNICO "complete sua reserva" pra leads de checkout abandonado (1-48h, sem reserva não-cancelada posterior; idempotente via `lead_invitations.recovery_email_sent_at`, migration 039). Fecha a pendência da PR #68 |
 | Login | Vendedor sem redirect explícito cai em `/vendedor` |
 
 ### Migrations da fusão
