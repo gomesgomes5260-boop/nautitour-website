@@ -5,6 +5,7 @@ import { createBookingAction } from './actions';
 import { captureLeadAction } from './lead-actions';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import { analytics } from '@/lib/analytics';
+import { isValidCpf, normalizeCpf } from '@/lib/cpf';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -85,6 +86,10 @@ export default function CheckoutForm({
       setError('Preencha nome, e-mail e telefone do responsável.');
       return;
     }
+    if (!isValidCpf(contact.cpf)) {
+      setError('CPF inválido. Confira os números digitados.');
+      return;
+    }
     if (passengers.some((p) => !p.full_name.trim())) {
       setError('Informe o nome de cada passageiro.');
       return;
@@ -102,7 +107,7 @@ export default function CheckoutForm({
         email: contact.email,
         fullName: contact.fullName,
         phone: contact.phone,
-        cpf: contact.cpf || undefined,
+        cpf: normalizeCpf(contact.cpf),
         notes: notes || undefined,
         passengers: passengers.map((p) => ({
           full_name: p.full_name,
@@ -163,11 +168,14 @@ export default function CheckoutForm({
               placeholder="(22) 99999-9999"
             />
           </Field>
-          <Field label="CPF (opcional)">
+          {/* Obrigatório: a adquirente (Stone/Pagar.me) recusa PIX e cartão
+              sem o documento do cliente. */}
+          <Field label="CPF" required>
             <input
               type="text"
               inputMode="numeric"
               autoComplete="off"
+              required
               value={contact.cpf}
               onChange={(e) => setContact({ ...contact, cpf: e.target.value })}
               className={inputClass}
