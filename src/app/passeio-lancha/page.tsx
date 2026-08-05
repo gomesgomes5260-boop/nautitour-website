@@ -25,7 +25,7 @@ const LANCHA_COVER =
 export const metadata: Metadata = {
   title: 'Lancha Privativa em Búzios — passeio exclusivo até 12 pessoas',
   description:
-    'Lancha privativa em Armação dos Búzios para grupos, eventos e ocasiões especiais. Roteiro sob medida, atendimento personalizado via WhatsApp. Reserve online ou consulte horário.',
+    'Lancha privativa em Armação dos Búzios para grupos, eventos e ocasiões especiais. Roteiro sob medida — escolha a data e consulte a disponibilidade pelo WhatsApp.',
   alternates: { canonical: '/passeio-lancha' },
   openGraph: {
     title: 'Lancha Privativa em Búzios | Nautitour',
@@ -235,19 +235,25 @@ export default async function PasseioLanchaPage() {
                       {formatPrice(tour.base_price_cents) ?? 'Sob consulta'}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-charcoal-500)] mt-1">
-                      Pagamento à vista — PIX ou cartão
+                      Consulta pelo WhatsApp — pagamento direto na loja
                     </p>
                   </div>
                   <div className="p-5 sm:p-6">
                     <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-charcoal-700)] mb-4">
-                      Escolha sua data
+                      Escolha data e horário
                     </h3>
+                    <p className="text-xs text-[var(--color-charcoal-500)] -mt-2 mb-4 leading-relaxed">
+                      Escolha abaixo e fale com a equipe no WhatsApp pra
+                      confirmar a disponibilidade — a reserva é finalizada com o
+                      atendente, sem pagamento pelo site.
+                    </p>
                     <DateScheduleSelector
                       schedules={schedulesNormalized}
                       fallbackPriceCents={tour.base_price_cents ?? null}
                       pricingMode="per_slot"
                       soldOutLabel="Reservado"
                       analyticsListId="lancha-privativa"
+                      ctaMode="whatsapp"
                     />
 
                     {/* WhatsApp inquiry card */}

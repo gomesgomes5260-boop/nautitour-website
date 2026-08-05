@@ -10,6 +10,8 @@ export type ScheduleOption = {
   departureAt: string;
   tourName: string;
   isTest: boolean;
+  /** Lancha privativa: preço fixo do barco (não multiplica por passageiro). */
+  perSlot: boolean;
   seatsAvailable: number;
   unitPriceCents: number | null;
 };
@@ -60,6 +62,7 @@ export default function NovaReservaForm({ schedules }: { schedules: ScheduleOpti
   const totalCents = useMemo(() => {
     if (!selected?.unitPriceCents) return null;
     const unit = selected.unitPriceCents;
+    if (selected.perSlot) return unit; // lancha: preço fixo do barco
     return unit * fullCount + Math.floor(unit / 2) * childCount;
   }, [selected, fullCount, childCount]);
 
@@ -112,7 +115,8 @@ export default function NovaReservaForm({ schedules }: { schedules: ScheduleOpti
           {schedules.map((s) => (
             <option key={s.id} value={s.id}>
               {DATE_TIME.format(new Date(s.departureAt))} · {s.tourName}
-              {s.isTest ? ' (TESTE)' : ''} · {s.seatsAvailable} vagas ·{' '}
+              {s.isTest ? ' (TESTE)' : ''} ·{' '}
+              {s.perSlot ? 'barco inteiro' : `${s.seatsAvailable} vagas`} ·{' '}
               {s.unitPriceCents != null ? PRICE.format(s.unitPriceCents / 100) : ''}
             </option>
           ))}
@@ -271,8 +275,11 @@ export default function NovaReservaForm({ schedules }: { schedules: ScheduleOpti
                 {PRICE.format(totalCents / 100)}
               </strong>{' '}
               <span className="text-xs text-[var(--color-charcoal-500)]">
-                ({fullCount} inteira{fullCount === 1 ? '' : 's'}
-                {childCount > 0 ? ` + ${childCount} meia${childCount === 1 ? '' : 's'}` : ''})
+                {selected?.perSlot
+                  ? '(preço fixo do barco)'
+                  : `(${fullCount} inteira${fullCount === 1 ? '' : 's'}${
+                      childCount > 0 ? ` + ${childCount} meia${childCount === 1 ? '' : 's'}` : ''
+                    })`}
               </span>
             </>
           ) : (

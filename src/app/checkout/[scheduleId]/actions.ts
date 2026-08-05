@@ -54,6 +54,24 @@ export async function createBookingAction(
     return { ok: false, error: 'CPF inválido. Confira os números digitados.' };
   }
 
+  // Lancha (private) não fecha reserva pelo site — defesa em profundidade
+  // além do 404 da página de checkout (decisão 05/ago).
+  {
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const { data: sched } = await createAdminClient()
+      .from('tour_schedules')
+      .select('tour:tours(tour_type)')
+      .eq('id', input.scheduleId)
+      .maybeSingle();
+    const tour = Array.isArray(sched?.tour) ? sched?.tour[0] : sched?.tour;
+    if ((tour as { tour_type?: string } | null | undefined)?.tour_type === 'private') {
+      return {
+        ok: false,
+        error: 'Reserva da lancha privativa é feita pelo WhatsApp com a nossa equipe.',
+      };
+    }
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc('create_booking_pending', {

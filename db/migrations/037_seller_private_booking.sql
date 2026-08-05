@@ -1,0 +1,18 @@
+-- 037: seller_create_booking passa a aceitar tours PRIVATE (lancha).
+-- Aplicada via MCP em 05/ago/2026 (migration `seller_private_booking`).
+--
+-- Decisão 05/ago: a lancha privativa sai do checkout online — o cliente
+-- consulta disponibilidade pelo WhatsApp (rota /api/wa?s=lancha-data com a
+-- data/hora escolhida no calendário) e a reserva entra MANUAL pelo painel
+-- do vendedor. A RPC rejeitava tour_type <> 'scheduled'; agora espelha o
+-- create_booking_pending pros tours private:
+--   · total = preço de slot FIXO (ignora composição inteira/meia)
+--   · na reserva, a saída inteira vira sold_out (seats_taken = capacity)
+--   · checagem per-seat só pra scheduled (private valida só o teto de pax)
+--
+-- Demais partes da função (guards, cliente sem e-mail em .invalid, evento
+-- seller_created, revoke de anon) inalteradas. Assinatura idêntica — sem
+-- regeneração de types.
+--
+-- SQL completo aplicado: ver a migration no Supabase
+-- (supabase_migrations.schema_migrations, name = seller_private_booking).

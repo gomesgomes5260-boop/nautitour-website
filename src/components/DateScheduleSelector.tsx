@@ -28,6 +28,13 @@ type Props = {
   soldOutLabel?: string;
   /** Slug do tour pro evento select_item do GA4 (item_list_id). */
   analyticsListId?: string;
+  /**
+   * 'checkout' (default): CTA "Reservar" → /checkout/[id].
+   * 'whatsapp': CTA "Consultar" → /api/wa?s=lancha-data com a data/hora
+   * escolhida na mensagem — a lancha não fecha reserva pelo site (decisão
+   * 05/ago); a reserva entra manual pelo painel do vendedor.
+   */
+  ctaMode?: 'checkout' | 'whatsapp';
 };
 
 const TZ = 'America/Sao_Paulo';
@@ -76,6 +83,7 @@ export default function DateScheduleSelector({
   pricingMode = 'per_passenger',
   soldOutLabel = 'Esgotado',
   analyticsListId,
+  ctaMode = 'checkout',
 }: Props) {
   // === Agrupa schedules por dia (key 'YYYY-MM-DD' em BRT) ===
   const byDay = useMemo(() => {
@@ -332,6 +340,25 @@ export default function DateScheduleSelector({
                       <span className="font-sans text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--color-charcoal-400)] px-2 py-1.5 shrink-0">
                         {soldOutLabel}
                       </span>
+                    ) : ctaMode === 'whatsapp' ? (
+                      <a
+                        href={`/api/wa?s=lancha-data&dt=${dayKey(new Date(s.departure_at))}T${time}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() =>
+                          analytics.selectItem(
+                            s.id,
+                            analyticsListId ?? 'tour',
+                            (s.price_cents ?? fallbackPriceCents) != null
+                              ? (s.price_cents ?? fallbackPriceCents)! / 100
+                              : null
+                          )
+                        }
+                        className="inline-flex items-center gap-1 bg-[var(--color-success)] hover:brightness-110 text-white font-bold text-xs px-3 py-2 rounded-full transition-all shrink-0"
+                      >
+                        Consultar
+                        <ChevronRight size={12} />
+                      </a>
                     ) : (
                       <Link
                         href={`/checkout/${s.id}`}
