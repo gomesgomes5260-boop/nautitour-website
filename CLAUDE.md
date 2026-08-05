@@ -221,6 +221,7 @@ O painel externo `nautitour-reservas` (webreservas.xyz — Next 14, Prisma, Next
 | Comissão | No 1º check-in a comissão é **registrada** em `seller_payouts` (status `pending`): `valor = min(sinal, max(0, total − neto×inteiras − floor(neto/2)×meias))`. Duplicação impossível: `booking_id UNIQUE` + claim atômico. **Pagamento é MANUAL** (decisão 10/jul): admin faz o PIX por fora e clica "Marcar como pago" em `/admin/comissoes` (mostra a chave PIX do vendedor). Registro nunca bloqueia check-in |
 | EFÍ | **REMOVIDO do V1** (decisão 10/jul, junto com o split). O código do client (pix saída corrigido pra `PUT /v2/gn/pix/:idEnvio` + mTLS) está no histórico do git (PR #93, arquivo `src/lib/efi/client.ts`) — recuperar de lá na PR futura de implementações complementares. Cobrança segue 100% Pagar.me; se um dia gerar PIX de sinal pelo site, gerar pelo **Pagar.me**, não EFÍ |
 | Lembrete D-1 | Vercel Cron 18:00 UTC → `/api/cron/reminders` (Bearer `CRON_SECRET`), idempotente via `bookings.reminder_sent_at` |
+| Pós-passeio (avaliação Google) | Vercel Cron 13:00 UTC → `/api/cron/reviews` — pede review no Google (confirmed/completed, saída nos últimos 3 dias, idempotente via `review_request_sent_at`, migration 038). **Adormecido sem env `GOOGLE_REVIEW_URL`** |
 | Login | Vendedor sem redirect explícito cai em `/vendedor` |
 
 ### Migrations da fusão

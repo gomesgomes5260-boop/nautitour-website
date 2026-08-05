@@ -49,6 +49,12 @@ function messageFor(source: string, req: NextRequest): string | null {
       if (!BOOKING_CODE_RE.test(code)) return null;
       return `Olá! Cancelei a reserva ${code} pelo site e tenho uma dúvida.`;
     }
+    case 'email-review': {
+      // Link "algo não saiu como esperado?" do e-mail pós-passeio.
+      const code = req.nextUrl.searchParams.get('code') ?? '';
+      if (!BOOKING_CODE_RE.test(code)) return null;
+      return `Olá! Acabei de fazer o passeio da reserva ${code} e gostaria de falar com vocês.`;
+    }
     default:
       return null;
   }
