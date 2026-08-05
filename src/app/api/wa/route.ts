@@ -22,6 +22,16 @@ function messageFor(source: string, req: NextRequest): string | null {
       return 'Olá! Gostaria de saber mais sobre os passeios.';
     case 'lancha':
       return 'Olá! Gostaria de consultar um horário diferente para a lancha privativa.';
+    case 'lancha-data': {
+      // Consulta de disponibilidade a partir do calendário da lancha
+      // (dt = YYYY-MM-DDTHH:MM em BRT). A lancha não fecha reserva pelo
+      // site — o atendente confirma e registra manual no painel.
+      const dt = req.nextUrl.searchParams.get('dt') ?? '';
+      if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dt)) return null;
+      const [date, time] = dt.split('T');
+      const [, month, day] = date.split('-');
+      return `Olá! Quero consultar a disponibilidade da lancha privativa para o dia ${day}/${month} às ${time}. Pode me ajudar?`;
+    }
     case 'blog': {
       const raw = req.nextUrl.searchParams.get('t') ?? '';
       const title = raw.replace(TITLE_RE, '').trim().slice(0, 80);

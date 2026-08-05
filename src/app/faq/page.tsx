@@ -9,11 +9,11 @@ export const metadata = {
 const faqs: Array<{ q: string; a: string }> = [
   {
     q: 'Como faço uma reserva?',
-    a: 'Pelo site, escolha o passeio (Escuna ou Lancha), selecione a data e clique em Reservar. Você pode reservar como visitante ou criar uma conta.',
+    a: 'Escuna: pelo site — escolha a data, clique em Reservar e pague online (como visitante ou com conta). Lancha privativa: escolha a data e o horário no site e finalize pelo WhatsApp com a nossa equipe — o pagamento é feito na loja.',
   },
   {
     q: 'Quais formas de pagamento vocês aceitam?',
-    a: 'PIX ou cartão, sempre à vista (não trabalhamos com parcelamento). Para locação privativa, o pagamento é combinado diretamente com o representante.',
+    a: 'PIX ou cartão, sempre à vista (não trabalhamos com parcelamento). Para a lancha privativa e a locação privativa, o pagamento é combinado com o atendimento e feito direto na loja.',
   },
   {
     q: 'Quanto tempo dura cada passeio?',

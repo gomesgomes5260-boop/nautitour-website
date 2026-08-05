@@ -36,12 +36,18 @@ export default async function NovaReservaPage() {
       const tour = Array.isArray(s.tour) ? s.tour[0] : s.tour;
       return { s, tour };
     })
-    .filter(({ tour }) => tour && tour.active && tour.tour_type === 'scheduled')
+    // Escuna (per-passenger) e lancha privativa (per_slot) — a lancha entra
+    // SÓ por aqui desde 05/ago (checkout online desabilitado pra private).
+    .filter(
+      ({ tour }) =>
+        tour && tour.active && (tour.tour_type === 'scheduled' || tour.tour_type === 'private')
+    )
     .map(({ s, tour }) => ({
       id: s.id,
       departureAt: s.departure_at,
       tourName: tour!.name,
       isTest: tour!.is_test_only,
+      perSlot: tour!.tour_type === 'private',
       seatsAvailable: Math.max(0, s.capacity - s.seats_taken),
       unitPriceCents: s.price_cents ?? tour!.base_price_cents ?? null,
     }))

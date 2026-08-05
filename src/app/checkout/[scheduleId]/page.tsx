@@ -54,6 +54,11 @@ export default async function CheckoutPage({
   // live (allowlist/off, usado em dev/staging) segue acessível pra E2E.
   if (tour.is_test_only && getMode() === 'live') notFound();
 
+  // Lancha privativa NÃO fecha reserva pelo site (decisão 05/ago): o cliente
+  // consulta pelo WhatsApp e o vendedor registra manual no painel. 404 mesmo
+  // com link direto pra saída.
+  if (tour.tour_type === 'private') notFound();
+
   const pierRaw = (schedule as { pier?: unknown }).pier;
   const pier = Array.isArray(pierRaw) ? pierRaw[0] : pierRaw;
   const pierTyped = pier as
