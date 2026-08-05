@@ -472,6 +472,7 @@ export type Database = {
           source: string | null
           token: string
           used_at: string | null
+          recovery_email_sent_at: string | null
         }
         Insert: {
           created_at?: string
@@ -481,6 +482,7 @@ export type Database = {
           source?: string | null
           token: string
           used_at?: string | null
+          recovery_email_sent_at?: string | null
         }
         Update: {
           created_at?: string
@@ -490,6 +492,7 @@ export type Database = {
           source?: string | null
           token?: string
           used_at?: string | null
+          recovery_email_sent_at?: string | null
         }
         Relationships: [
           {
