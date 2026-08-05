@@ -1,29 +1,58 @@
-import { describe, it, expect } from 'vitest';
-import { buildWaUrl, WHATSAPP_NUMBER } from './whatsapp';
+import { describe, expect, it } from 'vitest';
+import { buildWaUrl, pickWhatsAppNumber, WHATSAPP_NUMBERS } from './whatsapp';
+
+describe('WHATSAPP_NUMBERS', () => {
+  it('tem os 4 números da equipe, só dígitos com DDI', () => {
+    expect(WHATSAPP_NUMBERS).toHaveLength(4);
+    for (const n of WHATSAPP_NUMBERS) {
+      expect(n).toMatch(/^55\d{10,11}$/);
+    }
+  });
+});
+
+describe('pickWhatsAppNumber', () => {
+  it('sempre devolve um número da lista', () => {
+    for (let i = 0; i < 50; i++) {
+      expect(WHATSAPP_NUMBERS).toContain(pickWhatsAppNumber());
+    }
+  });
+
+  it('o rodízio alcança todos os números', () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 500 && seen.size < WHATSAPP_NUMBERS.length; i++) {
+      seen.add(pickWhatsAppNumber());
+    }
+    expect(seen.size).toBe(WHATSAPP_NUMBERS.length);
+  });
+});
 
 describe('buildWaUrl', () => {
-  it('returns base wa.me URL with WHATSAPP_NUMBER when no text', () => {
-    expect(buildWaUrl()).toBe(`https://wa.me/${WHATSAPP_NUMBER}`);
+  it('sem texto: base wa.me com um número da lista', () => {
+    const url = buildWaUrl();
+    const match = url.match(/^https:\/\/wa\.me\/(\d+)$/);
+    expect(match).not.toBeNull();
+    expect(WHATSAPP_NUMBERS).toContain(match![1]);
   });
 
-  it('treats empty string as no text (returns base URL)', () => {
-    expect(buildWaUrl('')).toBe(`https://wa.me/${WHATSAPP_NUMBER}`);
+  it('string vazia vale como sem texto (base URL)', () => {
+    expect(buildWaUrl('', '5522999963664')).toBe('https://wa.me/5522999963664');
   });
 
-  it('appends ?text= with URL-encoded payload', () => {
-    expect(buildWaUrl('Olá!')).toBe(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=Ol%C3%A1!`
+  it('com número explícito é determinístico', () => {
+    expect(buildWaUrl(undefined, '5522999963664')).toBe(
+      'https://wa.me/5522999963664'
     );
   });
 
-  it('encodes whitespace and special characters', () => {
-    const result = buildWaUrl('reserva NTT-AB12 ok?');
-    expect(result).toBe(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=reserva%20NTT-AB12%20ok%3F`
+  it('encoda o texto da mensagem', () => {
+    expect(buildWaUrl('Olá!', '5522999963664')).toBe(
+      'https://wa.me/5522999963664?text=Ol%C3%A1!'
     );
   });
 
-  it('uses canonical number (no env override)', () => {
-    expect(WHATSAPP_NUMBER).toMatch(/^\d{10,13}$/);
+  it('encoda espaços e caracteres especiais', () => {
+    expect(buildWaUrl('reserva NTT-AB12 ok?', '5522999963664')).toBe(
+      'https://wa.me/5522999963664?text=reserva%20NTT-AB12%20ok%3F'
+    );
   });
 });

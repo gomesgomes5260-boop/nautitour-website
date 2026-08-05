@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { inquiryLimiter, getClientIp } from '@/lib/rate-limit';
-import { WHATSAPP_NUMBER } from '@/lib/whatsapp';
+import { buildWaUrl } from '@/lib/whatsapp';
 
 export type CreateInquiryInput = {
   email: string;
@@ -106,8 +106,6 @@ export async function createInquiryAction(
     console.error('[locacao] falha ao registrar clique de WhatsApp', err);
   }
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    buildWhatsAppMessage(input)
-  )}`;
+  const whatsappUrl = buildWaUrl(buildWhatsAppMessage(input));
   return { ok: true, whatsappUrl };
 }
