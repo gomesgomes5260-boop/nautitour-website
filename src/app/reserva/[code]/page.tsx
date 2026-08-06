@@ -85,7 +85,7 @@ export default async function ReservaPage({
       expires_at,
       tour:tours ( name, slug ),
       schedule:tour_schedules ( departure_at, pier:embarkation_piers ( slug, name, fee_cents, address, notes ) ),
-      customer:customers ( email, full_name, auth_user_id )
+      customer:customers ( email, full_name, phone, auth_user_id )
     `
     )
     .eq('booking_code', code)
@@ -120,8 +120,8 @@ export default async function ReservaPage({
         }[]
       | null;
     customer:
-      | { email: string; full_name: string | null; auth_user_id: string | null }
-      | { email: string; full_name: string | null; auth_user_id: string | null }[]
+      | { email: string; full_name: string | null; phone: string | null; auth_user_id: string | null }
+      | { email: string; full_name: string | null; phone: string | null; auth_user_id: string | null }[]
       | null;
   };
   const b = booking as unknown as Joined;
@@ -189,6 +189,9 @@ export default async function ReservaPage({
       <PurchaseTracker
         bookingCode={b.booking_code}
         valueBRL={b.total_cents / 100}
+        email={customer?.email}
+        phone={customer?.phone}
+        customerName={customer?.full_name}
       />
       <main className="bg-[var(--color-charcoal-50)]">
         <Container as="section" className="py-10 sm:py-14 md:py-16 max-w-3xl">
