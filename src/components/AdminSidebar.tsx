@@ -29,10 +29,10 @@ type Props = {
 
 const NAV: Array<{ href: string; label: string; Icon: typeof LayoutDashboard }> = [
   { href: '/admin/overview', label: 'Visão geral', Icon: LayoutDashboard },
-  { href: '/admin/reservas', label: 'Reservas', Icon: Calendar },
-  { href: '/admin/manifesto', label: 'Manifesto', Icon: Sailboat },
+  { href: '/admin/reservas', label: 'Reservas', Icon: Sailboat },
+  { href: '/admin/manifesto', label: 'Calendário', Icon: Calendar },
   { href: '/admin/scan', label: 'Check-in', Icon: QrCode },
-  { href: '/admin/inquiries', label: 'Inquiries', Icon: MessageSquare },
+  { href: '/admin/inquiries', label: 'Requerimentos', Icon: MessageSquare },
   { href: '/admin/clientes', label: 'Clientes', Icon: Users },
   { href: '/admin/vendedores', label: 'Vendedores', Icon: UserPlus },
   { href: '/admin/comissoes', label: 'Comissões', Icon: Banknote },
