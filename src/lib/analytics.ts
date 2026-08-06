@@ -137,5 +137,21 @@ export const analytics = {
   },
   whatsappClick(location: string) {
     trackEvent('whatsapp_click', { location });
+    // Conversão do Google Ads de clique de WhatsApp — o foco de vendas do
+    // negócio (a lancha fecha só por WhatsApp; equipe atende em rodízio). É uma
+    // conversão de LEAD, SEM valor: contar o clique é o sinal, mas atribuir R$
+    // seria receita fake que poluiria o valor de conversão / ROAS. A diferença
+    // por origem vive no evento GA4 `whatsapp_click` (`location`), não aqui.
+    // `transport_type: 'beacon'` garante que o hit sobreviva ao redirect do
+    // /api/wa. No-op sem as envs. A ação de conversão no Ads deve ser criada
+    // como "não usar valor" (count-only), coerente com isto.
+    const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+    const label = process.env.NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_LABEL;
+    if (adsId && label) {
+      trackEvent('conversion', {
+        send_to: `${adsId}/${label}`,
+        transport_type: 'beacon',
+      });
+    }
   },
 };

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { analytics } from '@/lib/analytics';
 
 const HIDDEN_PREFIXES = ['/admin', '/checkout', '/reserva', '/blog/'];
 
@@ -45,7 +44,6 @@ export default function WhatsAppFab() {
         rel="noopener noreferrer"
         aria-label="Abrir conversa no WhatsApp"
         onMouseEnter={() => setShowTooltip(true)}
-        onClick={() => analytics.whatsappClick('fab')}
         className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1ebd5a] text-white shadow-[var(--shadow-3)] transition-transform hover:scale-105 active:scale-95"
       >
         <WhatsAppIcon className="w-7 h-7 relative z-10" />
