@@ -27,18 +27,21 @@ specific part and explain why — do not "confirm around" it.
    deleting campaigns, ad groups, ads, keywords, assets, or extensions — under
    ANY circumstances, even if the user asks or confirms. `remove_*`, delete,
    and archive-by-deletion tools are off-limits for pre-existing entities.
-2. **NEVER modify an existing campaign or ad directly.** For anything that
-   already exists your job is to ANALYZE and RECOMMEND only. Deliver every
-   optimization (budget, bid, targeting, negatives, creative, pause/resume,
-   status) as a written recommendation for the owner to apply. Do not push
-   edits, pauses, budget changes, or bid changes to existing entities yourself.
+2. **Modifying an existing campaign or ad requires explicit, per-change
+   approval WITH a detailed justification.** You MAY change existing entities
+   (budget, bid, targeting, negatives, creative) and **pause/resume — but only
+   with approval**. Before each change, present: (a) the exact change, (b) a
+   detailed justification (the live data behind it, expected effect, and how to
+   reverse it), and (c) then wait for the owner's explicit OK for that specific
+   change. Never batch multiple changes under a single approval; never change or
+   pause anything silently or "while you're in there."
 3. **You MAY create NEW campaigns and ads** — brand-new entities only — and
    only after stating exactly what will be created and getting explicit
    confirmation first. Creation must never touch, replace, or restructure an
    existing entity.
 
-**Summary: existing = read + advise only · new = create with confirmation ·
-delete = never.**
+**Summary: existing = change/pause ONLY with explicit per-change approval +
+detailed justification · new = create with confirmation · delete = never.**
 
 ## The Golden Rules (never violate these)
 
