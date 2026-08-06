@@ -1,5 +1,5 @@
 type GtagFn = (
-  command: 'event' | 'config' | 'js',
+  command: 'event' | 'config' | 'js' | 'set',
   ...args: unknown[]
 ) => void;
 
@@ -18,6 +18,56 @@ export function trackEvent(
   if (typeof window === 'undefined') return;
   if (typeof window.gtag !== 'function') return;
   window.gtag('event', name, params ?? {});
+}
+
+// Dados do comprador pra Enhanced Conversions (Google Ads). Enviados via
+// gtag('set', 'user_data', ...) — o próprio gtag normaliza e faz o hash
+// SHA-256 client-side ANTES de transmitir, então PII crua nunca sai do
+// browser. Só é chamado com consent de retargeting (ver PurchaseTracker).
+export type PurchaseUserData = {
+  email?: string | null;
+  phone?: string | null;
+  name?: string | null;
+};
+
+// Normaliza telefone BR pra E.164 (+55DDNNNNNNNNN). Best-effort: descarta
+// não-dígitos e assume Brasil quando não há código de país.
+export function normalizePhoneE164(raw?: string | null): string | null {
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.startsWith('55') && digits.length >= 12) return `+${digits}`;
+  if (digits.length === 10 || digits.length === 11) return `+55${digits}`;
+  return `+${digits}`;
+}
+
+// Monta o objeto user_data do gtag a partir dos dados do comprador. Retorna
+// null se não sobrar nada utilizável. Pula e-mails placeholder `.invalid`
+// (vendas de vendedor sem e-mail real — RFC 2606).
+export function buildUserData(data?: PurchaseUserData): Record<string, unknown> | null {
+  if (!data) return null;
+  const out: Record<string, unknown> = {};
+
+  const email = data.email?.trim().toLowerCase();
+  if (email && email.includes('@') && !email.endsWith('.invalid')) {
+    out.email = email;
+  }
+
+  const phone = normalizePhoneE164(data.phone);
+  if (phone) out.phone_number = phone;
+
+  const name = data.name?.trim();
+  if (name) {
+    const parts = name.split(/\s+/);
+    out.address = {
+      first_name: parts[0].toLowerCase(),
+      ...(parts.length > 1
+        ? { last_name: parts.slice(1).join(' ').toLowerCase() }
+        : {}),
+    };
+  }
+
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 // Eventos canônicos do funil de conversão (nomes GA4 padrão).
@@ -51,7 +101,11 @@ export const analytics = {
       payment_type: method,
     });
   },
-  purchase(bookingCode: string, valueBRL: number) {
+  purchase(
+    bookingCode: string,
+    valueBRL: number,
+    userData?: PurchaseUserData
+  ) {
     trackEvent('purchase', {
       transaction_id: bookingCode,
       currency: 'BRL',
@@ -63,6 +117,13 @@ export const analytics = {
     const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
     const label = process.env.NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL;
     if (adsId && label) {
+      // Enhanced Conversions: alimenta o gtag com dados do comprador antes de
+      // disparar a conversão — melhora o match rate (recupera conversões que o
+      // cookie sozinho perderia). O gtag faz o hash SHA-256 client-side.
+      const ud = buildUserData(userData);
+      if (ud && typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('set', 'user_data', ud);
+      }
       trackEvent('conversion', {
         send_to: `${adsId}/${label}`,
         transaction_id: bookingCode,
