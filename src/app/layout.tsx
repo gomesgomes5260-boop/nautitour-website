@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Montserrat, JetBrains_Mono } from "next/font/google";
 import WhatsAppFab from "@/components/WhatsAppFab";
+import WhatsAppClickTracker from "@/components/WhatsAppClickTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleAdsTag from "@/components/GoogleAdsTag";
 import CookieBanner from "@/components/CookieBanner";
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         {children}
         <WhatsAppFab />
+        <WhatsAppClickTracker />
         <CookieBanner />
         <GoogleAnalytics />
         <GoogleAdsTag />

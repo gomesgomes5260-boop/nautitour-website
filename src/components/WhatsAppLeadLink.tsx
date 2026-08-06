@@ -3,8 +3,9 @@
 import { analytics } from '@/lib/analytics';
 
 // Link de WhatsApp com tracking de lead — pra CTAs em server components
-// (ex.: card "Outro horário?" da lancha). Dispara generate_lead +
-// whatsapp_click no clique; navegação segue normal.
+// (ex.: card "Outro horário?" da lancha). Dispara generate_lead no clique;
+// o evento whatsapp_click + a conversão do Google Ads ficam a cargo do
+// WhatsAppClickTracker global (listener em /api/wa). Navegação segue normal.
 export default function WhatsAppLeadLink({
   href,
   source,
@@ -24,7 +25,6 @@ export default function WhatsAppLeadLink({
       className={className}
       onClick={() => {
         analytics.generateLead(source);
-        analytics.whatsappClick(source);
       }}
     >
       {children}
