@@ -3,6 +3,7 @@ import { Wallet, Send, AlertTriangle } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import KpiCard from '@/components/KpiCard';
 import MarkPaidButton from './MarkPaidButton';
+import ReceiptButton from './ReceiptButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,19 +34,33 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   },
 };
 
-export default async function AdminComissoesPage() {
+export default async function AdminComissoesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const sp = await searchParams;
+  // Sanitiza metacaracteres do PostgREST antes do ilike (mesmo cuidado da
+  // busca de /admin/clientes).
+  const q = (sp.q ?? '').replace(/[,()*.:\\%]/g, ' ').trim().slice(0, 80);
+
   const admin = createAdminClient();
-  const { data: payouts } = await admin
+  let query = admin
     .from('seller_payouts')
     .select(
       `
       id, amount_cents, status, e2e_id, error, sent_at, created_at, pix_key,
-      seller:sellers ( full_name, pix_key ),
+      receipt_path,
+      seller:sellers!inner ( full_name, pix_key ),
       booking:bookings ( booking_code )
       `
     )
     .order('created_at', { ascending: false })
     .limit(200);
+  if (q) {
+    query = query.ilike('seller.full_name', `%${q}%`);
+  }
+  const { data: payouts } = await query;
 
   type Row = {
     id: string;
@@ -56,6 +71,7 @@ export default async function AdminComissoesPage() {
     sent_at: string | null;
     created_at: string;
     pix_key: string | null;
+    receipt_path: string | null;
     seller:
       | { full_name: string; pix_key: string | null }
       | { full_name: string; pix_key: string | null }[]
@@ -80,6 +96,30 @@ export default async function AdminComissoesPage() {
           PIX pela chave do vendedor e marque como pago aqui.
         </p>
       </div>
+
+      <form className="flex items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar vendedor…"
+          className="w-full max-w-xs border border-[var(--color-charcoal-200)] rounded-full px-4 py-2 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors"
+        />
+        <button
+          type="submit"
+          className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+        >
+          Buscar
+        </button>
+        {q && (
+          <Link
+            href="/admin/comissoes"
+            className="text-xs text-[var(--color-charcoal-500)] hover:underline"
+          >
+            limpar
+          </Link>
+        )}
+      </form>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
@@ -163,14 +203,19 @@ export default async function AdminComissoesPage() {
                       {DATE_TIME.format(new Date(r.sent_at ?? r.created_at))}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {(r.status === 'failed' || r.status === 'pending') &&
-                        r.amount_cents > 0 && (
-                          <MarkPaidButton
-                            payoutId={r.id}
-                            sellerName={seller?.full_name ?? 'vendedor'}
-                            amountLabel={PRICE.format(r.amount_cents / 100)}
-                          />
+                      <span className="inline-flex flex-col items-end gap-1.5">
+                        {(r.status === 'failed' || r.status === 'pending') &&
+                          r.amount_cents > 0 && (
+                            <MarkPaidButton
+                              payoutId={r.id}
+                              sellerName={seller?.full_name ?? 'vendedor'}
+                              amountLabel={PRICE.format(r.amount_cents / 100)}
+                            />
+                          )}
+                        {(r.status === 'sent' || r.receipt_path) && (
+                          <ReceiptButton payoutId={r.id} hasReceipt={!!r.receipt_path} />
                         )}
+                      </span>
                     </td>
                   </tr>
                 );

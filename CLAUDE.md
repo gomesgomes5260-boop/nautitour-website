@@ -10,6 +10,7 @@ Onboarding pra retomar o projeto Nautitour sem precisar reler todo histórico. �
 - **Stack**: Next.js 16 + React 19 + Tailwind v4 + Supabase (Postgres, `sa-east-1` desde 18/jul) + Pagar.me v5 + Resend + Vitest (22 testes) + GitHub Actions CI
 - **Modo Pagar.me `live`** desde 11/maio. Bookings reais com PIX e cartão funcionando.
 - **Brand visual**: charcoal (`#404040`) + red (`#C00010`), Fraunces serif + Montserrat sans + JetBrains Mono. Logo PNG em `public/brand/`.
+- **Pacote admin 05/ago (migration 040)**: dashboard com filtro de datas + KPIs expansíveis em gráfico + auto-refresh; exports .xlsx (exceljs) e impressão/PDF (print CSS, sidebar `print:hidden`) em dashboard/reservas/financeiro/vendedor; Reservas e Requerimentos com filtro escuna×lancha; Requerimentos com cotação manual, nº de WhatsApp direcionado (`wa_number` via rodízio) e histórico de status (`inquiry_events`); detalhe do vendedor com relatório de vendas/comissões; Comissões com busca + comprovante (bucket privado `commission-receipts`, `seller_payouts.receipt_path`); lista de embarque compacta no print.
 - **Rebrand visual 100% completo** (customer-facing + admin). Tier 3 backend 5/5 (captcha, Sentry, CSP, refund parcial, paginação). DB advisor 100% limpo (migration 021). Componentes compartilhados: `KpiCard`, `Pagination`, `WhatsAppFab`, `PhotoGallery`, `CookieBanner`.
 - **Schedule da escuna**: sáb/dom 09:30+12:00, seg-sex 11:30, capacidade 120, 2h30 de duração
 - **Píeres de embarque**: 3 opções, Rua das Pedras default sem taxa, Porto Veleiro e Pescador R$ 10/pax presencial

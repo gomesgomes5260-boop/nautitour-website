@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { formatWaNumber } from '@/lib/whatsapp';
 import type { Database } from '@/lib/supabase/database.types';
 import InquiryActions from './InquiryActions';
 import ConvertInquiryButton from './ConvertInquiryButton';
@@ -72,6 +73,8 @@ export default async function InquiryDetailPage({
       message,
       admin_notes,
       whatsapp_contacted_at,
+      wa_number,
+      created_via,
       status_changed_at,
       created_at,
       customer:customers ( full_name, email, phone, cpf ),
@@ -94,6 +97,8 @@ export default async function InquiryDetailPage({
     message: string | null;
     admin_notes: string | null;
     whatsapp_contacted_at: string | null;
+    wa_number: string | null;
+    created_via: string;
     status_changed_at: string | null;
     created_at: string;
     customer:
@@ -130,6 +135,13 @@ export default async function InquiryDetailPage({
       .maybeSingle();
     if (b) convertedBooking = b;
   }
+
+  // Histórico completo de mudanças de status (inquiry_events, migration 040)
+  const { data: statusEvents } = await admin
+    .from('inquiry_events')
+    .select('id, from_status, to_status, actor_email, created_at')
+    .eq('inquiry_id', i.id)
+    .order('created_at', { ascending: true });
 
   // Defaults pro modal de conversão (datetime-local sem TZ, BRT implícito)
   const todayPlus3 = new Date();
@@ -189,6 +201,12 @@ export default async function InquiryDetailPage({
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
               <Field label="Tour">{tour?.name ?? '—'}</Field>
               <Field label="Recebido em">{DATETIME.format(new Date(i.created_at))}</Field>
+              <Field label="Origem">
+                {i.created_via === 'manual' ? 'Registrado manualmente (operador)' : 'Formulário do site'}
+              </Field>
+              <Field label="WhatsApp direcionado">
+                {i.wa_number ? formatWaNumber(i.wa_number) : '—'}
+              </Field>
               <div className="sm:col-span-2">
                 <dt className="text-[10px] font-bold tracking-[0.18em] uppercase text-[var(--color-charcoal-500)] mb-1">
                   Data desejada
@@ -289,7 +307,29 @@ export default async function InquiryDetailPage({
                   {DATETIME.format(new Date(i.whatsapp_contacted_at))}
                 </li>
               )}
-              {i.status_changed_at && (
+              {(statusEvents ?? []).map((ev) => (
+                <li
+                  key={ev.id}
+                  className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4"
+                >
+                  <span
+                    className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"
+                    aria-hidden
+                  />
+                  <strong className="text-[var(--color-charcoal-900)]">
+                    {STATUS_LABEL[(ev.from_status ?? '') as InquiryStatus]?.label ?? 'Criado'}
+                    {' → '}
+                    {STATUS_LABEL[ev.to_status as InquiryStatus]?.label ?? ev.to_status}:
+                  </strong>{' '}
+                  {DATETIME.format(new Date(ev.created_at))}
+                  {ev.actor_email && (
+                    <span className="block text-xs text-[var(--color-charcoal-500)]">
+                      por {ev.actor_email}
+                    </span>
+                  )}
+                </li>
+              ))}
+              {(statusEvents ?? []).length === 0 && i.status_changed_at && (
                 <li className="relative border-l-2 border-[var(--color-charcoal-100)] pl-4">
                   <span
                     className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[var(--color-red-600)]"

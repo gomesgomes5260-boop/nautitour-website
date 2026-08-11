@@ -128,7 +128,7 @@ export default async function AdminVendedoresPage({
                       href={`/admin/vendedores/${s.id}`}
                       className="text-xs font-semibold text-[var(--color-red-600)] hover:underline"
                     >
-                      Editar
+                      Abrir / Relatório
                     </Link>
                   </td>
                 </tr>

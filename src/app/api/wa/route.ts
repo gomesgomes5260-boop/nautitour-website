@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { buildWaUrl } from '@/lib/whatsapp';
+import { buildWaUrl, pickWhatsAppNumber } from '@/lib/whatsapp';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 // Redireciona pro WhatsApp registrando o clique em `whatsapp_clicks` — a
@@ -72,12 +72,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(buildWaUrl(), 302);
   }
 
+  // Sorteia o atendente AQUI pra registrar pra qual número o cliente foi
+  // direcionado (pedido do admin, 05/ago) — o mesmo número vai no redirect.
+  const waNumber = pickWhatsAppNumber();
+
   try {
     const admin = createAdminClient();
-    await admin.from('whatsapp_clicks').insert({ source });
+    await admin.from('whatsapp_clicks').insert({ source, wa_number: waNumber });
   } catch (err) {
     console.error('[wa] falha ao registrar clique', err);
   }
 
-  return NextResponse.redirect(buildWaUrl(message), 302);
+  return NextResponse.redirect(buildWaUrl(message, waNumber), 302);
 }

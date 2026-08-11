@@ -170,7 +170,7 @@ export default async function ManifestoSchedulePage({
       </div>
 
       <div className="bg-white border border-gray-200 rounded-md p-6 print:border-0 print:rounded-none print:p-0">
-        <header className="border-b border-gray-200 pb-4 mb-4">
+        <header className="border-b border-gray-200 pb-4 mb-4 print:pb-2 print:mb-2">
           <h1 className="text-xl font-semibold">{tour?.name ?? '—'}</h1>
           <p className="text-sm text-gray-600 mt-1">
             {DATETIME.format(new Date(s.departure_at))}
@@ -203,16 +203,16 @@ export default async function ManifestoSchedulePage({
             Nenhuma reserva confirmada para este horário.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase text-gray-600 border-b border-gray-200">
+          <table className="w-full text-sm print:text-[10px] print:leading-tight">
+            <thead className="text-left text-xs print:text-[9px] uppercase text-gray-600 border-b border-gray-200">
               <tr>
-                <th className="py-2 pr-4">#</th>
-                <th className="py-2 pr-4">Reserva</th>
-                <th className="py-2 pr-4">Passageiro</th>
-                <th className="py-2 pr-4">Documento</th>
-                <th className="py-2 pr-4">Tipo</th>
-                <th className="py-2 pr-4">Contato</th>
-                <th className="py-2 pr-4">Embarque</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">#</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Reserva</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Passageiro</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Documento</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Tipo</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Contato</th>
+                <th className="py-2 pr-4 print:py-0.5 print:pr-2 print:py-0.5 print:pr-2">Embarque</th>
               </tr>
             </thead>
             <tbody>
@@ -221,10 +221,10 @@ export default async function ManifestoSchedulePage({
                 const seller = Array.isArray(b.seller) ? b.seller[0] : b.seller;
                 return b.passengers.map((p, pi) => (
                   <tr key={`${b.id}-${pi}`} className="border-b border-gray-100">
-                    <td className="py-2 pr-4 text-gray-500">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2 text-gray-500">
                       {bi + 1}.{pi + 1}
                     </td>
-                    <td className="py-2 pr-4 font-mono text-xs">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2 font-mono text-xs">
                       {b.booking_code}
                       {pi === 0 && seller && (
                         <span className="block text-[10px] text-gray-500 font-sans">
@@ -232,19 +232,19 @@ export default async function ManifestoSchedulePage({
                         </span>
                       )}
                     </td>
-                    <td className="py-2 pr-4">{p.full_name}</td>
-                    <td className="py-2 pr-4 text-gray-700">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2">{p.full_name}</td>
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2 text-gray-700">
                       {p.document ?? '—'}
                     </td>
-                    <td className="py-2 pr-4 text-gray-700">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2 text-gray-700">
                       {p.is_child ? 'Criança' : 'Adulto'}
                     </td>
-                    <td className="py-2 pr-4 text-gray-700">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2 text-gray-700">
                       {pi === 0
                         ? `${cust?.full_name ?? ''} · ${cust?.phone ?? cust?.email ?? ''}`
                         : ''}
                     </td>
-                    <td className="py-2 pr-4">
+                    <td className="py-2 pr-4 print:py-0.5 print:pr-2">
                       {pi === 0 &&
                         (b.status === 'completed' ? (
                           <span className="inline-block rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">

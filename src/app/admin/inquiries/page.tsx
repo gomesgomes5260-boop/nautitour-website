@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { tourIdsForKind } from '@/lib/tour-filter';
+import { formatWaNumber } from '@/lib/whatsapp';
+import NewInquiryForm from './NewInquiryForm';
 import type { Database } from '@/lib/supabase/database.types';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +48,7 @@ const DATE_ONLY = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
 });
 
-type Search = { status?: string };
+type Search = { status?: string; tipo?: string };
 
 export default async function AdminInquiriesPage({
   searchParams,
@@ -54,8 +57,10 @@ export default async function AdminInquiriesPage({
 }) {
   const sp = await searchParams;
   const status = sp.status as InquiryStatus | '' | undefined;
+  const tipo = sp.tipo === 'lancha' || sp.tipo === 'escuna' ? sp.tipo : '';
 
   const admin = createAdminClient();
+  const tourIds = await tourIdsForKind(admin, tipo);
 
   // Counts pra chips.
   const { data: allForCounts } = await admin
@@ -86,9 +91,11 @@ export default async function AdminInquiriesPage({
       passenger_count,
       interested_in_open_bar,
       whatsapp_contacted_at,
+      wa_number,
+      created_via,
       created_at,
       customer:customers ( full_name, email, phone ),
-      tour:tours ( name )
+      tour:tours ( name, tour_type )
       `
     )
     .order('created_at', { ascending: false })
@@ -96,6 +103,9 @@ export default async function AdminInquiriesPage({
 
   if (status) {
     q = q.eq('status', status);
+  }
+  if (tourIds) {
+    q = q.in('tour_id', tourIds);
   }
 
   const { data, error } = await q;
@@ -109,12 +119,14 @@ export default async function AdminInquiriesPage({
     passenger_count: number | null;
     interested_in_open_bar: boolean;
     whatsapp_contacted_at: string | null;
+    wa_number: string | null;
+    created_via: string;
     created_at: string;
     customer:
       | { full_name: string | null; email: string; phone: string | null }
       | { full_name: string | null; email: string; phone: string | null }[]
       | null;
-    tour: { name: string } | { name: string }[] | null;
+    tour: { name: string; tour_type: string } | { name: string; tour_type: string }[] | null;
   };
   const rows = (data ?? []) as unknown as Joined[];
 
@@ -128,20 +140,26 @@ export default async function AdminInquiriesPage({
 
   return (
     <div>
-      <h1
-        className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight mb-6"
-        style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
-      >
-        Inquiries de locação
-      </h1>
+      <div className="flex items-start justify-between flex-wrap gap-3 mb-6">
+        <h1
+          className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight"
+          style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
+        >
+          Requerimentos
+        </h1>
+        <NewInquiryForm />
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6">
         {FILTERS.map((f) => {
           const active = (status ?? '') === f.value;
+          const qs = new URLSearchParams();
+          if (f.value) qs.set('status', f.value);
+          if (tipo) qs.set('tipo', tipo);
           return (
             <Link
               key={f.value}
-              href={f.value ? `/admin/inquiries?status=${f.value}` : '/admin/inquiries'}
+              href={qs.size ? `/admin/inquiries?${qs.toString()}` : '/admin/inquiries'}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 active
                   ? 'bg-[var(--color-red-50)] border-[var(--color-red-600)] text-[var(--color-red-600)]'
@@ -161,6 +179,32 @@ export default async function AdminInquiriesPage({
             </Link>
           );
         })}
+        <span className="mx-1 h-5 w-px bg-[var(--color-charcoal-200)]" aria-hidden />
+        {(
+          [
+            { value: '', label: 'Lancha + Escuna' },
+            { value: 'lancha', label: 'Lancha' },
+            { value: 'escuna', label: 'Escuna' },
+          ] as const
+        ).map((t) => {
+          const active = tipo === t.value;
+          const qs = new URLSearchParams();
+          if (status) qs.set('status', status);
+          if (t.value) qs.set('tipo', t.value);
+          return (
+            <Link
+              key={t.label}
+              href={qs.size ? `/admin/inquiries?${qs.toString()}` : '/admin/inquiries'}
+              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                active
+                  ? 'bg-[var(--color-red-50)] border-[var(--color-red-600)] text-[var(--color-red-600)]'
+                  : 'bg-white text-[var(--color-charcoal-700)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-300)] hover:bg-[var(--color-charcoal-50)]'
+              }`}
+            >
+              {t.label}
+            </Link>
+          );
+        })}
       </div>
 
       {error && (
@@ -176,8 +220,10 @@ export default async function AdminInquiriesPage({
               <th className="px-4 py-3">Recebido</th>
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3 hidden md:table-cell">Contato</th>
+              <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Data desejada</th>
               <th className="px-4 py-3 text-center">Pax</th>
+              <th className="px-4 py-3 hidden lg:table-cell">WhatsApp equipe</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3"></th>
             </tr>
@@ -186,7 +232,7 @@ export default async function AdminInquiriesPage({
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="px-4 py-10 text-center text-[var(--color-charcoal-500)]"
                 >
                   Nenhum inquiry neste filtro.
@@ -195,6 +241,8 @@ export default async function AdminInquiriesPage({
             )}
             {rows.map((i) => {
               const cust = Array.isArray(i.customer) ? i.customer[0] : i.customer;
+              const tour = Array.isArray(i.tour) ? i.tour[0] : i.tour;
+              const isLancha = tour?.tour_type === 'private';
               const st = STATUS_LABEL[i.status];
               return (
                 <tr
@@ -206,9 +254,25 @@ export default async function AdminInquiriesPage({
                   </td>
                   <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
                     {cust?.full_name ?? '—'}
+                    {i.created_via === 'manual' && (
+                      <span className="ml-1.5 inline-block rounded-full bg-violet-50 border border-violet-200 text-violet-700 px-1.5 py-0.5 text-[10px] font-semibold align-middle">
+                        Manual
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-700)] text-xs">
                     {cust?.phone ?? cust?.email ?? '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold border ${
+                        isLancha
+                          ? 'bg-sky-50 border-sky-200 text-sky-700'
+                          : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                      }`}
+                    >
+                      {isLancha ? 'Lancha' : 'Escuna'}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
                     {i.requested_date
@@ -222,6 +286,9 @@ export default async function AdminInquiriesPage({
                   </td>
                   <td className="px-4 py-3 text-center text-[var(--color-charcoal-900)] tabular-nums">
                     {i.passenger_count ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell font-mono text-xs text-[var(--color-charcoal-700)]">
+                    {formatWaNumber(i.wa_number)}
                   </td>
                   <td className="px-4 py-3">
                     <span

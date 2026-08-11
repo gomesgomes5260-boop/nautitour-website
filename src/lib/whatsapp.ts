@@ -27,6 +27,17 @@ export function pickWhatsAppNumber(): string {
   return WHATSAPP_NUMBERS[Math.floor(Math.random() * WHATSAPP_NUMBERS.length)];
 }
 
+/** "5522999963664" → "(22) 99996-3664" (exibição no admin). */
+export function formatWaNumber(raw: string | null | undefined): string {
+  const digits = (raw ?? '').replace(/\D/g, '');
+  if (!digits) return '—';
+  const local = digits.startsWith('55') ? digits.slice(2) : digits;
+  if (local.length < 10) return local;
+  const ddd = local.slice(0, 2);
+  const rest = local.slice(2);
+  return `(${ddd}) ${rest.slice(0, rest.length - 4)}-${rest.slice(-4)}`;
+}
+
 export function buildWaUrl(text?: string, number?: string): string {
   const base = `https://wa.me/${number ?? pickWhatsAppNumber()}`;
   if (!text) return base;

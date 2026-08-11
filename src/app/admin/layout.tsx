@@ -36,8 +36,8 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-[var(--color-charcoal-50)]">
       <AdminSidebar user={{ email: user.email ?? null, name }} />
-      <main className="lg:pl-64">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-6 sm:py-8 md:py-10">
+      <main className="lg:pl-64 print:pl-0">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-6 sm:py-8 md:py-10 print:px-0 print:py-0 print:max-w-none">
           {children}
         </div>
       </main>

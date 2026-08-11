@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isAdminUser } from '@/lib/admin';
+import { tourIdsForKind } from '@/lib/tour-filter';
 
-type Filters = { from: string; to: string; status: string };
+type Filters = { from: string; to: string; status: string; tour?: string };
 
 function csvField(v: unknown): string {
   if (v === null || v === undefined) return '';
@@ -52,6 +53,10 @@ export async function exportBookingsCsvAction(
 
   if (filters.status) {
     q = q.eq('status', filters.status as 'pending_payment');
+  }
+  const tourIds = await tourIdsForKind(c, filters.tour);
+  if (tourIds) {
+    q = q.in('tour_id', tourIds);
   }
 
   const { data, error } = await q;
