@@ -61,7 +61,7 @@ export default function AdminSidebar({ user }: Props) {
   return (
     <>
       {/* === MOBILE topbar === */}
-      <div className="lg:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-5 bg-[var(--color-charcoal-900)] text-white">
+      <div className="lg:hidden print:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-5 bg-[var(--color-charcoal-900)] text-white">
         <Logo size="sm" variant="white" />
         <button
           aria-label="Menu"
@@ -82,7 +82,7 @@ export default function AdminSidebar({ user }: Props) {
 
       {/* === Sidebar (fixed em desktop, drawer mobile) === */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-[var(--color-charcoal-900)] text-white flex flex-col transition-transform duration-200 ${
+        className={`print:hidden fixed top-0 left-0 z-50 h-screen w-64 bg-[var(--color-charcoal-900)] text-white flex flex-col transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >

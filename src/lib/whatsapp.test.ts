@@ -56,3 +56,16 @@ describe('buildWaUrl', () => {
     );
   });
 });
+
+describe('formatWaNumber', () => {
+  it('formata número BR com DDI', async () => {
+    const { formatWaNumber } = await import('./whatsapp');
+    expect(formatWaNumber('5522999963664')).toBe('(22) 99996-3664');
+  });
+
+  it('vazio/null vira travessão', async () => {
+    const { formatWaNumber } = await import('./whatsapp');
+    expect(formatWaNumber(null)).toBe('—');
+    expect(formatWaNumber('')).toBe('—');
+  });
+});

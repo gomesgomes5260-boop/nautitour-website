@@ -395,6 +395,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string
+          created_via: string
           customer_id: string
           end_time: string | null
           id: string
@@ -408,11 +409,13 @@ export type Database = {
           status_changed_by: string | null
           tour_id: string
           updated_at: string
+          wa_number: string | null
           whatsapp_contacted_at: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string
+          created_via?: string
           customer_id: string
           end_time?: string | null
           id?: string
@@ -426,11 +429,13 @@ export type Database = {
           status_changed_by?: string | null
           tour_id: string
           updated_at?: string
+          wa_number?: string | null
           whatsapp_contacted_at?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string
+          created_via?: string
           customer_id?: string
           end_time?: string | null
           id?: string
@@ -444,6 +449,7 @@ export type Database = {
           status_changed_by?: string | null
           tour_id?: string
           updated_at?: string
+          wa_number?: string | null
           whatsapp_contacted_at?: string | null
         }
         Relationships: [
@@ -643,6 +649,7 @@ export type Database = {
           error: string | null
           id: string
           pix_key: string | null
+          receipt_path: string | null
           seller_id: string
           sent_at: string | null
           status: string
@@ -656,6 +663,7 @@ export type Database = {
           error?: string | null
           id?: string
           pix_key?: string | null
+          receipt_path?: string | null
           seller_id: string
           sent_at?: string | null
           status?: string
@@ -669,6 +677,7 @@ export type Database = {
           error?: string | null
           id?: string
           pix_key?: string | null
+          receipt_path?: string | null
           seller_id?: string
           sent_at?: string | null
           status?: string
@@ -857,18 +866,56 @@ export type Database = {
           clicked_at: string
           id: string
           source: string
+          wa_number: string | null
         }
         Insert: {
           clicked_at?: string
           id?: string
           source: string
+          wa_number?: string | null
         }
         Update: {
           clicked_at?: string
           id?: string
           source?: string
+          wa_number?: string | null
         }
         Relationships: []
+      }
+      inquiry_events: {
+        Row: {
+          actor_email: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          inquiry_id: string
+          to_status: string
+        }
+        Insert: {
+          actor_email?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          inquiry_id: string
+          to_status: string
+        }
+        Update: {
+          actor_email?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          inquiry_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_events_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiry_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

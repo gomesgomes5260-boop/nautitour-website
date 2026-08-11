@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { tourIdsForKind } from '@/lib/tour-filter';
+import AdminPrintButton from '@/components/AdminPrintButton';
 import ExportCsvButton from './ExportCsvButton';
 
 export const dynamic = 'force-dynamic';
@@ -58,7 +60,14 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-type Search = { from?: string; to?: string; status?: string };
+type Search = { from?: string; to?: string; status?: string; tour?: string };
+
+// Filtro escuna × lancha: escuna = tours 'scheduled', lancha = 'private'.
+const TOUR_FILTERS = [
+  { value: '', label: 'Todos os passeios' },
+  { value: 'escuna', label: 'Escuna' },
+  { value: 'lancha', label: 'Lancha' },
+] as const;
 
 const inputClass =
   'border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
@@ -76,8 +85,10 @@ export default async function AdminReservasPage({
   const from = sp.from || isoDay(past);
   const to = sp.to || isoDay(today);
   const status = sp.status || '';
+  const tour = sp.tour || '';
 
   const admin = createAdminClient();
+  const tourIds = await tourIdsForKind(admin, tour);
   let q = admin
     .from('bookings')
     .select(
@@ -101,6 +112,9 @@ export default async function AdminReservasPage({
 
   if (status) {
     q = q.eq('status', status as 'pending_payment');
+  }
+  if (tourIds) {
+    q = q.in('tour_id', tourIds);
   }
 
   const { data, error } = await q;
@@ -126,16 +140,26 @@ export default async function AdminReservasPage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1
-          className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight"
-          style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
-        >
-          Reservas
-        </h1>
-        <ExportCsvButton filters={{ from, to, status }} />
+        <div>
+          <h1
+            className="font-display font-semibold text-[var(--color-charcoal-900)] tracking-tight"
+            style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}
+          >
+            Reservas
+          </h1>
+          <p className="hidden print:block text-xs text-[var(--color-charcoal-500)] mt-1">
+            Período {from.split('-').reverse().join('/')} a {to.split('-').reverse().join('/')}
+            {tour ? ` · ${tour === 'lancha' ? 'Lancha' : 'Escuna'}` : ''}
+            {status ? ` · ${STATUSES.find((s) => s.value === status)?.label ?? status}` : ''}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 print:hidden">
+          <AdminPrintButton />
+          <ExportCsvButton filters={{ from, to, status, tour }} />
+        </div>
       </div>
 
-      <form className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-5 mb-6 flex flex-wrap gap-4 items-end">
+      <form className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-5 mb-6 flex flex-wrap gap-4 items-end print:hidden">
         <div>
           <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
             De
@@ -160,6 +184,18 @@ export default async function AdminReservasPage({
             ))}
           </select>
         </div>
+        <div>
+          <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+            Passeio
+          </label>
+          <select name="tour" defaultValue={tour} className={inputClass}>
+            {TOUR_FILTERS.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
           type="submit"
           className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
@@ -174,18 +210,18 @@ export default async function AdminReservasPage({
         </div>
       )}
 
-      <div className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl overflow-hidden print:border-0 print:rounded-none">
+        <table className="w-full text-sm print:text-[10px]">
           <thead className="bg-[var(--color-charcoal-50)] text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)]">
             <tr>
-              <th className="px-4 py-3">Código</th>
-              <th className="px-4 py-3">Cliente</th>
-              <th className="px-4 py-3 hidden md:table-cell">E-mail</th>
-              <th className="px-4 py-3">Tour</th>
-              <th className="px-4 py-3 hidden md:table-cell">Saída</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Total</th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1">Código</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1">Cliente</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1 hidden md:table-cell">E-mail</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1">Tour</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1 hidden md:table-cell">Saída</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1">Status</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1 text-right">Total</th>
+              <th className="px-4 py-3 print:px-1.5 print:py-1"></th>
             </tr>
           </thead>
           <tbody>
@@ -217,24 +253,24 @@ export default async function AdminReservasPage({
                   key={b.id}
                   className="border-t border-[var(--color-charcoal-100)] hover:bg-[var(--color-charcoal-50)]/60"
                 >
-                  <td className="px-4 py-3 font-mono text-xs text-[var(--color-charcoal-900)]">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 font-mono text-xs text-[var(--color-charcoal-900)]">
                     {b.booking_code}
                   </td>
-                  <td className="px-4 py-3 text-[var(--color-charcoal-900)]">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 text-[var(--color-charcoal-900)]">
                     {cust?.full_name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-500)]">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 hidden md:table-cell text-[var(--color-charcoal-500)]">
                     {cust?.email ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-[var(--color-charcoal-700)]">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 text-[var(--color-charcoal-700)]">
                     {tour?.name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-[var(--color-charcoal-500)] text-xs">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 hidden md:table-cell text-[var(--color-charcoal-500)] text-xs">
                     {sched?.departure_at
                       ? DATETIME.format(new Date(sched.departure_at))
                       : '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${st.cls}`}
                     >
@@ -242,10 +278,10 @@ export default async function AdminReservasPage({
                       {st.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-mono text-[var(--color-charcoal-900)]">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 text-right font-mono text-[var(--color-charcoal-900)]">
                     {PRICE.format(b.total_cents / 100)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 print:px-1.5 print:py-1 text-right">
                     <Link
                       href={`/admin/reservas/${b.booking_code}`}
                       className="text-[var(--color-charcoal-700)] underline-offset-2 hover:underline text-xs font-medium"
@@ -259,8 +295,9 @@ export default async function AdminReservasPage({
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-[var(--color-charcoal-500)] mt-3">
-        Mostrando até 500 reservas. Use os filtros pra refinar.
+      <p className="text-xs text-[var(--color-charcoal-500)] mt-3 print:hidden">
+        Mostrando até 500 reservas. Use os filtros pra refinar. Pra PDF, use
+        Imprimir / PDF (o navegador salva como PDF).
       </p>
     </div>
   );

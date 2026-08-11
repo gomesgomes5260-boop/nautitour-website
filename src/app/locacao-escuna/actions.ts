@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { inquiryLimiter, getClientIp } from '@/lib/rate-limit';
-import { buildWaUrl } from '@/lib/whatsapp';
+import { buildWaUrl, pickWhatsAppNumber } from '@/lib/whatsapp';
 
 export type CreateInquiryInput = {
   email: string;
@@ -86,14 +86,18 @@ export async function createInquiryAction(
     return { ok: false, error: error.message };
   }
 
-  // Marca whatsapp_contacted_at — cliente sai daqui pro WhatsApp agora.
+  // Sorteia o atendente aqui pra gravar no inquérito pra qual número o
+  // cliente foi direcionado (Requerimentos do admin mostram isso).
+  const waNumber = pickWhatsAppNumber();
+
+  // Marca whatsapp_contacted_at + wa_number — cliente sai daqui pro WhatsApp.
   // Service-role bypassa RLS (inquiry_requests não permite UPDATE direto).
   const inquiryId = (data?.[0] as { inquiry_id?: string } | undefined)?.inquiry_id;
   const admin = createAdminClient();
   if (inquiryId) {
     await admin
       .from('inquiry_requests')
-      .update({ whatsapp_contacted_at: new Date().toISOString() })
+      .update({ whatsapp_contacted_at: new Date().toISOString(), wa_number: waNumber })
       .eq('id', inquiryId)
       .is('whatsapp_contacted_at', null);
   }
@@ -101,11 +105,11 @@ export async function createInquiryAction(
   // Conta no KPI de chats do admin — aqui o texto é dinâmico (dados do form),
   // então o registro é feito na action em vez da rota /api/wa. Best-effort.
   try {
-    await admin.from('whatsapp_clicks').insert({ source: 'locacao' });
+    await admin.from('whatsapp_clicks').insert({ source: 'locacao', wa_number: waNumber });
   } catch (err) {
     console.error('[locacao] falha ao registrar clique de WhatsApp', err);
   }
 
-  const whatsappUrl = buildWaUrl(buildWhatsAppMessage(input));
+  const whatsappUrl = buildWaUrl(buildWhatsAppMessage(input), waNumber);
   return { ok: true, whatsappUrl };
 }

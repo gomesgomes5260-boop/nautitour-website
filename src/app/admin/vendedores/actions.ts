@@ -171,3 +171,98 @@ export async function updateSellerAction(input: {
   revalidatePath(`/admin/vendedores/${input.id}`);
   return { ok: true };
 }
+
+export async function exportSellerReportXlsxAction(filters: {
+  sellerId: string;
+  from?: string;
+  to?: string;
+}): Promise<
+  { ok: true; base64: string; filename: string } | { ok: false; error: string }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login?redirect=/admin/vendedores');
+  if (!(await isAdminUser(user.id))) return { ok: false, error: 'Sem permissão' };
+
+  const { parseDateRange } = await import('@/lib/date-range');
+  const range = parseDateRange(filters.from, filters.to);
+
+  const admin = createAdminClient();
+  const { data: seller } = await admin
+    .from('sellers')
+    .select('full_name')
+    .eq('id', filters.sellerId)
+    .maybeSingle();
+  if (!seller) return { ok: false, error: 'Vendedor não encontrado' };
+
+  const { getSellerReport } = await import('./[id]/report-data');
+  const report = await getSellerReport(filters.sellerId, range);
+
+  const DT = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const { buildXlsxBase64 } = await import('@/lib/xlsx');
+  const base64 = await buildXlsxBase64([
+    {
+      name: 'Resumo',
+      columns: [{ header: 'Métrica', width: 30 }, { header: 'Valor', width: 22 }],
+      rows: [
+        ['Vendedor', seller.full_name],
+        ['Período', `${range.from} a ${range.to}`],
+        ['Reservas (não canceladas)', report.totals.bookings],
+        ['Passageiros', report.totals.pax],
+        ['Valor das reservas (R$)', report.totals.totalCents / 100],
+        ['Sinal recebido (R$)', report.totals.paidCents / 100],
+        ['Comissão paga (R$)', report.totals.commissionSentCents / 100],
+        ['Comissão a receber (R$)', report.totals.commissionPendingCents / 100],
+      ],
+    },
+    {
+      name: 'Vendas',
+      columns: [
+        { header: 'Reserva', width: 14 },
+        { header: 'Criada em', width: 18 },
+        { header: 'Saída', width: 18 },
+        { header: 'Tour', width: 26 },
+        { header: 'Cliente', width: 26 },
+        { header: 'Pax', width: 8 },
+        { header: 'Total (R$)', width: 14, money: true },
+        { header: 'Sinal (R$)', width: 14, money: true },
+        { header: 'Status', width: 14 },
+        { header: 'Comissão (R$)', width: 14, money: true },
+        { header: 'Comissão status', width: 16 },
+      ],
+      rows: report.rows.map((r) => [
+        r.bookingCode,
+        DT.format(new Date(r.createdAt)),
+        r.departureAt ? DT.format(new Date(r.departureAt)) : '',
+        r.tourName,
+        r.customerName,
+        r.pax,
+        r.totalCents / 100,
+        r.paidCents / 100,
+        r.status,
+        r.payoutCents != null ? r.payoutCents / 100 : null,
+        r.payoutStatus === 'sent'
+          ? 'paga'
+          : r.payoutStatus === 'pending' || r.payoutStatus === 'failed'
+            ? 'a receber'
+            : '',
+      ]),
+    },
+  ]);
+
+  return {
+    ok: true,
+    base64,
+    filename: `vendedor-${seller.full_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${range.from}-a-${range.to}.xlsx`,
+  };
+}

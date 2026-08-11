@@ -1,9 +1,5 @@
 import Link from 'next/link';
 import {
-  DollarSign,
-  Users,
-  Activity,
-  RotateCcw,
   ArrowRight,
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -11,10 +7,15 @@ import {
   PlusCircle,
   RefreshCcw,
   Ban,
-  MessageCircle,
 } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
-import KpiCard from '@/components/KpiCard';
+import AutoRefresh from '@/components/AutoRefresh';
+import AdminPrintButton from '@/components/AdminPrintButton';
+import XlsxDownloadButton from '@/components/XlsxDownloadButton';
+import { parseDateRange, shortDay } from '@/lib/date-range';
+import { getOverviewData } from './data';
+import { exportOverviewXlsxAction } from './actions';
+import KpiCharts, { type KpiMetric } from './KpiCharts';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,15 +92,6 @@ function brtTodayISO(): string {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
-function monthBoundsBRT(): { fromIso: string; toIso: string } {
-  const today = brtTodayISO();
-  const [y, m] = today.split('-').map(Number);
-  const fromIso = new Date(`${y}-${String(m).padStart(2, '0')}-01T00:00:00-03:00`).toISOString();
-  const next = new Date(`${y}-${String(m).padStart(2, '0')}-01T00:00:00-03:00`);
-  next.setMonth(next.getMonth() + 1);
-  return { fromIso, toIso: next.toISOString() };
-}
-
 function dayBoundsBRT(daysOffset = 0): { fromIso: string; toIso: string } {
   const today = brtTodayISO();
   const d = new Date(`${today}T00:00:00-03:00`);
@@ -110,32 +102,29 @@ function dayBoundsBRT(daysOffset = 0): { fromIso: string; toIso: string } {
   return { fromIso, toIso: next.toISOString() };
 }
 
-export default async function AdminOverviewPage() {
+const inputClass =
+  'border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
+
+export default async function AdminOverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>;
+}) {
+  const sp = await searchParams;
+  const range = parseDateRange(sp.from, sp.to);
+
   const admin = createAdminClient();
-  const { fromIso: monthFrom, toIso: monthTo } = monthBoundsBRT();
+  const data = await getOverviewData(range);
   const { fromIso: todayFrom, toIso: todayTo } = dayBoundsBRT(0);
 
-  const { data: testTours } = await admin.from('tours').select('id').eq('is_test_only', true);
-  const testTourIds = (testTours ?? []).map((t) => t.id);
+  // Chats de HOJE (sub do KPI) — independente do range filtrado.
+  const { count: waChatsToday } = await admin
+    .from('whatsapp_clicks')
+    .select('id', { count: 'exact', head: true })
+    .gte('clicked_at', todayFrom)
+    .lt('clicked_at', todayTo);
 
-  // ===== KPIs =====
-  const { data: monthPaymentsRaw } = await admin
-    .from('payments')
-    .select('amount_cents, booking_id, status, paid_at')
-    .eq('status', 'paid')
-    .gte('paid_at', monthFrom)
-    .lt('paid_at', monthTo);
-  const monthBookingIds = (monthPaymentsRaw ?? []).map((p) => p.booking_id);
-  const { data: monthBookings } = monthBookingIds.length
-    ? await admin.from('bookings').select('id, tour_id').in('id', monthBookingIds)
-    : { data: [] as Array<{ id: string; tour_id: string }> };
-  const monthBookingTour = new Map((monthBookings ?? []).map((b) => [b.id, b.tour_id]));
-  const monthRevenueCents = (monthPaymentsRaw ?? []).reduce((acc, p) => {
-    const tourId = monthBookingTour.get(p.booking_id);
-    if (tourId && testTourIds.includes(tourId)) return acc;
-    return acc + (p.amount_cents ?? 0);
-  }, 0);
-
+  // ===== Saídas de hoje (operacional — sempre "hoje") =====
   const { data: schedulesToday } = await admin
     .from('tour_schedules')
     .select('id, departure_at, capacity, seats_taken, status, tour:tours(name, is_test_only)')
@@ -154,106 +143,7 @@ export default async function AdminOverviewPage() {
     const t = Array.isArray(s.tour) ? s.tour[0] : s.tour;
     return t && !t.is_test_only;
   });
-  const todayBookingsCount = todayList.reduce((acc, s) => acc + s.seats_taken, 0);
-
-  const { fromIso: sevenAgoFrom } = dayBoundsBRT(-7);
-  const { toIso: nowToISO } = dayBoundsBRT(0);
-  const { data: schedules7d } = await admin
-    .from('tour_schedules')
-    .select('capacity, seats_taken, status, tour_id')
-    .gte('departure_at', sevenAgoFrom)
-    .lt('departure_at', nowToISO);
-  const valid7d = (schedules7d ?? []).filter(
-    (s) => s.status !== 'cancelled' && s.capacity > 0 && !testTourIds.includes(s.tour_id)
-  );
-  const occupancy7d =
-    valid7d.length === 0
-      ? 0
-      : Math.round(
-          (valid7d.reduce((acc, s) => acc + s.seats_taken / s.capacity, 0) / valid7d.length) * 100
-        );
-
-  const { data: refundEvents } = await admin
-    .from('booking_events')
-    .select('booking_id, created_at, payload')
-    .eq('kind', 'refund_succeeded')
-    .gte('created_at', monthFrom)
-    .lt('created_at', monthTo);
-  const refundsCount = (refundEvents ?? []).length;
-  const refundBookingIds = (refundEvents ?? []).map((e) => e.booking_id);
-  const { data: refundPayments } = refundBookingIds.length
-    ? await admin
-        .from('payments')
-        .select('amount_cents, booking_id')
-        .in('booking_id', refundBookingIds)
-        .eq('status', 'refunded')
-    : { data: [] as Array<{ amount_cents: number; booking_id: string }> };
-  const refundsTotalCents = (refundPayments ?? []).reduce(
-    (acc, p) => acc + (p.amount_cents ?? 0),
-    0
-  );
-
-  // Chats WhatsApp — só redirects de fato servidos (rota /api/wa + form de
-  // locação). Mesmas janelas BRT dos demais KPIs: mês corrente + hoje.
-  const { count: waChatsMonth } = await admin
-    .from('whatsapp_clicks')
-    .select('id', { count: 'exact', head: true })
-    .gte('clicked_at', monthFrom)
-    .lt('clicked_at', monthTo);
-  const { count: waChatsToday } = await admin
-    .from('whatsapp_clicks')
-    .select('id', { count: 'exact', head: true })
-    .gte('clicked_at', todayFrom)
-    .lt('clicked_at', todayTo);
-
-  // ===== Bar chart 14 dias =====
-  const { fromIso: fourteenAgoFrom } = dayBoundsBRT(-13);
-  const { data: paymentsLast14 } = await admin
-    .from('payments')
-    .select('amount_cents, paid_at, booking_id')
-    .eq('status', 'paid')
-    .gte('paid_at', fourteenAgoFrom)
-    .lt('paid_at', nowToISO);
-  const last14BookingIds = (paymentsLast14 ?? []).map((p) => p.booking_id);
-  const { data: last14Bookings } = last14BookingIds.length
-    ? await admin.from('bookings').select('id, tour_id').in('id', last14BookingIds)
-    : { data: [] as Array<{ id: string; tour_id: string }> };
-  const last14Tour = new Map((last14Bookings ?? []).map((b) => [b.id, b.tour_id]));
-
-  const dayBuckets: Array<{ label: string; dayShort: string; cents: number; isToday: boolean }> = [];
-  for (let i = -13; i <= 0; i++) {
-    const d = new Date(`${brtTodayISO()}T12:00:00-03:00`);
-    d.setDate(d.getDate() + i);
-    const dayKey = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(d);
-    dayBuckets.push({
-      label: `${dayKey.slice(8)}/${dayKey.slice(5, 7)}`,
-      dayShort: dayKey.slice(8),
-      cents: 0,
-      isToday: i === 0,
-    });
-  }
-  for (const p of paymentsLast14 ?? []) {
-    if (!p.paid_at) continue;
-    const tourId = last14Tour.get(p.booking_id);
-    if (tourId && testTourIds.includes(tourId)) continue;
-    const dayKey = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(new Date(p.paid_at));
-    const idx = dayBuckets.findIndex(
-      (b) => b.label === `${dayKey.slice(8)}/${dayKey.slice(5, 7)}`
-    );
-    if (idx >= 0) dayBuckets[idx].cents += p.amount_cents ?? 0;
-  }
-  const max14 = Math.max(...dayBuckets.map((b) => b.cents), 1);
-  const sum14 = dayBuckets.reduce((a, b) => a + b.cents, 0);
+  const todayPax = todayList.reduce((acc, s) => acc + s.seats_taken, 0);
 
   // ===== Atividade recente =====
   const { data: recentEvents } = await admin
@@ -268,62 +158,106 @@ export default async function AdminOverviewPage() {
     : { data: [] as Array<{ id: string; booking_code: string }> };
   const recentCodeFor = new Map((recentBookings ?? []).map((b) => [b.id, b.booking_code]));
 
+  const periodLabel = `${shortDay(range.from)} – ${shortDay(range.to)}`;
+
+  const metrics: KpiMetric[] = [
+    {
+      key: 'receita',
+      label: 'Receita no período',
+      value: PRICE.format(data.revenueCents / 100),
+      sub: periodLabel,
+      unit: 'brl',
+      series: data.revenueByDay,
+    },
+    {
+      key: 'embarques',
+      label: 'Passageiros no período',
+      value: String(data.paxTotal),
+      sub: `${todayPax} hoje · ${todayList.length} saída${todayList.length === 1 ? '' : 's'}`,
+      unit: 'int',
+      series: data.paxByDay,
+    },
+    {
+      key: 'ocupacao',
+      label: 'Ocupação média',
+      value: `${data.occPct}%`,
+      sub: 'saídas do período',
+      unit: 'pct',
+      series: data.occByDay,
+    },
+    {
+      key: 'reembolsos',
+      label: 'Reembolsos no período',
+      value: String(data.refundsCount),
+      sub: data.refundsTotalCents > 0 ? PRICE.format(data.refundsTotalCents / 100) : '—',
+      unit: 'int',
+      series: data.refundsByDay,
+    },
+    {
+      key: 'chats',
+      label: 'Chats WhatsApp',
+      value: String(data.chatsCount),
+      sub: `${waChatsToday ?? 0} hoje`,
+      unit: 'int',
+      series: data.chatsByDay,
+    },
+  ];
+
+  const maxRev = Math.max(...data.revenueByDay.map((b) => b.value), 1);
+  const revLabelEvery = data.days.length > 45 ? 7 : data.days.length > 21 ? 3 : 1;
+
   return (
     <div>
+      {/* Atividade recente atualiza sozinha (fix 05/ago). */}
+      <AutoRefresh seconds={60} />
+
       {/* Header */}
-      <div className="mb-8 md:mb-10">
-        <h1
-          className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight"
-          style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', letterSpacing: '-0.02em' }}
-        >
-          Dashboard
-        </h1>
-        <p className="text-sm text-[var(--color-charcoal-500)] mt-2">
-          Operação do dia · {DATETIME.format(new Date()).split(',')[0]}
-        </p>
+      <div className="mb-6 md:mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1
+            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight"
+            style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', letterSpacing: '-0.02em' }}
+          >
+            Dashboard
+          </h1>
+          <p className="text-sm text-[var(--color-charcoal-500)] mt-2">
+            Período: {range.from.split('-').reverse().join('/')} a{' '}
+            {range.to.split('-').reverse().join('/')}
+          </p>
+        </div>
+        <div className="flex items-end gap-3 flex-wrap print:hidden">
+          <form className="flex items-end gap-2 flex-wrap">
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+                De
+              </label>
+              <input type="date" name="from" defaultValue={range.from} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+                Até
+              </label>
+              <input type="date" name="to" defaultValue={range.to} className={inputClass} />
+            </div>
+            <button
+              type="submit"
+              className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+            >
+              Filtrar
+            </button>
+          </form>
+          <XlsxDownloadButton
+            exportAction={exportOverviewXlsxAction.bind(null, { from: range.from, to: range.to })}
+          />
+          <AdminPrintButton />
+        </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 mb-8 md:mb-10">
-        <KpiCard
-          Icon={DollarSign}
-          iconTone="bg-emerald-100 text-emerald-700"
-          label="Receita do mês"
-          value={PRICE.format(monthRevenueCents / 100)}
-          sub="No mês corrente"
-        />
-        <KpiCard
-          Icon={Users}
-          iconTone="bg-[var(--color-red-50)] text-[var(--color-red-600)]"
-          label="Embarques hoje"
-          value={String(todayBookingsCount)}
-          sub={`${todayList.length} saída${todayList.length === 1 ? '' : 's'}`}
-        />
-        <KpiCard
-          Icon={Activity}
-          iconTone="bg-blue-100 text-blue-700"
-          label="Ocupação 7 dias"
-          value={`${occupancy7d}%`}
-          sub="Média ponderada"
-        />
-        <KpiCard
-          Icon={RotateCcw}
-          iconTone="bg-amber-100 text-amber-700"
-          label="Reembolsos do mês"
-          value={String(refundsCount)}
-          sub={refundsTotalCents > 0 ? PRICE.format(refundsTotalCents / 100) : '—'}
-        />
-        <KpiCard
-          Icon={MessageCircle}
-          iconTone="bg-green-100 text-green-700"
-          label="Chats WhatsApp no mês"
-          value={String(waChatsMonth ?? 0)}
-          sub={`${waChatsToday ?? 0} hoje`}
-        />
-      </div>
+      {/* KPIs expansíveis (clique abre o gráfico diário) */}
+      <KpiCharts metrics={metrics} />
 
-      {/* Saídas + Receita 14d */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-8">
+      {/* Saídas + Receita do período */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-8 print:grid-cols-2">
         {/* Saídas hoje */}
         <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 md:p-7">
           <div className="flex items-center justify-between mb-5">
@@ -332,7 +266,7 @@ export default async function AdminOverviewPage() {
             </h2>
             <Link
               href="/admin/manifesto"
-              className="text-xs font-bold text-[var(--color-red-600)] hover:text-[var(--color-red-700)] inline-flex items-center gap-1"
+              className="text-xs font-bold text-[var(--color-red-600)] hover:text-[var(--color-red-700)] inline-flex items-center gap-1 print:hidden"
             >
               Manifesto <ArrowRight size={12} />
             </Link>
@@ -392,50 +326,54 @@ export default async function AdminOverviewPage() {
           )}
         </section>
 
-        {/* Receita 14d */}
+        {/* Receita do período */}
         <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 md:p-7">
           <div className="flex items-baseline justify-between mb-1">
             <h2 className="font-display text-xl md:text-2xl font-semibold text-[var(--color-charcoal-900)] tracking-tight">
-              Receita · 14 dias
+              Receita · período
             </h2>
+            <span className="text-xs text-[var(--color-charcoal-500)]">{periodLabel}</span>
           </div>
           <p className="font-display text-2xl font-semibold text-[var(--color-red-600)] mb-5">
-            {PRICE.format(sum14 / 100)}
+            {PRICE.format(data.revenueCents / 100)}
           </p>
           <svg viewBox="0 0 300 120" className="w-full h-32" aria-label="Receita por dia">
-            {dayBuckets.map((b, idx) => {
-              const colW = 300 / 14;
+            {data.revenueByDay.map((b, idx) => {
+              const colW = 300 / data.days.length;
               const x = idx * colW;
-              const h = (b.cents / max14) * 96;
+              const h = (b.value / maxRev) * 96;
               const y = 100 - h;
-              const fill = b.isToday
+              const isToday = b.day === brtTodayISO();
+              const fill = isToday
                 ? 'var(--color-red-600)'
-                : b.cents > 0
+                : b.value > 0
                   ? 'var(--color-charcoal-700)'
                   : 'var(--color-charcoal-200)';
               return (
                 <g key={idx}>
                   <rect
-                    x={x + 3}
+                    x={x + Math.min(3, colW * 0.15)}
                     y={y}
-                    width={colW - 6}
+                    width={Math.max(colW - Math.min(6, colW * 0.3), 0.8)}
                     height={Math.max(h, 2)}
                     fill={fill}
-                    rx={3}
+                    rx={Math.min(3, colW / 4)}
                   >
                     <title>
-                      {b.label}: {COMPACT_PRICE.format(b.cents / 100)}
+                      {b.label}: {COMPACT_PRICE.format(b.value / 100)}
                     </title>
                   </rect>
-                  <text
-                    x={x + colW / 2}
-                    y={114}
-                    textAnchor="middle"
-                    fontSize="7"
-                    fill="var(--color-charcoal-400)"
-                  >
-                    {b.dayShort}
-                  </text>
+                  {idx % revLabelEvery === 0 && (
+                    <text
+                      x={x + colW / 2}
+                      y={114}
+                      textAnchor="middle"
+                      fontSize="7"
+                      fill="var(--color-charcoal-400)"
+                    >
+                      {data.days.length > 21 ? b.label : b.day.slice(8)}
+                    </text>
+                  )}
                 </g>
               );
             })}
@@ -444,7 +382,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* Atividade recente */}
-      <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 md:p-7">
+      <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 md:p-7 print:hidden">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-xl md:text-2xl font-semibold text-[var(--color-charcoal-900)] tracking-tight">
             Atividade recente
