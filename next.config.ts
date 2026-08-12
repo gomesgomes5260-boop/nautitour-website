@@ -15,9 +15,9 @@ const cspReportOnly = [
   "font-src 'self' data:",
   // images: photos locais + Supabase storage + Vercel preview + data/blob.
   "img-src 'self' data: blob: https:",
-  // fetch: tokenize Pagar.me + Supabase (REST e Realtime WSS) + beacons do
-  // GA4/Google Ads (collect e conversion).
-  "connect-src 'self' https://api.pagar.me https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com",
+  // fetch: tokenize Pagar.me + ViaCEP (autofill do endereço de cobrança do
+  // cartão) + Supabase (REST e Realtime WSS) + beacons do GA4/Google Ads.
+  "connect-src 'self' https://api.pagar.me https://viacep.com.br https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com",
   // Turnstile renderiza um iframe pra captcha; doubleclick = conversion
   // linker/remarketing do Google Ads.
   "frame-src 'self' https://challenges.cloudflare.com https://td.doubleclick.net https://bid.g.doubleclick.net",

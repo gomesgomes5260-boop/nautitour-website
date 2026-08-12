@@ -53,6 +53,7 @@ export default function PaymentMethodPicker({ bookingCode, totalCents, maxInstal
           bookingCode={bookingCode}
           totalCents={totalCents}
           maxInstallments={maxInstallments}
+          onSwitchToPix={() => setMethod('pix')}
         />
       )}
     </div>

@@ -31,7 +31,31 @@ export type PagarmeCharge = {
     qr_code_url?: string;
     expires_at?: string;
     status?: string;
+    // Campos de recusa de cartão — populados quando a adquirente (Stone)
+    // nega a autorização. Usados pra explicar o motivo real ao cliente.
+    acquirer_message?: string | null;
+    acquirer_return_code?: string | null;
+    gateway_response?: {
+      code?: string;
+      errors?: Array<{ message?: string }> | null;
+    } | null;
   };
+};
+
+/**
+ * Endereço de cobrança do cartão. Obrigatório pela antifraude da Stone: um
+ * pedido de cartão sem `billing_address` é recusado na validação com
+ * `validation_error | billing | "value" is required` — antes mesmo de tentar
+ * autorizar. Como usamos card_token, o endereço NÃO é tokenizado e precisa
+ * viajar no pedido (docs Pagar.me v5).
+ */
+export type BillingAddress = {
+  line_1: string;
+  line_2?: string;
+  zip_code: string; // só dígitos, 8
+  city: string;
+  state: string; // UF, 2 chars
+  country: string; // ISO-2, ex 'BR'
 };
 
 type FetchOptions = {
@@ -66,12 +90,45 @@ async function pagarmeFetch<T>(path: string, opts: FetchOptions = {}): Promise<T
   }
 
   if (!res.ok) {
-    const errMsg =
-      (json && typeof json === 'object' && 'message' in json && (json as { message?: string }).message) ||
-      `Pagar.me request failed (${res.status})`;
-    throw new Error(String(errMsg));
+    throw new Error(extractPagarmeError(json, res.status));
   }
   return json as T;
+}
+
+/**
+ * Extrai uma mensagem legível do corpo de erro da Pagar.me. Respostas de
+ * validação vêm como `{ message, errors: { "campo": ["motivo"] } }` — o
+ * `message` sozinho ("The request is invalid.") não diz nada, então
+ * anexamos o primeiro detalhe de `errors` (ex: `billing: "value" is
+ * required`). Nunca inclui dado de cartão (a Pagar.me não ecoa PAN/CVV).
+ */
+export function extractPagarmeError(json: unknown, status: number): string {
+  if (!json || typeof json !== 'object') {
+    return `Pagar.me request failed (${status})`;
+  }
+  const obj = json as { message?: string; errors?: unknown };
+  const base = obj.message || `Pagar.me request failed (${status})`;
+  const detail = firstErrorDetail(obj.errors);
+  return detail ? `${base} | ${detail}` : base;
+}
+
+function firstErrorDetail(errors: unknown): string | null {
+  if (!errors) return null;
+  // Formato objeto: { "campo": ["motivo", ...] }
+  if (!Array.isArray(errors) && typeof errors === 'object') {
+    for (const [field, msgs] of Object.entries(errors as Record<string, unknown>)) {
+      const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+      if (msg) return `${field}: ${String(msg)}`;
+    }
+    return null;
+  }
+  // Formato array: [{ message }, ...]
+  if (Array.isArray(errors)) {
+    const first = errors[0] as { message?: string } | string | undefined;
+    if (typeof first === 'string') return first;
+    if (first && typeof first === 'object' && first.message) return first.message;
+  }
+  return null;
 }
 
 export type CreatePixOrderInput = {
@@ -145,6 +202,36 @@ export function getOrder(id: string): Promise<PagarmeOrder> {
   return pagarmeFetch<PagarmeOrder>(`/orders/${id}`);
 }
 
+/**
+ * Traduz o motivo bruto de uma recusa de cartão (mensagem da adquirente)
+ * numa frase curta em PT-BR que o cliente entende. Cai num fallback genérico
+ * quando não reconhece a mensagem. Retorna também `raw` pra log interno.
+ */
+export function describeCardDecline(charge: PagarmeCharge | undefined): {
+  friendly: string;
+  raw: string | null;
+} {
+  const tx = charge?.last_transaction;
+  const raw =
+    tx?.acquirer_message ||
+    tx?.gateway_response?.errors?.[0]?.message ||
+    null;
+  const code = tx?.acquirer_return_code || tx?.gateway_response?.code || null;
+  const hay = `${raw ?? ''} ${code ?? ''}`.toLowerCase();
+
+  let friendly = 'Não foi possível aprovar o cartão.';
+  if (/insufficient|saldo|limite|funds/.test(hay)) {
+    friendly = 'Cartão recusado por saldo/limite insuficiente.';
+  } else if (/cvv|security code|cvc|expired|vencid|validade|invalid card|dados inv/.test(hay)) {
+    friendly = 'Dados do cartão incorretos ou cartão vencido. Confira número, validade e CVV.';
+  } else if (/fraud|antifraud|risk|blocked|bloque/.test(hay)) {
+    friendly = 'Compra bloqueada pelo emissor do cartão por segurança.';
+  } else if (/do not honor|honor|nao autoriz|não autoriz|declined|recus/.test(hay)) {
+    friendly = 'Compra não autorizada pelo banco emissor.';
+  }
+  return { friendly, raw };
+}
+
 export type CreateCardOrderInput = {
   bookingId: string;
   bookingCode: string;
@@ -158,6 +245,8 @@ export type CreateCardOrderInput = {
     phone?: string;
     document?: string;
   };
+  // Endereço de cobrança — obrigatório pela antifraude da Stone.
+  billingAddress: BillingAddress;
   // Up to 13 chars; appears on the card statement.
   statementDescriptor?: string;
 };
@@ -201,6 +290,18 @@ export function createCreditCardOrder(input: CreateCardOrderInput): Promise<Paga
           card_token: input.cardToken,
           installments,
           statement_descriptor: (input.statementDescriptor ?? 'NAUTITOUR').slice(0, 13),
+          // billing_address viaja no pedido (não é tokenizado). Sem isso a
+          // Stone recusa na validação.
+          card: {
+            billing_address: {
+              line_1: input.billingAddress.line_1,
+              line_2: input.billingAddress.line_2 || undefined,
+              zip_code: input.billingAddress.zip_code,
+              city: input.billingAddress.city,
+              state: input.billingAddress.state,
+              country: input.billingAddress.country,
+            },
+          },
         },
       },
     ],

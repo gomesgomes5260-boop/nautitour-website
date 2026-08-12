@@ -4,7 +4,12 @@ import { cookies, headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { canPay } from '@/lib/pagarme/config';
-import { createCreditCardOrder, createPixOrder } from '@/lib/pagarme/client';
+import {
+  createCreditCardOrder,
+  createPixOrder,
+  describeCardDecline,
+  type BillingAddress,
+} from '@/lib/pagarme/client';
 import { cookieNameFor, verifyBookingCode } from '@/lib/booking-session';
 import { paymentLimiter, getClientIp } from '@/lib/rate-limit';
 
@@ -170,6 +175,77 @@ export type CreateCardResult =
   | { ok: false; error: string };
 
 /**
+ * Endereço de cobrança vindo do formulário de cartão. O cliente digita só
+ * CEP + número (+ complemento); rua/bairro/cidade/UF chegam do ViaCEP (ou
+ * preenchidos à mão no fallback). Montamos o BillingAddress da Pagar.me aqui,
+ * no servidor, validando o mínimo que a Stone exige.
+ */
+export type CardBillingInput = {
+  zipCode: string;
+  number: string;
+  street: string;
+  neighborhood?: string;
+  city: string;
+  state: string;
+  complement?: string;
+};
+
+function buildBillingAddress(
+  b: CardBillingInput | undefined
+): { ok: true; value: BillingAddress } | { ok: false; error: string } {
+  if (!b) return { ok: false, error: 'Informe o endereço de cobrança do cartão.' };
+  const zip = (b.zipCode ?? '').replace(/\D/g, '');
+  const state = (b.state ?? '').trim().toUpperCase().slice(0, 2);
+  const city = (b.city ?? '').trim();
+  const street = (b.street ?? '').trim();
+  const number = (b.number ?? '').trim();
+  const neighborhood = (b.neighborhood ?? '').trim();
+  const complement = (b.complement ?? '').trim();
+
+  if (zip.length !== 8) return { ok: false, error: 'CEP inválido. Use 8 dígitos.' };
+  if (state.length !== 2) return { ok: false, error: 'UF inválida no endereço de cobrança.' };
+  if (!city) return { ok: false, error: 'Cidade obrigatória no endereço de cobrança.' };
+  if (!street) return { ok: false, error: 'Logradouro obrigatório no endereço de cobrança.' };
+  if (!number) return { ok: false, error: 'Informe o número do endereço de cobrança.' };
+
+  // line_1 precisa ser não-vazio e parecer um endereço. Ex: "Rua X, 100 - Centro".
+  const line_1 = [`${street}, ${number}`, neighborhood].filter(Boolean).join(' - ').slice(0, 256);
+
+  return {
+    ok: true,
+    value: {
+      line_1,
+      line_2: complement || undefined,
+      zip_code: zip,
+      city: city.slice(0, 64),
+      state,
+      country: 'BR',
+    },
+  };
+}
+
+/**
+ * Registra uma falha/recusa de cartão em booking_events SEM mudar o status
+ * da reserva — ela continua pending_payment pra o cliente poder tentar de
+ * novo (outro cartão) ou trocar pro PIX. Best-effort: nunca lança.
+ */
+async function logCardFailure(
+  admin: ReturnType<typeof createAdminClient>,
+  bookingId: string,
+  payload: Record<string, unknown>
+): Promise<void> {
+  try {
+    await admin.from('booking_events').insert({
+      booking_id: bookingId,
+      kind: 'payment_failed',
+      payload: { payment_method: 'credit_card', ...payload },
+    });
+  } catch (e) {
+    console.error('[createCardForBookingAction] log event failed', e);
+  }
+}
+
+/**
  * Charge an existing pending booking with a tokenized card. Amount comes
  * from booking.total_cents (server-side), never from the client.
  *
@@ -183,6 +259,7 @@ export async function createCardForBookingAction(input: {
   cardToken: string;
   cardHolderName: string;
   installments?: number;
+  billing: CardBillingInput;
 }): Promise<CreateCardResult> {
   const headersList = await headers();
   const ip = getClientIp(headersList);
@@ -240,6 +317,11 @@ export async function createCardForBookingAction(input: {
     return { ok: false, error: 'Pagamento apenas à vista (sem parcelamento).' };
   }
 
+  // Endereço de cobrança é obrigatório (antifraude Stone). Valida antes de
+  // gastar uma tokenização/pedido na Pagar.me.
+  const billing = buildBillingAddress(input.billing);
+  if (!billing.ok) return { ok: false, error: billing.error };
+
   try {
     const order = await createCreditCardOrder({
       bookingId: booking.id,
@@ -254,6 +336,7 @@ export async function createCardForBookingAction(input: {
         phone: customer.phone ?? undefined,
         document: customer.cpf ?? undefined,
       },
+      billingAddress: billing.value,
     });
 
     const charge = order.charges?.[0];
@@ -286,12 +369,24 @@ export async function createCardForBookingAction(input: {
     }
 
     if (status === 'failed' || status === 'canceled') {
-      return { ok: false, error: 'Pagamento recusado pela operadora.' };
+      const { friendly, raw } = describeCardDecline(charge);
+      await logCardFailure(admin, booking.id, {
+        stage: 'declined',
+        order_status: status,
+        pagarme_order_id: order.id,
+        pagarme_charge_id: charge?.id ?? null,
+        reason: raw,
+      });
+      return { ok: false, error: friendly };
     }
 
     return { ok: true, status: 'pending', bookingCode: booking.booking_code };
   } catch (err) {
-    console.error('[createCardForBookingAction] error', err);
+    // Erro da API (validação, indisponibilidade, etc). Loga o motivo bruto
+    // pra diagnóstico, mas mostra mensagem genérica ao cliente.
+    const raw = err instanceof Error ? err.message : String(err);
+    console.error('[createCardForBookingAction] error', raw);
+    await logCardFailure(admin, booking.id, { stage: 'api_error', reason: raw });
     return { ok: false, error: 'Falha ao processar pagamento. Tente novamente.' };
   }
 }
