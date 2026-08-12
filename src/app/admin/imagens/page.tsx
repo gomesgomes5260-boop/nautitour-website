@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isOwnerUser } from '@/lib/admin';
 import ImageLibrary from './ImageLibrary';
-import { listSiteImagesAction } from './actions';
+import { listSiteImagesAction, listTagsAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +29,8 @@ export default async function AdminImagensPage() {
   // (evita setState em effect, regra react-hooks/set-state-in-effect).
   const initialList = await listSiteImagesAction(INITIAL_FOLDER);
   const initialImages = initialList.ok ? initialList.images : [];
+  const tagList = await listTagsAction();
+  const initialTags = tagList.ok ? tagList.tags : [];
 
   return (
     <div className="space-y-6">
@@ -37,7 +39,10 @@ export default async function AdminImagensPage() {
         <p className="text-sm text-[var(--color-charcoal-500)] mt-1">
           Biblioteca de imagens do site (blog, capas e galeria), servida pelo
           Supabase Storage com CDN. Clique numa foto pra selecionar; use a barra
-          pra excluir ou copiar a URL.
+          pra excluir, copiar a URL ou taguear. As tags{' '}
+          <strong>galeria-home, galeria-escuna, galeria-lancha e galeria-locacao</strong>{' '}
+          controlam as galerias das páginas públicas — tagueou, apareceu no site
+          (na ordem em que foram tagueadas).
           {!canManage && ' Upload e exclusão são restritos ao admin master.'}
         </p>
       </div>
@@ -46,6 +51,7 @@ export default async function AdminImagensPage() {
         initialFolders={initialFolders}
         initialFolder={INITIAL_FOLDER}
         initialImages={initialImages}
+        initialTags={initialTags}
       />
     </div>
   );

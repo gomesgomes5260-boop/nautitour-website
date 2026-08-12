@@ -34,19 +34,24 @@ const steps: Step[] = [
 
 export default function HowToBook() {
   return (
-    <section className="bg-[var(--color-charcoal-50)] py-16 sm:py-20 md:py-28">
+    // Degradê maré no lugar do cinza (pedido do admin 12/ago) — cards brancos
+    // assentam sobre o teal com sombra em vez de borda.
+    <section
+      className="py-16 sm:py-20 md:py-28"
+      style={{ background: 'var(--gradient-mare)' }}
+    >
       <Container>
         <div className="text-center mb-12 md:mb-16 max-w-xl mx-auto">
-          <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-600)]">
+          <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-white/80">
             Como funciona
           </span>
           <h2
-            className="font-display text-[var(--color-charcoal-900)] font-semibold tracking-tight mt-3 mb-3 sm:mb-4"
+            className="font-display text-white font-semibold tracking-tight mt-3 mb-3 sm:mb-4"
             style={{ fontSize: 'clamp(1.75rem, 5.5vw, 3.5rem)', lineHeight: '1.1', letterSpacing: '-0.02em' }}
           >
             Reservar é fácil e rápido.
           </h2>
-          <p className="text-[var(--color-charcoal-500)] text-sm sm:text-base md:text-lg leading-relaxed">
+          <p className="text-white/85 text-sm sm:text-base md:text-lg leading-relaxed">
             3 passos pra sair do clique pro embarque. Sem complicação.
           </p>
         </div>
@@ -55,7 +60,7 @@ export default function HowToBook() {
           {steps.map((step) => (
             <article
               key={step.num}
-              className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 sm:p-7 md:p-8"
+              className="bg-white rounded-2xl p-6 sm:p-7 md:p-8 shadow-[var(--shadow-2)]"
             >
               <div className="flex items-center gap-4 mb-5">
                 <span

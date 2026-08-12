@@ -622,6 +622,24 @@ export type Database = {
           },
         ]
       }
+      site_image_tags: {
+        Row: {
+          path: string
+          tag: string
+          tagged_at: string
+        }
+        Insert: {
+          path: string
+          tag: string
+          tagged_at?: string
+        }
+        Update: {
+          path?: string
+          tag?: string
+          tagged_at?: string
+        }
+        Relationships: []
+      }
       site_image_usage: {
         Row: {
           last_used_at: string
