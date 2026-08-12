@@ -9,6 +9,7 @@ import Container from '@/components/Container';
 import DateScheduleSelector from '@/components/DateScheduleSelector';
 import ViewItemTracker from '@/components/ViewItemTracker';
 import PhotoGallery from '@/components/PhotoGallery';
+import LanchaUpsell from '@/components/LanchaUpsell';
 import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_ESCUNA_GALLERY } from '@/lib/photo-gallery';
 import { getGalleryPhotos } from '@/lib/gallery';
@@ -345,6 +346,7 @@ export default async function PasseioEscunaPage() {
             </div>
           </Container>
         </section>
+        <LanchaUpsell />
         <PhotoGallery
           eyebrow="Galeria"
           title="A bordo da nossa escuna"

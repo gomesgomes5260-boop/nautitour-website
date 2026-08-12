@@ -32,6 +32,9 @@ function messageFor(source: string, req: NextRequest): string | null {
       const [, month, day] = date.split('-');
       return `Olá! Quero consultar a disponibilidade da lancha privativa para o dia ${day}/${month} às ${time}. Pode me ajudar?`;
     }
+    case 'escuna-lancha':
+      // Cross-sell: veio da página da escuna e quer a lancha privativa.
+      return 'Olá! Vi o passeio de escuna no site e queria saber sobre a lancha privativa. Podem me passar valores e disponibilidade?';
     case 'blog': {
       const raw = req.nextUrl.searchParams.get('t') ?? '';
       const title = raw.replace(TITLE_RE, '').trim().slice(0, 80);
