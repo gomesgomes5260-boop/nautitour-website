@@ -44,6 +44,12 @@ function messageFor(source: string, req: NextRequest): string | null {
       if (!BOOKING_CODE_RE.test(code)) return null;
       return `Olá! Quero finalizar a reserva ${code}.`;
     }
+    case 'pagamento-cartao': {
+      // Cliente cujo cartão foi recusado/deu erro no checkout.
+      const code = req.nextUrl.searchParams.get('code') ?? '';
+      if (!BOOKING_CODE_RE.test(code)) return null;
+      return `Olá! Tentei pagar a reserva ${code} no cartão e não consegui. Podem me ajudar?`;
+    }
     case 'email-cancel': {
       const code = req.nextUrl.searchParams.get('code') ?? '';
       if (!BOOKING_CODE_RE.test(code)) return null;
