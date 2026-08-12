@@ -100,7 +100,7 @@ export default function InquiryForm() {
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 text-green-800 rounded-md p-6">
+      <div className="bg-green-50 border border-green-200 text-green-800 rounded-2xl p-6">
         <h3 className="font-semibold mb-2">Solicitação registrada!</h3>
         <p className="text-sm mb-4">
           Já abrimos o WhatsApp em uma nova aba com seus dados pré-preenchidos. Se
@@ -110,8 +110,7 @@ export default function InquiryForm() {
           href={success.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block px-6 py-3 text-white text-sm font-semibold rounded-full"
-          style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+          className="inline-block px-6 py-3 text-white text-sm font-semibold rounded-full bg-[var(--color-success)] hover:brightness-110 transition-all"
         >
           Abrir WhatsApp
         </a>
@@ -127,7 +126,7 @@ export default function InquiryForm() {
           required
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2"
+          className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
         />
       </Field>
 
@@ -138,7 +137,7 @@ export default function InquiryForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
           />
         </Field>
         <Field label="Telefone (com DDD)" required>
@@ -148,7 +147,7 @@ export default function InquiryForm() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(22) 99999-9999"
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
           />
         </Field>
       </div>
@@ -160,7 +159,7 @@ export default function InquiryForm() {
           min={minDate}
           value={requestedDate}
           onChange={(e) => setRequestedDate(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2"
+          className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
         />
       </Field>
 
@@ -171,7 +170,7 @@ export default function InquiryForm() {
             required
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
           />
         </Field>
         <Field label="Horário de retorno" required>
@@ -180,7 +179,7 @@ export default function InquiryForm() {
             required
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
           />
         </Field>
       </div>
@@ -204,11 +203,11 @@ export default function InquiryForm() {
           onChange={(e) =>
             setPassengerCount(e.target.value === '' ? '' : Number(e.target.value))
           }
-          className="w-full border border-gray-300 rounded-md px-3 py-2"
+          className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
         />
       </Field>
 
-      <label className="flex items-start gap-3 border border-gray-200 rounded-md p-4">
+      <label className="flex items-start gap-3 border border-[var(--color-charcoal-200)] rounded-xl p-4 hover:border-[var(--color-charcoal-400)] transition-colors cursor-pointer">
         <input
           type="checkbox"
           checked={interestedInOpenBar}
@@ -216,10 +215,10 @@ export default function InquiryForm() {
           className="mt-1"
         />
         <span>
-          <span className="block font-medium text-gray-800">
+          <span className="block font-semibold text-[var(--color-charcoal-900)]">
             Tenho interesse em open bar
           </span>
-          <span className="block text-sm text-gray-600">
+          <span className="block text-sm text-[var(--color-charcoal-500)]">
             Inclui drinks, caipirinhas e refrigerantes a bordo (orçamento à parte).
           </span>
         </span>
@@ -231,14 +230,14 @@ export default function InquiryForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Ocasião, restrições, preferências..."
-          className="w-full border border-gray-300 rounded-md px-3 py-2"
+          className="w-full border border-[var(--color-charcoal-200)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--color-charcoal-900)] focus:outline-none focus:border-[var(--color-red-600)]"
         />
       </Field>
 
       <TurnstileWidget onToken={handleTurnstileToken} action="inquiry" />
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-3 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-3 text-sm">
           {error}
         </div>
       )}
@@ -246,8 +245,7 @@ export default function InquiryForm() {
       <button
         type="submit"
         disabled={isPending || !turnstileToken}
-        className="w-full px-6 py-4 text-white text-base font-semibold rounded-full disabled:opacity-50"
-        style={{ backgroundColor: 'rgb(9, 110, 171)' }}
+        className="w-full px-6 py-4 text-white text-base font-bold rounded-full bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] transition-colors disabled:opacity-50"
       >
         {isPending ? 'Enviando...' : 'Enviar e abrir WhatsApp'}
       </button>
@@ -270,7 +268,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-gray-700 mb-1">
+      <span className="block text-sm font-semibold text-[var(--color-charcoal-700)] mb-1">
         {label}
         {required && <span className="text-red-600"> *</span>}
       </span>

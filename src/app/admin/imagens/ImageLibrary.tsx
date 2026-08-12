@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
-import type { SiteImage } from './actions';
+import type { SiteImage, TagCount } from './actions';
 import Image from 'next/image';
 import {
   UploadCloud,
@@ -10,13 +10,20 @@ import {
   Loader2,
   FolderPlus,
   FolderUp,
+  Tag as TagIcon,
 } from 'lucide-react';
 import {
   listSiteImagesAction,
+  listImagesByTagAction,
   uploadSiteImageAction,
   deleteSiteImagesAction,
   markImageUsedAction,
+  tagImagesAction,
+  untagImagesAction,
 } from './actions';
+import { SUGGESTED_TAGS, GALLERY_TAGS } from '@/lib/image-tags';
+
+const GALLERY_TAG_SET = new Set<string>(GALLERY_TAGS);
 
 const ALL = '__all__';
 
@@ -162,11 +169,13 @@ export default function ImageLibrary({
   initialFolders,
   initialFolder,
   initialImages,
+  initialTags,
 }: {
   canManage: boolean;
   initialFolders: string[];
   initialFolder: string;
   initialImages: SiteImage[];
+  initialTags: TagCount[];
 }) {
   const [folders, setFolders] = useState<string[]>(() =>
     Array.from(new Set([...DEFAULT_FOLDERS, ...initialFolders]))
@@ -184,6 +193,11 @@ export default function ImageLibrary({
   const [notice, setNotice] = useState<string | null>(null);
   const [newFolder, setNewFolder] = useState('');
   const [showNewFolder, setShowNewFolder] = useState(false);
+  const [tags, setTags] = useState<TagCount[]>(initialTags);
+  // Filtro por tag ativo — sobrepõe a visão por pasta enquanto setado.
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [tagInput, setTagInput] = useState('');
   const [pending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dirInputRef = useRef<HTMLInputElement>(null);
@@ -193,6 +207,7 @@ export default function ImageLibrary({
   // handler — nada de setState em effect (regra react-hooks/set-state-in-effect).
   const changeFolder = useCallback((f: string) => {
     setFolder(f);
+    setTagFilter(null);
     setLoading(true);
     setSelected(new Set());
     startTransition(async () => {
@@ -206,6 +221,82 @@ export default function ImageLibrary({
       setLoading(false);
     });
   }, []);
+
+  const changeTagFilter = useCallback((tag: string) => {
+    setTagFilter(tag);
+    setLoading(true);
+    setSelected(new Set());
+    startTransition(async () => {
+      const res = await listImagesByTagAction(tag);
+      if (res.ok) {
+        setImages(res.images);
+        setErr(null);
+      } else {
+        setErr(res.error);
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  /** Recarrega a contagem de tags (após taguear/destaguear). */
+  const refreshTags = useCallback((delta: Map<string, number>) => {
+    setTags((prev) => {
+      const byTag = new Map(prev.map((t) => [t.tag, t.count]));
+      for (const [tag, d] of delta) {
+        byTag.set(tag, Math.max(0, (byTag.get(tag) ?? 0) + d));
+      }
+      return Array.from(byTag.entries())
+        .filter(([, count]) => count > 0)
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => a.tag.localeCompare(b.tag));
+    });
+  }, []);
+
+  function applyTagToSelection() {
+    const raw = tagInput.trim();
+    if (!raw || selected.size === 0) return;
+    const paths = Array.from(selected);
+    startTransition(async () => {
+      const res = await tagImagesAction(paths, raw);
+      if (!res.ok) {
+        setErr(res.error);
+        return;
+      }
+      setErr(null);
+      // Anexa a tag localmente só em quem ainda não tinha (contagem correta).
+      let added = 0;
+      setImages((prev) =>
+        prev.map((img) => {
+          if (!selected.has(img.path) || img.tags.includes(res.tag)) return img;
+          added += 1;
+          return { ...img, tags: [...img.tags, res.tag].sort() };
+        })
+      );
+      refreshTags(new Map([[res.tag, added]]));
+      setNotice(`Tag "${res.tag}" aplicada em ${paths.length} imagem${paths.length === 1 ? '' : 'ns'}.`);
+      setTagInput('');
+      setShowTagInput(false);
+    });
+  }
+
+  function removeTagFromSelection() {
+    if (!tagFilter || selected.size === 0) return;
+    const paths = Array.from(selected);
+    const tag = tagFilter;
+    startTransition(async () => {
+      const res = await untagImagesAction(paths, tag);
+      if (!res.ok) {
+        setErr(res.error);
+        return;
+      }
+      setErr(null);
+      // Na visão filtrada, remover a tag = sair da lista.
+      setImages((prev) => prev.filter((img) => !selected.has(img.path)));
+      refreshTags(new Map([[tag, -paths.length]]));
+      setSelected(new Set());
+      setNotice(`Tag "${tag}" removida de ${paths.length} imagem${paths.length === 1 ? '' : 'ns'}.`);
+    });
+  }
 
   async function uploadQueue(queue: QueuedFile[]) {
     if (!canManage) return;
@@ -473,6 +564,44 @@ export default function ImageLibrary({
         </label>
       </div>
 
+      {/* Filtro por tag — tags "galeria-*" alimentam as galerias públicas */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-xs text-[var(--color-charcoal-500)]">
+            <TagIcon size={13} /> Tags:
+          </span>
+          {tags.map((t) => {
+            const active = tagFilter === t.tag;
+            const isGallery = GALLERY_TAG_SET.has(t.tag);
+            return (
+              <button
+                key={t.tag}
+                type="button"
+                onClick={() => (active ? changeFolder(folder) : changeTagFilter(t.tag))}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold border transition-colors ${
+                  active
+                    ? 'bg-[var(--color-red-600)] text-white border-[var(--color-red-600)]'
+                    : isGallery
+                      ? 'bg-[var(--color-red-50)] text-[var(--color-red-700)] border-[var(--color-red-100)] hover:border-[var(--color-red-600)]'
+                      : 'bg-white text-[var(--color-charcoal-700)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-400)]'
+                }`}
+              >
+                {t.tag} <span className="opacity-60">{t.count}</span>
+              </button>
+            );
+          })}
+          {tagFilter && (
+            <button
+              type="button"
+              onClick={() => changeFolder(folder)}
+              className="text-[11px] text-[var(--color-charcoal-500)] hover:text-[var(--color-charcoal-900)] underline underline-offset-2"
+            >
+              limpar filtro
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Dropzone (só owner) */}
       {canManage && (
         <div
@@ -617,6 +746,60 @@ export default function ImageLibrary({
               <LinkIcon size={13} /> Copiar URL
             </button>
           )}
+          {canManage &&
+            (showTagInput ? (
+              <span className="inline-flex items-center gap-1.5">
+                <input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && applyTagToSelection()}
+                  placeholder="tag (ex: galeria-home)"
+                  list="tag-suggestions"
+                  autoFocus
+                  className="rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs text-white placeholder:text-white/40 w-44 focus:outline-none focus:border-white/50"
+                />
+                <datalist id="tag-suggestions">
+                  {Array.from(new Set([...SUGGESTED_TAGS, ...tags.map((t) => t.tag)])).map(
+                    (t) => (
+                      <option key={t} value={t} />
+                    )
+                  )}
+                </datalist>
+                <button
+                  type="button"
+                  onClick={applyTagToSelection}
+                  disabled={pending}
+                  className="text-xs font-semibold text-emerald-300 hover:text-emerald-200 disabled:opacity-50"
+                >
+                  Aplicar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowTagInput(false)}
+                  className="text-xs text-white/50 hover:text-white"
+                >
+                  ✕
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowTagInput(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 hover:text-white"
+              >
+                <TagIcon size={13} /> Taguear
+              </button>
+            ))}
+          {canManage && tagFilter && (
+            <button
+              type="button"
+              onClick={removeTagFromSelection}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 hover:text-amber-200 disabled:opacity-50"
+            >
+              <TagIcon size={13} /> Remover tag &ldquo;{tagFilter}&rdquo;
+            </button>
+          )}
           {canManage && (
             <button
               type="button"
@@ -690,9 +873,30 @@ export default function ImageLibrary({
                   >
                     {isSelected ? '✓' : ''}
                   </span>
-                  {folder === ALL && (
+                  {(folder === ALL || tagFilter) && (
                     <span className="absolute top-2 right-2 rounded-full bg-black/60 text-white text-[9px] font-bold px-2 py-0.5">
                       {img.folder}
+                    </span>
+                  )}
+                  {img.tags.length > 0 && (
+                    <span className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[calc(100%-1rem)]">
+                      {img.tags.slice(0, 2).map((t) => (
+                        <span
+                          key={t}
+                          className={`rounded-full text-[9px] font-bold px-1.5 py-0.5 ${
+                            GALLERY_TAG_SET.has(t)
+                              ? 'bg-[var(--color-red-600)]/90 text-white'
+                              : 'bg-black/60 text-white'
+                          }`}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                      {img.tags.length > 2 && (
+                        <span className="rounded-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5">
+                          +{img.tags.length - 2}
+                        </span>
+                      )}
                     </span>
                   )}
                 </button>

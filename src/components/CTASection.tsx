@@ -1,6 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import Container from './Container';
+
+// Foto aérea da escuna em João Fernandes (pedido do admin 12/ago — antes o
+// fundo era só o gradiente escuro). O gradient-iron fica por trás como
+// fallback enquanto a imagem carrega.
+const CTA_BG = '/images/photos/aerea/drone-joao-fernandes-01.jpg';
 
 export default function CTASection() {
   return (
@@ -8,16 +14,21 @@ export default function CTASection() {
       className="relative overflow-hidden py-16 sm:py-20 md:py-28 lg:py-32"
       style={{ background: 'var(--gradient-iron)' }}
     >
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(45deg, transparent 0, transparent 24px, rgba(255,255,255,0.5) 24px, rgba(255,255,255,0.5) 25px)',
-        }}
+      <Image
+        src={CTA_BG}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="100vw"
+        aria-hidden
       />
+      {/* Overlay escuro pra manter o contraste do texto sobre a foto */}
       <div
-        className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-25 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, var(--color-red-600) 0%, transparent 70%)' }}
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(31,31,31,0.72) 0%, rgba(31,31,31,0.55) 50%, rgba(31,31,31,0.72) 100%)',
+        }}
       />
 
       <Container className="relative">
@@ -31,13 +42,17 @@ export default function CTASection() {
               fontSize: 'clamp(1.875rem, 6vw, 4rem)',
               lineHeight: '1.08',
               letterSpacing: '-0.02em',
+              textShadow: '0 2px 18px rgba(0,0,0,0.45)',
             }}
           >
             A melhor experiência
             <br />
             <span className="italic font-medium text-white/90">de passeio em Búzios.</span>
           </h2>
-          <p className="text-white/75 text-sm sm:text-base md:text-lg mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
+          <p
+            className="text-white/85 text-sm sm:text-base md:text-lg mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed"
+            style={{ textShadow: '0 1px 10px rgba(0,0,0,0.5)' }}
+          >
             12 praias, 3 ilhas, sol o dia todo. Seguro, divertido e com o melhor atendimento da Região dos Lagos.
           </p>
           <Link

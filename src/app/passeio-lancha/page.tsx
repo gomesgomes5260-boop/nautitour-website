@@ -11,6 +11,7 @@ import WhatsAppLeadLink from '@/components/WhatsAppLeadLink';
 import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
 import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
+import { getGalleryPhotos } from '@/lib/gallery';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration } from '@/lib/format-duration';
 
@@ -117,11 +118,14 @@ export default async function PasseioLanchaPage() {
       <main className="bg-[var(--color-charcoal-50)]">
         {/* === HERO === */}
         <section className="relative w-full overflow-hidden">
+          {/* Foto deslocada pra direita: o texto cai sobre a parte escura do
+              mar à esquerda (pedido 12/ago — saiu também o degradê vermelho). */}
           <Image
             src={tour.cover_image_url ?? LANCHA_COVER}
             alt={tour.name}
             fill
             className="object-cover"
+            style={{ objectPosition: '72% center' }}
             priority
             sizes="100vw"
           />
@@ -129,7 +133,7 @@ export default async function PasseioLanchaPage() {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(105deg, rgba(31,31,31,0.82) 0%, rgba(192,0,16,0.4) 50%, rgba(31,31,31,0.15) 100%)',
+                'linear-gradient(105deg, rgba(31,31,31,0.85) 0%, rgba(31,31,31,0.5) 45%, rgba(31,31,31,0.08) 100%)',
             }}
           />
           <Container className="relative py-16 sm:py-20 md:py-24">
@@ -151,6 +155,15 @@ export default async function PasseioLanchaPage() {
                 {tour.description}
               </p>
             )}
+            {/* CTA principal da página: a reserva da lancha fecha no WhatsApp */}
+            <WhatsAppLeadLink
+              href={WHATSAPP_URL}
+              source="lancha-hero-whatsapp"
+              className="inline-flex items-center gap-2.5 bg-[var(--color-success)] hover:brightness-110 text-white font-bold text-sm sm:text-base px-6 sm:px-7 py-3.5 rounded-full transition-all mt-6"
+            >
+              <MessageCircle size={18} />
+              Consultar disponibilidade no WhatsApp
+            </WhatsAppLeadLink>
           </Container>
         </section>
 
@@ -256,24 +269,18 @@ export default async function PasseioLanchaPage() {
                       ctaMode="whatsapp"
                     />
 
-                    {/* WhatsApp inquiry card */}
+                    {/* CTA de WhatsApp reforçado (pedido 12/ago) */}
                     <WhatsAppLeadLink
                       href={WHATSAPP_URL}
                       source="lancha-whatsapp"
-                      className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-dashed border-[var(--color-charcoal-200)] hover:border-[var(--color-red-600)] hover:bg-[var(--color-red-50)] p-4 transition-colors"
+                      className="mt-5 flex items-center justify-center gap-2.5 rounded-2xl bg-[var(--color-success)] hover:brightness-110 text-white font-bold text-sm py-4 px-4 transition-all"
                     >
-                      <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[var(--color-success)] text-white shrink-0">
-                        <MessageCircle size={16} />
-                      </span>
-                      <div>
-                        <p className="font-sans text-sm font-bold text-[var(--color-charcoal-900)] mb-0.5">
-                          Outro horário?
-                        </p>
-                        <p className="text-xs text-[var(--color-charcoal-500)] leading-relaxed">
-                          Consulte disponibilidade direto no WhatsApp.
-                        </p>
-                      </div>
+                      <MessageCircle size={18} />
+                      Falar no WhatsApp agora
                     </WhatsAppLeadLink>
+                    <p className="text-[11px] text-[var(--color-charcoal-500)] text-center leading-relaxed mt-2">
+                      Outro horário? Consulte a disponibilidade direto com a equipe.
+                    </p>
                   </div>
                 </div>
               </aside>
@@ -284,7 +291,7 @@ export default async function PasseioLanchaPage() {
           eyebrow="Galeria"
           title="Experiência privativa"
           subtitle="Imagens de roteiros privativos — ilhas, drone aéreo e momentos íntimos a bordo."
-          photos={PASSEIO_LANCHA_GALLERY}
+          photos={await getGalleryPhotos('galeria-lancha', PASSEIO_LANCHA_GALLERY)}
         />
       </main>
       <Footer />
