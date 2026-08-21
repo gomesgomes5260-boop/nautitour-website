@@ -12,7 +12,16 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import AutoRefresh from '@/components/AutoRefresh';
 import AdminPrintButton from '@/components/AdminPrintButton';
 import XlsxDownloadButton from '@/components/XlsxDownloadButton';
-import { parseDateRange, shortDay } from '@/lib/date-range';
+import {
+  addDays,
+  brtTodayISO,
+  compareRange,
+  deltaPct,
+  parseDateRange,
+  shortDay,
+  type CompareMode,
+} from '@/lib/date-range';
+import AdminBarChart from '@/components/AdminBarChart';
 import { getOverviewData } from './data';
 import { exportOverviewXlsxAction } from './actions';
 import KpiCharts, { type KpiMetric } from './KpiCharts';
@@ -36,12 +45,6 @@ const TIME = new Intl.DateTimeFormat('pt-BR', {
 const PRICE = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
-});
-
-const COMPACT_PRICE = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-  maximumFractionDigits: 0,
 });
 
 const EVENT_LABEL: Record<string, string> = {
@@ -81,17 +84,6 @@ const VISIBLE_EVENT_KINDS = [
   'schedule_blocked',
 ];
 
-function brtTodayISO(): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Sao_Paulo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date());
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
 function dayBoundsBRT(daysOffset = 0): { fromIso: string; toIso: string } {
   const today = brtTodayISO();
   const d = new Date(`${today}T00:00:00-03:00`);
@@ -108,13 +100,26 @@ const inputClass =
 export default async function AdminOverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; cmp?: string }>;
 }) {
   const sp = await searchParams;
   const range = parseDateRange(sp.from, sp.to);
 
+  // Comparação de períodos (upgrade 12/ago): 'prev' (default), 'yoy' ou 'off'.
+  const cmpParam = sp.cmp === 'off' || sp.cmp === 'yoy' ? sp.cmp : 'prev';
+  const cmpMode: CompareMode | null = cmpParam === 'off' ? null : cmpParam;
+  const cmpRange = cmpMode ? compareRange(range, cmpMode) : null;
+
   const admin = createAdminClient();
-  const data = await getOverviewData(range);
+  const [data, cmpData] = await Promise.all([
+    getOverviewData(range),
+    cmpRange ? getOverviewData(cmpRange) : Promise.resolve(null),
+  ]);
+  const compareLabel = cmpRange
+    ? cmpMode === 'yoy'
+      ? `mesmo período de ${cmpRange.from.slice(0, 4)}`
+      : `período anterior (${shortDay(cmpRange.from)} – ${shortDay(cmpRange.to)})`
+    : undefined;
   const { fromIso: todayFrom, toIso: todayTo } = dayBoundsBRT(0);
 
   // Chats de HOJE (sub do KPI) — independente do range filtrado.
@@ -168,6 +173,8 @@ export default async function AdminOverviewPage({
       sub: periodLabel,
       unit: 'brl',
       series: data.revenueByDay,
+      compareSeries: cmpData?.revenueByDay ?? null,
+      delta: cmpData ? { pct: deltaPct(data.revenueCents, cmpData.revenueCents) } : undefined,
     },
     {
       key: 'embarques',
@@ -176,6 +183,8 @@ export default async function AdminOverviewPage({
       sub: `${todayPax} hoje · ${todayList.length} saída${todayList.length === 1 ? '' : 's'}`,
       unit: 'int',
       series: data.paxByDay,
+      compareSeries: cmpData?.paxByDay ?? null,
+      delta: cmpData ? { pct: deltaPct(data.paxTotal, cmpData.paxTotal) } : undefined,
     },
     {
       key: 'ocupacao',
@@ -184,6 +193,8 @@ export default async function AdminOverviewPage({
       sub: 'saídas do período',
       unit: 'pct',
       series: data.occByDay,
+      compareSeries: cmpData?.occByDay ?? null,
+      delta: cmpData ? { pct: deltaPct(data.occPct, cmpData.occPct) } : undefined,
     },
     {
       key: 'reembolsos',
@@ -192,6 +203,10 @@ export default async function AdminOverviewPage({
       sub: data.refundsTotalCents > 0 ? PRICE.format(data.refundsTotalCents / 100) : '—',
       unit: 'int',
       series: data.refundsByDay,
+      compareSeries: cmpData?.refundsByDay ?? null,
+      delta: cmpData
+        ? { pct: deltaPct(data.refundsCount, cmpData.refundsCount), positiveIsGood: false }
+        : undefined,
     },
     {
       key: 'chats',
@@ -200,11 +215,25 @@ export default async function AdminOverviewPage({
       sub: `${waChatsToday ?? 0} hoje`,
       unit: 'int',
       series: data.chatsByDay,
+      compareSeries: cmpData?.chatsByDay ?? null,
+      delta: cmpData ? { pct: deltaPct(data.chatsCount, cmpData.chatsCount) } : undefined,
     },
   ];
 
-  const maxRev = Math.max(...data.revenueByDay.map((b) => b.value), 1);
-  const revLabelEvery = data.days.length > 45 ? 7 : data.days.length > 21 ? 3 : 1;
+  const today = brtTodayISO();
+  // Presets rápidos do filtro + toggle de comparação (preservam os demais params).
+  const presets = [
+    { label: '7 dias', from: addDays(today, -6), to: today },
+    { label: '30 dias', from: addDays(today, -29), to: today },
+    { label: 'Este mês', from: `${today.slice(0, 7)}-01`, to: today },
+  ];
+  const cmpOptions: Array<{ key: string; label: string }> = [
+    { key: 'prev', label: 'vs anterior' },
+    { key: 'yoy', label: 'vs ano passado' },
+    { key: 'off', label: 'sem comparação' },
+  ];
+  const hrefFor = (from: string, to: string, cmp: string) =>
+    `/admin/overview?from=${from}&to=${to}&cmp=${cmp}`;
 
   return (
     <div>
@@ -223,38 +252,77 @@ export default async function AdminOverviewPage({
           <p className="text-sm text-[var(--color-charcoal-500)] mt-2">
             Período: {range.from.split('-').reverse().join('/')} a{' '}
             {range.to.split('-').reverse().join('/')}
+            {compareLabel && (
+              <span className="text-[var(--color-charcoal-400)]"> · comparando com {compareLabel}</span>
+            )}
           </p>
         </div>
-        <div className="flex items-end gap-3 flex-wrap print:hidden">
-          <form className="flex items-end gap-2 flex-wrap">
-            <div>
-              <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
-                De
-              </label>
-              <input type="date" name="from" defaultValue={range.from} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
-                Até
-              </label>
-              <input type="date" name="to" defaultValue={range.to} className={inputClass} />
-            </div>
-            <button
-              type="submit"
-              className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-            >
-              Filtrar
-            </button>
-          </form>
-          <XlsxDownloadButton
-            exportAction={exportOverviewXlsxAction.bind(null, { from: range.from, to: range.to })}
-          />
-          <AdminPrintButton />
+        <div className="flex flex-col items-end gap-2 print:hidden">
+          <div className="flex items-end gap-3 flex-wrap justify-end">
+            <form className="flex items-end gap-2 flex-wrap">
+              <input type="hidden" name="cmp" value={cmpParam} />
+              <div>
+                <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+                  De
+                </label>
+                <input type="date" name="from" defaultValue={range.from} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--color-charcoal-700)] mb-1.5">
+                  Até
+                </label>
+                <input type="date" name="to" defaultValue={range.to} className={inputClass} />
+              </div>
+              <button
+                type="submit"
+                className="bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+              >
+                Filtrar
+              </button>
+            </form>
+            <XlsxDownloadButton
+              exportAction={exportOverviewXlsxAction.bind(null, { from: range.from, to: range.to })}
+            />
+            <AdminPrintButton />
+          </div>
+          <div className="flex items-center gap-3 flex-wrap justify-end text-xs">
+            <span className="flex items-center gap-1.5">
+              {presets.map((p) => (
+                <Link
+                  key={p.label}
+                  href={hrefFor(p.from, p.to, cmpParam)}
+                  className={`rounded-full px-2.5 py-1 font-semibold border transition-colors ${
+                    range.from === p.from && range.to === p.to
+                      ? 'bg-[var(--color-charcoal-900)] text-white border-[var(--color-charcoal-900)]'
+                      : 'bg-white text-[var(--color-charcoal-600)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-400)]'
+                  }`}
+                >
+                  {p.label}
+                </Link>
+              ))}
+            </span>
+            <span className="w-px h-4 bg-[var(--color-charcoal-200)]" aria-hidden />
+            <span className="flex items-center gap-1.5">
+              {cmpOptions.map((o) => (
+                <Link
+                  key={o.key}
+                  href={hrefFor(range.from, range.to, o.key)}
+                  className={`rounded-full px-2.5 py-1 font-semibold border transition-colors ${
+                    cmpParam === o.key
+                      ? 'bg-[var(--color-red-600)] text-white border-[var(--color-red-600)]'
+                      : 'bg-white text-[var(--color-charcoal-600)] border-[var(--color-charcoal-200)] hover:border-[var(--color-charcoal-400)]'
+                  }`}
+                >
+                  {o.label}
+                </Link>
+              ))}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* KPIs expansíveis (clique abre o gráfico diário) */}
-      <KpiCharts metrics={metrics} />
+      <KpiCharts metrics={metrics} todayIso={today} compareLabel={compareLabel} />
 
       {/* Saídas + Receita do período */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-8 print:grid-cols-2">
@@ -337,47 +405,15 @@ export default async function AdminOverviewPage({
           <p className="font-display text-2xl font-semibold text-[var(--color-red-600)] mb-5">
             {PRICE.format(data.revenueCents / 100)}
           </p>
-          <svg viewBox="0 0 300 120" className="w-full h-32" aria-label="Receita por dia">
-            {data.revenueByDay.map((b, idx) => {
-              const colW = 300 / data.days.length;
-              const x = idx * colW;
-              const h = (b.value / maxRev) * 96;
-              const y = 100 - h;
-              const isToday = b.day === brtTodayISO();
-              const fill = isToday
-                ? 'var(--color-red-600)'
-                : b.value > 0
-                  ? 'var(--color-charcoal-700)'
-                  : 'var(--color-charcoal-200)';
-              return (
-                <g key={idx}>
-                  <rect
-                    x={x + Math.min(3, colW * 0.15)}
-                    y={y}
-                    width={Math.max(colW - Math.min(6, colW * 0.3), 0.8)}
-                    height={Math.max(h, 2)}
-                    fill={fill}
-                    rx={Math.min(3, colW / 4)}
-                  >
-                    <title>
-                      {b.label}: {COMPACT_PRICE.format(b.value / 100)}
-                    </title>
-                  </rect>
-                  {idx % revLabelEvery === 0 && (
-                    <text
-                      x={x + colW / 2}
-                      y={114}
-                      textAnchor="middle"
-                      fontSize="7"
-                      fill="var(--color-charcoal-400)"
-                    >
-                      {data.days.length > 21 ? b.label : b.day.slice(8)}
-                    </text>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
+          <AdminBarChart
+            series={data.revenueByDay}
+            compareSeries={cmpData?.revenueByDay ?? null}
+            unit="brl"
+            todayIso={today}
+            compareLabel={compareLabel}
+            ariaLabel="Receita por dia"
+            heightClass="h-32 sm:h-36"
+          />
         </section>
       </div>
 

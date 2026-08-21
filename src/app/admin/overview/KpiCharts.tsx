@@ -10,7 +10,8 @@ import {
   ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
-import KpiCard from '@/components/KpiCard';
+import KpiCard, { type KpiDelta } from '@/components/KpiCard';
+import AdminBarChart, { type ChartPoint } from '@/components/AdminBarChart';
 
 export type KpiMetric = {
   key: string;
@@ -19,7 +20,10 @@ export type KpiMetric = {
   sub?: string;
   /** Como formatar os valores da série no gráfico. */
   unit: 'brl' | 'int' | 'pct';
-  series: Array<{ label: string; value: number }>;
+  series: ChartPoint[];
+  /** Série do período de comparação, alinhada por índice (opcional). */
+  compareSeries?: ChartPoint[] | null;
+  delta?: KpiDelta;
 };
 
 const ICON: Record<string, { Icon: LucideIcon; tone: string }> = {
@@ -30,23 +34,20 @@ const ICON: Record<string, { Icon: LucideIcon; tone: string }> = {
   chats: { Icon: MessageCircle, tone: 'bg-green-100 text-green-700' },
 };
 
-const BRL = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-  maximumFractionDigits: 0,
-});
-
-function fmt(unit: KpiMetric['unit'], v: number): string {
-  if (unit === 'brl') return BRL.format(v / 100);
-  if (unit === 'pct') return `${Math.round(v)}%`;
-  return String(v);
-}
-
 /**
  * KPIs do dashboard expansíveis: clicar num card abre o gráfico diário
- * daquela métrica no período filtrado (pedido do admin, 05/ago).
+ * daquela métrica no período filtrado (pedido do admin, 05/ago; upgrade
+ * 12/ago: AdminBarChart responsivo + comparação de períodos).
  */
-export default function KpiCharts({ metrics }: { metrics: KpiMetric[] }) {
+export default function KpiCharts({
+  metrics,
+  todayIso,
+  compareLabel,
+}: {
+  metrics: KpiMetric[];
+  todayIso?: string;
+  compareLabel?: string;
+}) {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const open = metrics.find((m) => m.key === openKey) ?? null;
 
@@ -62,6 +63,7 @@ export default function KpiCharts({ metrics }: { metrics: KpiMetric[] }) {
               type="button"
               onClick={() => setOpenKey(isOpen ? null : m.key)}
               aria-expanded={isOpen}
+              aria-controls="kpi-chart-panel"
               className={`text-left relative rounded-2xl transition-shadow ${
                 isOpen ? 'ring-2 ring-[var(--color-red-600)]' : ''
               }`}
@@ -72,6 +74,7 @@ export default function KpiCharts({ metrics }: { metrics: KpiMetric[] }) {
                 label={m.label}
                 value={m.value}
                 sub={m.sub}
+                delta={m.delta}
               />
               <span
                 className={`absolute top-4 right-4 text-[var(--color-charcoal-400)] transition-transform print:hidden ${
@@ -86,7 +89,10 @@ export default function KpiCharts({ metrics }: { metrics: KpiMetric[] }) {
       </div>
 
       {open && open.series.length > 0 && (
-        <div className="mt-4 bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 print:hidden">
+        <div
+          id="kpi-chart-panel"
+          className="mt-4 bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-5 sm:p-6"
+        >
           <div className="flex items-baseline justify-between mb-4 flex-wrap gap-2">
             <h3 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)]">
               {open.label} · por dia
@@ -95,59 +101,16 @@ export default function KpiCharts({ metrics }: { metrics: KpiMetric[] }) {
               {open.series.length} dia{open.series.length === 1 ? '' : 's'} no período
             </span>
           </div>
-          <BarChart series={open.series} unit={open.unit} />
+          <AdminBarChart
+            series={open.series}
+            compareSeries={open.compareSeries}
+            unit={open.unit}
+            todayIso={todayIso}
+            compareLabel={compareLabel}
+            ariaLabel={`${open.label} por dia`}
+          />
         </div>
       )}
     </div>
-  );
-}
-
-function BarChart({
-  series,
-  unit,
-}: {
-  series: Array<{ label: string; value: number }>;
-  unit: KpiMetric['unit'];
-}) {
-  const max = Math.max(...series.map((s) => s.value), 1);
-  const n = series.length;
-  const colW = 600 / n;
-  // Com muitos dias, mostra label a cada K colunas pra não virar sopa.
-  const labelEvery = n > 45 ? 7 : n > 21 ? 3 : 1;
-
-  return (
-    <svg viewBox="0 0 600 150" className="w-full h-40" aria-label="Gráfico diário">
-      {series.map((s, i) => {
-        const h = (s.value / max) * 118;
-        const y = 126 - h;
-        return (
-          <g key={i}>
-            <rect
-              x={i * colW + Math.min(2, colW * 0.12)}
-              y={y}
-              width={Math.max(colW - Math.min(4, colW * 0.24), 1)}
-              height={Math.max(h, 1.5)}
-              rx={Math.min(2.5, colW / 4)}
-              fill={s.value > 0 ? 'var(--color-red-600)' : 'var(--color-charcoal-200)'}
-            >
-              <title>
-                {s.label}: {fmt(unit, s.value)}
-              </title>
-            </rect>
-            {i % labelEvery === 0 && (
-              <text
-                x={i * colW + colW / 2}
-                y={140}
-                textAnchor="middle"
-                fontSize="8"
-                fill="var(--color-charcoal-400)"
-              >
-                {s.label}
-              </text>
-            )}
-          </g>
-        );
-      })}
-    </svg>
   );
 }

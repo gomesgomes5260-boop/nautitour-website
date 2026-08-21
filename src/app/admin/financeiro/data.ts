@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin';
+import { brtDayOf, shortDay } from '@/lib/date-range';
 
 /**
  * Agregação do Financeiro pra um intervalo [fromIso, toIso) — compartilhada
@@ -16,6 +17,8 @@ export type FinanceTransaction = {
 
 export type FinanceData = {
   revenueCents: number;
+  /** Receita por dia (só quando o caller passa `days`; senão []). */
+  revenueByDay: Array<{ day: string; label: string; value: number }>;
   pendingTotalCents: number;
   pendingCount: number;
   refundsTotalCents: number;
@@ -26,7 +29,11 @@ export type FinanceData = {
   transactions: FinanceTransaction[];
 };
 
-export async function getFinanceData(fromIso: string, toIso: string): Promise<FinanceData> {
+export async function getFinanceData(
+  fromIso: string,
+  toIso: string,
+  days?: string[]
+): Promise<FinanceData> {
   const admin = createAdminClient();
 
   const { data: tours } = await admin
@@ -65,6 +72,18 @@ export async function getFinanceData(fromIso: string, toIso: string): Promise<Fi
   });
 
   const revenueCents = validPayments.reduce((acc, p) => acc + (p.amount_cents ?? 0), 0);
+
+  // Série diária de receita (gráfico do dashboard financeiro, 12/ago).
+  let revenueByDay: FinanceData['revenueByDay'] = [];
+  if (days && days.length > 0) {
+    const byDay = new Map<string, number>(days.map((d) => [d, 0]));
+    for (const p of validPayments) {
+      if (!p.paid_at) continue;
+      const day = brtDayOf(p.paid_at);
+      if (byDay.has(day)) byDay.set(day, (byDay.get(day) ?? 0) + (p.amount_cents ?? 0));
+    }
+    revenueByDay = days.map((day) => ({ day, label: shortDay(day), value: byDay.get(day) ?? 0 }));
+  }
 
   const { data: pendingRaw } = await admin
     .from('bookings')
@@ -150,6 +169,7 @@ export async function getFinanceData(fromIso: string, toIso: string): Promise<Fi
 
   return {
     revenueCents,
+    revenueByDay,
     pendingTotalCents,
     pendingCount,
     refundsTotalCents,
