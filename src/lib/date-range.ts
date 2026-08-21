@@ -63,6 +63,48 @@ export function rangeDays(range: DateRange, cap = 92): string[] {
   return days;
 }
 
+export type CompareMode = 'prev' | 'yoy';
+
+/** Soma `n` dias a um YYYY-MM-DD (BRT), preservando o formato. */
+export function addDays(day: string, n: number): string {
+  const d = new Date(`${day}T12:00:00-03:00`);
+  d.setDate(d.getDate() + n);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
+/**
+ * Range de comparação do dashboard:
+ * - 'prev': período anterior equivalente (mesmo nº de dias, terminando na
+ *   véspera do from). Ex.: 01–12/ago → 20–31/jul.
+ * - 'yoy': mesmas datas do ano anterior. Ex.: 01–12/ago/2026 → 01–12/ago/2025
+ *   (29/fev sem equivalente vira 28/fev via parse).
+ */
+export function compareRange(range: DateRange, mode: CompareMode): DateRange {
+  if (mode === 'yoy') {
+    const shiftYear = (day: string) =>
+      `${Number(day.slice(0, 4)) - 1}${day.slice(4)}`.replace('-02-29', '-02-28');
+    return parseDateRange(shiftYear(range.from), shiftYear(range.to));
+  }
+  const days = rangeDays(range).length;
+  const prevTo = addDays(range.from, -1);
+  const prevFrom = addDays(prevTo, -(days - 1));
+  return parseDateRange(prevFrom, prevTo);
+}
+
+/**
+ * Variação percentual atual vs anterior. null quando não dá pra comparar
+ * (base zero) — o caller mostra "—"/"novo" em vez de Infinity.
+ */
+export function deltaPct(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
 /** YYYY-MM-DD (BRT) de um timestamp ISO. */
 export function brtDayOf(iso: string): string {
   return new Intl.DateTimeFormat('en-CA', {

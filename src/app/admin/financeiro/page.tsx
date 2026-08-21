@@ -10,7 +10,16 @@ import {
 import KpiCard from '@/components/KpiCard';
 import AdminPrintButton from '@/components/AdminPrintButton';
 import XlsxDownloadButton from '@/components/XlsxDownloadButton';
-import { parseDateRange } from '@/lib/date-range';
+import AdminBarChart from '@/components/AdminBarChart';
+import {
+  brtTodayISO,
+  compareRange,
+  deltaPct,
+  parseDateRange,
+  rangeDays,
+  shortDay,
+  type CompareMode,
+} from '@/lib/date-range';
 import { getFinanceData } from './data';
 import { exportFinanceXlsxAction } from './actions';
 
@@ -114,7 +123,7 @@ const inputClass =
 export default async function AdminFinanceiroPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ month?: string; from?: string; to?: string; cmp?: string }>;
 }) {
   const sp = await searchParams;
 
@@ -123,6 +132,18 @@ export default async function AdminFinanceiroPage({
   const isCustom = Boolean(sp.from || sp.to);
   const { year, month } = parseMonthParam(sp.month);
   const custom = parseDateRange(sp.from, sp.to);
+  const today = brtTodayISO();
+
+  // Range em dias BRT do período visível (mês corrente para até hoje; meses
+  // fechados cobrem o mês inteiro) — alimenta a série diária e a comparação.
+  const monthFrom = `${year}-${String(month).padStart(2, '0')}-01`;
+  const monthLastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const monthTo =
+    monthFrom.slice(0, 7) === today.slice(0, 7)
+      ? today
+      : `${monthFrom.slice(0, 7)}-${String(monthLastDay).padStart(2, '0')}`;
+  const range = isCustom ? custom : parseDateRange(monthFrom, monthTo);
+
   const { fromIso, toIso } = isCustom
     ? { fromIso: custom.fromIso, toIso: custom.toIso }
     : monthBoundsISO(year, month);
@@ -130,10 +151,26 @@ export default async function AdminFinanceiroPage({
     ? `${custom.from.split('-').reverse().join('/')} a ${custom.to.split('-').reverse().join('/')}`
     : monthLabel(year, month);
 
-  const data = await getFinanceData(fromIso, toIso);
+  // Comparação de períodos (12/ago): 'prev' (default), 'yoy' ou 'off'.
+  const cmpParam = sp.cmp === 'off' || sp.cmp === 'yoy' ? sp.cmp : 'prev';
+  const cmpMode: CompareMode | null = cmpParam === 'off' ? null : cmpParam;
+  const cmpRange = cmpMode ? compareRange(range, cmpMode) : null;
+  const compareLabel = cmpRange
+    ? cmpMode === 'yoy'
+      ? `mesmo período de ${cmpRange.from.slice(0, 4)}`
+      : `período anterior (${shortDay(cmpRange.from)} – ${shortDay(cmpRange.to)})`
+    : undefined;
+
+  const [data, cmpData] = await Promise.all([
+    getFinanceData(fromIso, toIso, rangeDays(range)),
+    cmpRange
+      ? getFinanceData(cmpRange.fromIso, cmpRange.toIso, rangeDays(cmpRange))
+      : Promise.resolve(null),
+  ]);
 
   const prevMonth = shiftMonthParam(year, month, -1);
   const nextMonth = shiftMonthParam(year, month, +1);
+  const cmpQS = `&cmp=${cmpParam}`;
 
   return (
     <div>
@@ -144,17 +181,47 @@ export default async function AdminFinanceiroPage({
         >
           Financeiro · {periodLabel}
         </h1>
-        <div className="flex gap-2 print:hidden">
+        <div className="flex gap-2 flex-wrap print:hidden">
           {!isCustom && (
             <>
-              <MonthNav href={`/admin/financeiro?month=${prevMonth}`} icon={<ChevronLeft size={14} />} label="Mês anterior" iconLeft />
-              <MonthNav href="/admin/financeiro" label="Hoje" />
-              <MonthNav href={`/admin/financeiro?month=${nextMonth}`} icon={<ChevronRight size={14} />} label="Próximo mês" />
+              <MonthNav href={`/admin/financeiro?month=${prevMonth}${cmpQS}`} icon={<ChevronLeft size={14} />} label="Mês anterior" iconLeft />
+              <MonthNav href={`/admin/financeiro?cmp=${cmpParam}`} label="Hoje" />
+              <MonthNav href={`/admin/financeiro?month=${nextMonth}${cmpQS}`} icon={<ChevronRight size={14} />} label="Próximo mês" />
             </>
           )}
-          {isCustom && <MonthNav href="/admin/financeiro" label="Voltar pro mês" />}
+          {isCustom && <MonthNav href={`/admin/financeiro?cmp=${cmpParam}`} label="Voltar pro mês" />}
+          <span className="w-px h-6 bg-[var(--color-charcoal-200)] self-center" aria-hidden />
+          {(
+            [
+              { key: 'prev', label: 'vs anterior' },
+              { key: 'yoy', label: 'vs ano passado' },
+              { key: 'off', label: 'sem comparação' },
+            ] as const
+          ).map((o) => {
+            const base = isCustom
+              ? `/admin/financeiro?from=${range.from}&to=${range.to}`
+              : `/admin/financeiro?month=${year}-${String(month).padStart(2, '0')}`;
+            return (
+              <Link
+                key={o.key}
+                href={`${base}&cmp=${o.key}`}
+                className={`inline-flex items-center text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                  cmpParam === o.key
+                    ? 'bg-[var(--color-red-600)] text-white border-[var(--color-red-600)]'
+                    : 'border-[var(--color-charcoal-200)] text-[var(--color-charcoal-700)] hover:bg-[var(--color-charcoal-50)]'
+                }`}
+              >
+                {o.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
+      {compareLabel && (
+        <p className="text-xs text-[var(--color-charcoal-500)] -mt-2 mb-4">
+          Comparando com {compareLabel}
+        </p>
+      )}
 
       {/* Período personalizado + exports */}
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6 print:hidden">
@@ -196,6 +263,7 @@ export default async function AdminFinanceiroPage({
           iconTone="bg-emerald-50 text-emerald-700"
           label="Receita do período"
           value={PRICE.format(data.revenueCents / 100)}
+          delta={cmpData ? { pct: deltaPct(data.revenueCents, cmpData.revenueCents) } : undefined}
         />
         <KpiCard
           Icon={Clock}
@@ -210,14 +278,39 @@ export default async function AdminFinanceiroPage({
           label="Reembolsos"
           value={String(data.refundsCount)}
           sub={data.refundsTotalCents > 0 ? PRICE.format(data.refundsTotalCents / 100) : '—'}
+          delta={
+            cmpData
+              ? { pct: deltaPct(data.refundsCount, cmpData.refundsCount), positiveIsGood: false }
+              : undefined
+          }
         />
         <KpiCard
           Icon={Ban}
           iconTone="bg-[var(--color-red-50)] text-[var(--color-red-600)]"
           label="Cancelados"
           value={String(data.cancelledCount)}
+          delta={
+            cmpData
+              ? { pct: deltaPct(data.cancelledCount, cmpData.cancelledCount), positiveIsGood: false }
+              : undefined
+          }
         />
       </div>
+
+      {/* Receita por dia (upgrade 12/ago) */}
+      <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6 mb-6">
+        <h2 className="font-display text-lg font-semibold text-[var(--color-charcoal-900)] mb-4">
+          Receita por dia
+        </h2>
+        <AdminBarChart
+          series={data.revenueByDay}
+          compareSeries={cmpData?.revenueByDay ?? null}
+          unit="brl"
+          todayIso={today}
+          compareLabel={compareLabel}
+          ariaLabel="Receita por dia"
+        />
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 print:grid-cols-2">
         <section className="bg-white border border-[var(--color-charcoal-100)] rounded-2xl p-6">
