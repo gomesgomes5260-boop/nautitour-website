@@ -7,6 +7,7 @@ declare global {
   interface Window {
     gtag?: GtagFn;
     dataLayer?: unknown[];
+    fbq?: (...args: unknown[]) => void;
   }
 }
 
@@ -18,6 +19,16 @@ export function trackEvent(
   if (typeof window === 'undefined') return;
   if (typeof window.gtag !== 'function') return;
   window.gtag('event', name, params ?? {});
+}
+
+// Meta Pixel — dispara um evento padrão se o pixel carregou. O pixel só carrega
+// com NEXT_PUBLIC_META_PIXEL_ID + consent de "retargeting" (ver MetaPixel.tsx),
+// então checar window.fbq basta: se existe, houve consentimento. No-op caso
+// contrário (sem pixel, sem consent, ou SSR).
+function fbqTrack(event: string, params?: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return;
+  if (typeof window.fbq !== 'function') return;
+  window.fbq('track', event, params ?? {});
 }
 
 // Dados do comprador pra Enhanced Conversions (Google Ads). Enviados via
@@ -131,6 +142,8 @@ export const analytics = {
         value: valueBRL,
       });
     }
+    // Meta Pixel: compra pro retargeting/otimização do Meta (no-op sem pixel).
+    fbqTrack('Purchase', { value: valueBRL, currency: 'BRL' });
   },
   generateLead(source: string) {
     trackEvent('generate_lead', { source });
@@ -153,5 +166,7 @@ export const analytics = {
         transport_type: 'beacon',
       });
     }
+    // Meta Pixel: mesmo lead pro retargeting/otimização do Meta (no-op sem pixel).
+    fbqTrack('Lead');
   },
 };
