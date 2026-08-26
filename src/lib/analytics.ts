@@ -1,3 +1,5 @@
+import { hasConsent } from './cookie-consent';
+
 type GtagFn = (
   command: 'event' | 'config' | 'js' | 'set',
   ...args: unknown[]
@@ -21,13 +23,15 @@ export function trackEvent(
   window.gtag('event', name, params ?? {});
 }
 
-// Meta Pixel — dispara um evento padrão se o pixel carregou. O pixel só carrega
-// com NEXT_PUBLIC_META_PIXEL_ID + consent de "retargeting" (ver MetaPixel.tsx),
-// então checar window.fbq basta: se existe, houve consentimento. No-op caso
-// contrário (sem pixel, sem consent, ou SSR).
+// Meta Pixel — dispara um evento padrão. O pixel só carrega com
+// NEXT_PUBLIC_META_PIXEL_ID + consent de "retargeting" (ver MetaPixel.tsx).
+// Checamos o consent ATUAL a cada chamada: se o usuário revogar na mesma
+// sessão, o fbevents.js segue em memória, mas paramos de enviar evento (LGPD).
+// No-op sem pixel, sem consent, ou no SSR.
 function fbqTrack(event: string, params?: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
   if (typeof window.fbq !== 'function') return;
+  if (!hasConsent('retargeting')) return;
   window.fbq('track', event, params ?? {});
 }
 
@@ -147,6 +151,11 @@ export const analytics = {
   },
   generateLead(source: string) {
     trackEvent('generate_lead', { source });
+    // Meta 'Lead' é enviado pelo whatsappClick (WhatsApp = canal principal de
+    // lead do negócio). Leads de formulário (locação, recuperação de checkout)
+    // não vão pro Meta de propósito no V1 — evita duplicar o Lead do WhatsApp,
+    // já que WhatsAppLeadLink chama generateLead E dispara whatsappClick.
+    // Enhancement futuro se rodarmos otimização de lead de formulário no Meta.
   },
   whatsappClick(location: string) {
     trackEvent('whatsapp_click', { location });
