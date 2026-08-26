@@ -9,7 +9,7 @@ const cspReportOnly = [
   // 'unsafe-inline' / 'unsafe-eval' necessários por hidratação inline do Next
   // e SDKs (sem nonce SSR). Turnstile carrega challenges.cloudflare.com.
   // gtag.js (GA4 + Google Ads) e domínios de conversão do Ads.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net",
   // Tailwind v4 e next/font usam inline styles.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
@@ -17,7 +17,7 @@ const cspReportOnly = [
   "img-src 'self' data: blob: https:",
   // fetch: tokenize Pagar.me + ViaCEP (autofill do endereço de cobrança do
   // cartão) + Supabase (REST e Realtime WSS) + beacons do GA4/Google Ads.
-  "connect-src 'self' https://api.pagar.me https://viacep.com.br https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com",
+  "connect-src 'self' https://api.pagar.me https://viacep.com.br https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.facebook.com",
   // Turnstile renderiza um iframe pra captcha; doubleclick = conversion
   // linker/remarketing do Google Ads.
   "frame-src 'self' https://challenges.cloudflare.com https://td.doubleclick.net https://bid.g.doubleclick.net",

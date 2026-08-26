@@ -4,6 +4,7 @@ import WhatsAppFab from "@/components/WhatsAppFab";
 import WhatsAppClickTracker from "@/components/WhatsAppClickTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleAdsTag from "@/components/GoogleAdsTag";
+import MetaPixel from "@/components/MetaPixel";
 import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
@@ -90,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CookieBanner />
         <GoogleAnalytics />
         <GoogleAdsTag />
+        <MetaPixel />
       </body>
     </html>
   );
