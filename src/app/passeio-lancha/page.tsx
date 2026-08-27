@@ -10,6 +10,8 @@ import ViewItemTracker from '@/components/ViewItemTracker';
 import WhatsAppLeadLink from '@/components/WhatsAppLeadLink';
 import PhotoGallery from '@/components/PhotoGallery';
 import TourJsonLd from '@/components/TourJsonLd';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/site-jsonld';
 import { PASSEIO_LANCHA_GALLERY } from '@/lib/photo-gallery';
 import { getGalleryPhotos } from '@/lib/gallery';
 import { createClient } from '@/lib/supabase/server';
@@ -105,6 +107,12 @@ export default async function PasseioLanchaPage() {
         itemId="lancha-privativa"
         itemName={tour.name}
         valueBRL={tour.base_price_cents != null ? tour.base_price_cents / 100 : null}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Início', path: '/' },
+          { name: 'Passeio de Lancha', path: '/passeio-lancha' },
+        ])}
       />
       <TourJsonLd
         name={tour.name}

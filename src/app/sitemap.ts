@@ -72,6 +72,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       priority: 0.3,
     },
+    {
+      url: `${SITE_URL}/termos-de-uso`,
+      lastModified: now,
+      priority: 0.3,
+    },
   ];
 
   const postEntries: MetadataRoute.Sitemap = posts.map((p) => ({

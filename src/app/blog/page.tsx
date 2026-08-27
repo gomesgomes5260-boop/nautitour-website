@@ -18,19 +18,39 @@ export const dynamic = 'force-dynamic';
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nautitour-website.vercel.app';
 
-export const metadata: Metadata = {
-  title: 'Blog | Nautitour — Dicas e histórias de Búzios',
-  description:
-    'Dicas de praia, roteiros, curiosidades sobre Armação dos Búzios e bastidores dos passeios de escuna e lancha da Nautitour.',
-  alternates: { canonical: '/blog' },
-  openGraph: {
-    title: 'Blog Nautitour — Búzios por quem conhece o mar',
+// Canonical acompanha paginação/categoria — antes toda página se declarava
+// duplicata de /blog (SEO fix 25/ago). Título sem marca: o template do
+// layout completa "| Nautitour Passeios".
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Search>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const page = Math.max(1, Number.parseInt(sp.page ?? '1', 10) || 1);
+  const categoria = sp.categoria?.trim() || undefined;
+  const params = new URLSearchParams();
+  if (categoria) params.set('categoria', categoria);
+  if (page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  const canonical = qs ? `/blog?${qs}` : '/blog';
+  return {
+    title:
+      page > 1
+        ? `Blog — Dicas e histórias de Búzios (página ${page})`
+        : 'Blog — Dicas e histórias de Búzios',
     description:
-      'Dicas, roteiros e bastidores dos passeios em Armação dos Búzios.',
-    url: '/blog',
-    type: 'website',
-  },
-};
+      'Dicas de praia, roteiros, curiosidades sobre Armação dos Búzios e bastidores dos passeios de escuna e lancha da Nautitour.',
+    alternates: { canonical },
+    openGraph: {
+      title: 'Blog Nautitour — Búzios por quem conhece o mar',
+      description:
+        'Dicas, roteiros e bastidores dos passeios em Armação dos Búzios.',
+      url: canonical,
+      type: 'website',
+    },
+  };
+}
 
 const DATE = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo',

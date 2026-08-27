@@ -1,8 +1,9 @@
 import ContentPage from '@/components/ContentPage';
 
 export const metadata = {
-  title: 'Política de Cancelamento | Nautitour Passeios',
+  title: 'Política de Cancelamento',
   description: 'Regras para cancelamento e remarcação de reservas.',
+  alternates: { canonical: '/politica-de-cancelamento' },
 };
 
 // TODO: confirmar prazos e percentuais com a equipe da Nautitour

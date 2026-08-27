@@ -1,52 +1,32 @@
 import ContentPage from '@/components/ContentPage';
+import JsonLd from '@/components/JsonLd';
+import { FAQS } from '@/lib/faq-data';
+import { faqPageJsonLd } from '@/lib/site-jsonld';
 
 export const metadata = {
-  title: 'Perguntas Frequentes | Nautitour Passeios',
+  // Sem sufixo — o title.template do layout completa "| Nautitour Passeios".
+  title: 'Perguntas Frequentes',
   description: 'Tire suas dúvidas sobre os passeios, reservas, pagamento e cancelamento.',
+  alternates: { canonical: '/faq' },
 };
-
-// TODO: revisar lista com a equipe da Nautitour
-const faqs: Array<{ q: string; a: string }> = [
-  {
-    q: 'Como faço uma reserva?',
-    a: 'Escuna: pelo site — escolha a data, clique em Reservar e pague online (como visitante ou com conta). Lancha privativa: escolha a data e o horário no site e finalize pelo WhatsApp com a nossa equipe — o pagamento é feito na loja.',
-  },
-  {
-    q: 'Quais formas de pagamento vocês aceitam?',
-    a: 'PIX ou cartão, sempre à vista (não trabalhamos com parcelamento). Para a lancha privativa e a locação privativa, o pagamento é combinado com o atendimento e feito direto na loja.',
-  },
-  {
-    q: 'Quanto tempo dura cada passeio?',
-    a: 'A escuna pública dura cerca de 5 horas. A lancha privativa é vendida em pacotes de 3 horas. A locação privativa da escuna tem duração mínima de 3 horas, definida por você.',
-  },
-  {
-    q: 'O que acontece em caso de chuva ou mar agitado?',
-    a: 'Por segurança, podemos cancelar o passeio. Nesses casos, oferecemos remarcação ou reembolso integral.',
-  },
-  {
-    q: 'Crianças pagam?',
-    a: 'Marque a opção “criança” no formulário de reserva para que o atendimento entre em contato com as condições aplicáveis.',
-  },
-  {
-    q: 'Posso cancelar a reserva?',
-    a: 'Sim. Consulte nossa Política de Cancelamento para conhecer prazos e regras de reembolso.',
-  },
-];
 
 export default function FaqPage() {
   return (
-    <ContentPage
-      title="Perguntas frequentes"
-      intro="Reunimos as dúvidas mais comuns. Não encontrou a sua? Fale com a gente pelo WhatsApp."
-    >
-      <dl>
-        {faqs.map((item) => (
-          <div key={item.q} className="border-b border-gray-200 py-4">
-            <dt className="font-semibold text-gray-800 mb-1">{item.q}</dt>
-            <dd className="text-gray-700">{item.a}</dd>
-          </div>
-        ))}
-      </dl>
-    </ContentPage>
+    <>
+      <JsonLd data={faqPageJsonLd(FAQS)} />
+      <ContentPage
+        title="Perguntas frequentes"
+        intro="Reunimos as dúvidas mais comuns. Não encontrou a sua? Fale com a gente pelo WhatsApp."
+      >
+        <dl>
+          {FAQS.map((item) => (
+            <div key={item.q} className="border-b border-gray-200 py-4">
+              <dt className="font-semibold text-gray-800 mb-1">{item.q}</dt>
+              <dd className="text-gray-700">{item.a}</dd>
+            </div>
+          ))}
+        </dl>
+      </ContentPage>
+    </>
   );
 }
