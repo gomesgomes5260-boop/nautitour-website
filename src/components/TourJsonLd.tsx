@@ -1,3 +1,5 @@
+import { SITE_URL } from '@/lib/site-jsonld';
+
 type Props = {
   name: string;
   description: string;
@@ -40,8 +42,9 @@ export default function TourJsonLd({
     },
     provider: {
       '@type': 'TravelAgency',
+      '@id': `${SITE_URL}/#business`,
       name: 'Nautitour Passeios',
-      url: 'https://nautitour-website.vercel.app',
+      url: SITE_URL,
     },
   };
 

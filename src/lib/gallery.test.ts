@@ -53,15 +53,18 @@ describe('getGalleryPhotos', () => {
     expect(await getGalleryPhotos('galeria-lancha', FALLBACK)).toBe(FALLBACK);
   });
 
-  it('fotos tagueadas → mapeia src e alt na ordem', async () => {
+  it('fotos tagueadas → mapeia src e alt derivado do arquivo', async () => {
     selectResult.value = {
-      data: [{ path: 'aerea/a-001-x.webp' }, { path: 'escuna/b-001-y.webp' }],
+      data: [
+        { path: 'escuna/escuna-pier-001-60965385.webp' },
+        { path: 'ilhas/snorkel-ilha-002-87113b7b.webp' },
+      ],
       error: null,
     };
     const photos = await getGalleryPhotos('galeria-escuna', FALLBACK);
     expect(photos).toHaveLength(2);
-    expect(photos[0].src).toContain('/site-images/aerea/a-001-x.webp');
-    expect(photos[0].alt).toBe('Passeio de escuna em Búzios — foto 1');
-    expect(photos[1].alt).toBe('Passeio de escuna em Búzios — foto 2');
+    expect(photos[0].src).toContain('/site-images/escuna/escuna-pier-001-60965385.webp');
+    expect(photos[0].alt).toBe('Escuna pier — Passeio de escuna em Búzios');
+    expect(photos[1].alt).toBe('Snorkel ilha — Passeio de escuna em Búzios');
   });
 });

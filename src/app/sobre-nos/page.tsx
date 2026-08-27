@@ -7,7 +7,7 @@ import CTASection from '@/components/CTASection';
 import CertificationBadges from '@/components/CertificationBadges';
 
 export const metadata = {
-  title: 'Sobre nós | Nautitour Passeios',
+  title: 'Sobre nós',
   description:
     'Conheça a Nautitour Passeios — empresa de passeios de escuna e lancha privativa em Armação dos Búzios, RJ.',
   alternates: { canonical: '/sobre-nos' },

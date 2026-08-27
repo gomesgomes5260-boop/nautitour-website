@@ -11,6 +11,8 @@ import ViewItemTracker from '@/components/ViewItemTracker';
 import PhotoGallery from '@/components/PhotoGallery';
 import LanchaUpsell from '@/components/LanchaUpsell';
 import TourJsonLd from '@/components/TourJsonLd';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/site-jsonld';
 import { PASSEIO_ESCUNA_GALLERY } from '@/lib/photo-gallery';
 import { getGalleryPhotos } from '@/lib/gallery';
 import { createClient } from '@/lib/supabase/server';
@@ -105,6 +107,12 @@ export default async function PasseioEscunaPage() {
         itemId="escuna-publica"
         itemName={tour.name}
         valueBRL={tour.base_price_cents != null ? tour.base_price_cents / 100 : null}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Início', path: '/' },
+          { name: 'Passeio de Escuna', path: '/passeio-escuna' },
+        ])}
       />
       <TourJsonLd
         name={tour.name}

@@ -1,8 +1,12 @@
 import ContentPage from '@/components/ContentPage';
+import JsonLd from '@/components/JsonLd';
+import { localBusinessJsonLd } from '@/lib/site-jsonld';
 
 export const metadata = {
-  title: 'Contato | Nautitour Passeios',
+  // Sem sufixo — o title.template do layout completa "| Nautitour Passeios".
+  title: 'Contato',
   description: 'Fale com a Nautitour Passeios — telefone, WhatsApp, e-mail e endereço em Búzios.',
+  alternates: { canonical: '/contato' },
 };
 
 const phones = [
@@ -14,6 +18,8 @@ const phones = [
 
 export default function ContatoPage() {
   return (
+    <>
+    <JsonLd data={localBusinessJsonLd()} />
     <ContentPage
       title="Fale conosco"
       intro="Estamos disponíveis por telefone, WhatsApp e e-mail. Para reservas privativas, use também o formulário de locação."
@@ -47,5 +53,6 @@ export default function ContatoPage() {
       <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-2">Endereço</h2>
       <p>Travessa dos Pescadores, 326 — Búzios/RJ, 28950-000</p>
     </ContentPage>
+    </>
   );
 }

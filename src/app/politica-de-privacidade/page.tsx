@@ -1,8 +1,9 @@
 import ContentPage from '@/components/ContentPage';
 
 export const metadata = {
-  title: 'Política de Privacidade | Nautitour Passeios',
+  title: 'Política de Privacidade',
   description: 'Como tratamos seus dados pessoais conforme a LGPD.',
+  alternates: { canonical: '/politica-de-privacidade' },
 };
 
 // TODO: validar redação com assessoria jurídica antes de tratar como versão final.

@@ -16,6 +16,22 @@ export function publicImageUrl(path: string): string {
 }
 
 /**
+ * Alt derivado do nome do arquivo: "escuna/escuna-pier-001-60965385.webp"
+ * → "Escuna pier — Passeio de escuna em Búzios". Melhor pra SEO/a11y que o
+ * antigo "— foto N" (fix 25/ago).
+ */
+function altFromPath(path: string, tag: GalleryTag): string {
+  const base = (path.split('/').pop() ?? '')
+    .replace(/\.[^.]+$/, '')
+    .replace(/-\d{2,4}(-[0-9a-f]{6,})?$/, '')
+    .replace(/-[0-9a-f]{6,}$/, '')
+    .replace(/-/g, ' ')
+    .trim();
+  const pretty = base ? base.charAt(0).toUpperCase() + base.slice(1) : '';
+  return pretty ? `${pretty} — ${GALLERY_ALT[tag]}` : GALLERY_ALT[tag];
+}
+
+/**
  * Fotos da galeria de uma página, na ordem de tagueamento. Qualquer falha
  * (env ausente, erro de rede, tag sem fotos) cai no fallback estático de
  * src/lib/photo-gallery.ts — galeria nunca fica vazia.
@@ -37,9 +53,9 @@ export async function getGalleryPhotos(
       .order('path', { ascending: true })
       .limit(24);
     if (error || !data || data.length === 0) return fallback;
-    return data.map((row, i) => ({
+    return data.map((row) => ({
       src: publicImageUrl(row.path),
-      alt: `${GALLERY_ALT[tag]} — foto ${i + 1}`,
+      alt: altFromPath(row.path, tag),
     }));
   } catch {
     return fallback;

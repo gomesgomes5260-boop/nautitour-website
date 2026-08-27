@@ -1,9 +1,10 @@
 import ContentPage from '@/components/ContentPage';
 
 export const metadata = {
-  title: 'Termos de Uso | Nautitour Passeios',
+  title: 'Termos de Uso',
   description:
     'Termos de uso do site Nautitour Passeios e condições de contratação dos passeios.',
+  alternates: { canonical: '/termos-de-uso' },
 };
 
 // TODO: revisar com assessoria jurídica antes de divulgar como definitivo.
