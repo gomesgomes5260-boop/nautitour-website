@@ -10,6 +10,7 @@ declare global {
     gtag?: GtagFn;
     dataLayer?: unknown[];
     fbq?: (...args: unknown[]) => void;
+    oaiq?: (...args: unknown[]) => void;
   }
 }
 
@@ -33,6 +34,24 @@ function fbqTrack(event: string, params?: Record<string, unknown>): void {
   if (typeof window.fbq !== 'function') return;
   if (!hasConsent('retargeting')) return;
   window.fbq('track', event, params ?? {});
+}
+
+// Pixel da OpenAI (ChatGPT Ads) — dispara um evento padrão do oaiq. Mesmas
+// regras do fbqTrack: só com o pixel carregado (OpenAiPixel.tsx) e consent
+// ATUAL de "retargeting" a cada chamada. Valores monetários vão em unidade
+// mínima da moeda (centavos pra BRL), conforme a doc do SDK. No-op sem
+// pixel, sem consent, ou no SSR.
+function oaiqMeasure(
+  event: string,
+  params?: Record<string, unknown>,
+  options?: Record<string, unknown>
+): void {
+  if (typeof window === 'undefined') return;
+  if (typeof window.oaiq !== 'function') return;
+  if (!hasConsent('retargeting')) return;
+  if (params && options) window.oaiq('measure', event, params, options);
+  else if (params) window.oaiq('measure', event, params);
+  else window.oaiq('measure', event);
 }
 
 // Dados do comprador pra Enhanced Conversions (Google Ads). Enviados via
@@ -148,6 +167,14 @@ export const analytics = {
     }
     // Meta Pixel: compra pro retargeting/otimização do Meta (no-op sem pixel).
     fbqTrack('Purchase', { value: valueBRL, currency: 'BRL' });
+    // Pixel OpenAI: compra pra atribuição de anúncio no ChatGPT. amount em
+    // CENTAVOS (unidade mínima do BRL); event_id = booking_code deduplica
+    // contra um futuro envio server-side (Conversions API).
+    oaiqMeasure(
+      'order_created',
+      { type: 'contents', amount: Math.round(valueBRL * 100), currency: 'BRL' },
+      { event_id: bookingCode }
+    );
   },
   generateLead(source: string) {
     trackEvent('generate_lead', { source });
@@ -177,5 +204,8 @@ export const analytics = {
     }
     // Meta Pixel: mesmo lead pro retargeting/otimização do Meta (no-op sem pixel).
     fbqTrack('Lead');
+    // Pixel OpenAI: mesmo lead (clique de WhatsApp = lead canônico do negócio),
+    // sem valor — coerente com a conversão count-only do Google Ads acima.
+    oaiqMeasure('lead_created');
   },
 };
