@@ -5,6 +5,7 @@ import WhatsAppClickTracker from "@/components/WhatsAppClickTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleAdsTag from "@/components/GoogleAdsTag";
 import MetaPixel from "@/components/MetaPixel";
+import OpenAiPixel from "@/components/OpenAiPixel";
 import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleAnalytics />
         <GoogleAdsTag />
         <MetaPixel />
+        <OpenAiPixel />
       </body>
     </html>
   );
