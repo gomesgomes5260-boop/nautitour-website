@@ -22,7 +22,7 @@ type Props = {
 export default function PierSelect({ scheduleId, piers, currentSlug }: Props) {
   const [selected, setSelected] = useState(currentSlug);
   const [err, setErr] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -32,16 +32,20 @@ export default function PierSelect({ scheduleId, piers, currentSlug }: Props) {
   function submit() {
     if (!dirty || pending) return;
     setErr(null);
-    setSuccess(false);
+    setSuccess(null);
     startTransition(async () => {
       const res = await setPierAction(scheduleId, selected);
       if (!res.ok) {
         setErr(res.error);
         return;
       }
-      setSuccess(true);
+      setSuccess(
+        res.notified > 0
+          ? `Píer atualizado. ${res.notified} cliente${res.notified === 1 ? '' : 's'} avisado${res.notified === 1 ? '' : 's'} por e-mail${res.skipped > 0 ? ` (${res.skipped} sem e-mail válido)` : ''}.`
+          : 'Píer atualizado.'
+      );
       router.refresh();
-      setTimeout(() => setSuccess(false), 2500);
+      setTimeout(() => setSuccess(null), 6000);
     });
   }
 
@@ -111,7 +115,7 @@ export default function PierSelect({ scheduleId, piers, currentSlug }: Props) {
         <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <span>
-            Esse píer cobra taxa de embarque presencial. Os clientes já reservados receberão um aviso ao acessar a reserva.
+            Esse píer cobra taxa de embarque presencial. Ao salvar, os clientes já reservados recebem um e-mail com o novo local de check-in.
           </span>
         </div>
       )}
@@ -121,7 +125,7 @@ export default function PierSelect({ scheduleId, piers, currentSlug }: Props) {
       )}
       {success && (
         <p className="mt-3 text-xs text-[var(--color-success)] font-semibold">
-          Píer atualizado.
+          {success}
         </p>
       )}
 

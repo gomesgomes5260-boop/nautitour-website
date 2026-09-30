@@ -20,7 +20,7 @@ export async function sendBookingConfirmationFor(
       total_cents,
       currency,
       tour:tours ( name ),
-      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
+      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, google_maps_url, fee_cents ) ),
       customer:customers ( email, full_name, phone )
       `
     )
@@ -35,7 +35,12 @@ export async function sendBookingConfirmationFor(
     return { ok: false, error: 'booking not found' };
   }
 
-  type PierJoined = { name: string; address: string | null; fee_cents: number };
+  type PierJoined = {
+    name: string;
+    address: string | null;
+    google_maps_url: string | null;
+    fee_cents: number;
+  };
   type Joined = {
     booking_code: string;
     passenger_count: number;
@@ -96,6 +101,7 @@ export async function sendBookingConfirmationFor(
       ? {
           name: pier.name,
           address: pier.address,
+          mapsUrl: pier.google_maps_url,
           feeCents: pier.fee_cents,
         }
       : null,

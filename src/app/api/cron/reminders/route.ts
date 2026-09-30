@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       `
       id, booking_code, passenger_count,
       tour:tours ( name ),
-      schedule:tour_schedules!inner ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
+      schedule:tour_schedules!inner ( departure_at, pier:embarkation_piers ( name, address, google_maps_url, fee_cents ) ),
       customer:customers ( email, full_name )
       `
     )
@@ -52,7 +52,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'query failed' }, { status: 500 });
   }
 
-  type PierJoined = { name: string; address: string | null; fee_cents: number };
+  type PierJoined = {
+    name: string;
+    address: string | null;
+    google_maps_url: string | null;
+    fee_cents: number;
+  };
   type Row = {
     id: string;
     booking_code: string;
@@ -99,7 +104,12 @@ export async function GET(req: Request) {
       passengerCount: raw.passenger_count,
       siteUrl,
       pier: pier
-        ? { name: pier.name, address: pier.address, feeCents: pier.fee_cents }
+        ? {
+            name: pier.name,
+            address: pier.address,
+            mapsUrl: pier.google_maps_url,
+            feeCents: pier.fee_cents,
+          }
         : null,
       ticketUrl: `${siteUrl.replace(/\/$/, '')}/ticket/${encodeURIComponent(raw.booking_code)}`,
     });

@@ -10,6 +10,7 @@ export type BookingConfirmationPayload = {
   pier?: {
     name: string;
     address: string | null;
+    mapsUrl?: string | null;
     feeCents: number;
   } | null;
   /**
@@ -158,6 +159,7 @@ export function renderBookingConfirmation(p: BookingConfirmationPayload): {
     textParts.push('');
     textParts.push(`Local de embarque: ${p.pier.name}`);
     if (p.pier.address) textParts.push(p.pier.address);
+    if (p.pier.mapsUrl) textParts.push(`Mapa (local de check-in): ${p.pier.mapsUrl}`);
     if (p.pier.feeCents > 0) {
       const fee = (p.pier.feeCents / 100).toFixed(2).replace('.', ',');
       const totalFee = ((p.pier.feeCents * p.passengerCount) / 100)
@@ -202,7 +204,7 @@ function renderQrBlock(qrDataUri: string, ticketUrl: string | null): string {
 }
 
 function renderPierBlock(
-  pier: { name: string; address: string | null; feeCents: number },
+  pier: { name: string; address: string | null; mapsUrl?: string | null; feeCents: number },
   passengerCount: number
 ): string {
   const safeName = escapeHtml(pier.name);
@@ -232,6 +234,7 @@ function renderPierBlock(
       <p style="margin:0;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:#555;">Local de embarque</p>
       <p style="margin:4px 0 0;font-size:15px;font-weight:bold;color:#1a1a1a;">${safeName}</p>
       ${safeAddr ? `<p style="margin:2px 0 0;font-size:13px;color:#555;">${safeAddr}</p>` : ''}
+      ${pier.mapsUrl ? `<p style="margin:8px 0 0;"><a href="${pier.mapsUrl}" style="color:${accent};font-size:13px;font-weight:bold;">📍 Ver local de check-in no mapa</a></p>` : ''}
       ${feeBlock}
     </div>`;
 }

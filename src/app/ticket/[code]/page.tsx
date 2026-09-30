@@ -52,7 +52,7 @@ export default async function TicketPage({
       status,
       passenger_count,
       tour:tours ( name ),
-      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, fee_cents ) ),
+      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( name, address, google_maps_url, fee_cents ) ),
       customer:customers ( full_name ),
       passengers:booking_passengers ( is_child )
       `
@@ -62,7 +62,12 @@ export default async function TicketPage({
 
   if (!booking) notFound();
 
-  type PierJoined = { name: string; address: string | null; fee_cents: number };
+  type PierJoined = {
+    name: string;
+    address: string | null;
+    google_maps_url: string | null;
+    fee_cents: number;
+  };
   type Joined = {
     id: string;
     booking_code: string;
@@ -173,6 +178,16 @@ export default async function TicketPage({
                   <span className="block text-xs text-[var(--color-charcoal-500)]">
                     {pier.address}
                   </span>
+                )}
+                {pier.google_maps_url && (
+                  <a
+                    href={pier.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs font-semibold text-[var(--color-red-600)] underline underline-offset-2 mt-1 print:hidden"
+                  >
+                    Ver local de check-in no mapa
+                  </a>
                 )}
                 {pier.fee_cents > 0 && (
                   <span className="block text-xs text-[var(--color-red-600)] font-semibold mt-1">
