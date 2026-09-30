@@ -8,6 +8,7 @@ import EditScheduleForm from './EditScheduleForm';
 import DeleteScheduleButton from './DeleteScheduleButton';
 import CheckInButton from './CheckInButton';
 import type { Pier } from '@/lib/piers';
+import { getAdminLabels } from '@/lib/admin-directory';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,12 @@ const DATETIME = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: 'long',
   year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const CHECKIN_TIME = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
   hour: '2-digit',
   minute: '2-digit',
 });
@@ -79,6 +86,7 @@ export default async function ManifestoSchedulePage({
       passenger_count,
       status,
       checked_in_at,
+      checked_in_by,
       customer:customers ( full_name, email, phone ),
       seller:sellers ( full_name ),
       passengers:booking_passengers ( full_name, document, is_child )
@@ -94,6 +102,7 @@ export default async function ManifestoSchedulePage({
     passenger_count: number;
     status: string;
     checked_in_at: string | null;
+    checked_in_by: string | null;
     customer:
       | { full_name: string | null; email: string; phone: string | null }
       | { full_name: string | null; email: string; phone: string | null }[]
@@ -106,6 +115,12 @@ export default async function ManifestoSchedulePage({
     }>;
   };
   const rows = (bookings ?? []) as unknown as BookingRow[];
+
+  // Quem validou cada check-in (QR ou manual) — rótulo do operador.
+  const operatorLabels = await getAdminLabels(
+    admin,
+    rows.map((r) => r.checked_in_by)
+  );
 
   const totalPax = rows.reduce((acc, r) => acc + r.passenger_count, 0);
   const boardedPax = rows
@@ -247,8 +262,18 @@ export default async function ManifestoSchedulePage({
                     <td className="py-2 pr-4 print:py-0.5 print:pr-2">
                       {pi === 0 &&
                         (b.status === 'completed' ? (
-                          <span className="inline-block rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                            Embarcado
+                          <span className="inline-block">
+                            <span className="inline-block rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                              Embarcado
+                            </span>
+                            {b.checked_in_at && (
+                              <span className="block text-[10px] text-[var(--color-charcoal-500)] mt-0.5 leading-tight">
+                                {CHECKIN_TIME.format(new Date(b.checked_in_at))}
+                                {b.checked_in_by
+                                  ? ` · por ${operatorLabels.get(b.checked_in_by) ?? '—'}`
+                                  : ''}
+                              </span>
+                            )}
                           </span>
                         ) : (
                           <CheckInButton bookingCode={b.booking_code} />

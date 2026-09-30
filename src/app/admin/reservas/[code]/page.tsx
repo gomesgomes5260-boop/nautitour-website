@@ -6,6 +6,7 @@ import type { Database } from '@/lib/supabase/database.types';
 import CancelButton from './CancelButton';
 import RefundButton from './RefundButton';
 import ResendEmailButton from './ResendEmailButton';
+import { getAdminLabels } from '@/lib/admin-directory';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,9 @@ const EVENT_LABEL: Record<string, string> = {
   refund_succeeded: 'Reembolso aprovado',
   refund_failed: 'Reembolso recusado pela operadora',
   email_resent: 'E-mail de confirmação reenviado',
+  checked_in: 'Check-in realizado (embarque)',
+  pier_changed: 'Píer de embarque alterado',
+  schedule_changed: 'Horário da saída alterado',
 };
 
 const DATETIME = new Intl.DateTimeFormat('pt-BR', {
@@ -91,6 +95,8 @@ export default async function AdminBookingDetailPage({
       needs_pickup,
       pickup_address,
       pickup_room,
+      checked_in_at,
+      checked_in_by,
       seller:sellers ( full_name, role ),
       tour:tours ( name, slug ),
       schedule:tour_schedules ( id, departure_at, capacity, status ),
@@ -120,6 +126,8 @@ export default async function AdminBookingDetailPage({
     needs_pickup: boolean;
     pickup_address: string | null;
     pickup_room: string | null;
+    checked_in_at: string | null;
+    checked_in_by: string | null;
     seller:
       | { full_name: string; role: string }
       | { full_name: string; role: string }[]
@@ -162,6 +170,12 @@ export default async function AdminBookingDetailPage({
     .eq('booking_id', b.id)
     .order('created_at', { ascending: false });
   const events = eventsRaw ?? [];
+
+  // Rótulo de quem executou cada ação (check-in, cancelamento, píer, etc).
+  const operatorLabels = await getAdminLabels(admin, [
+    b.checked_in_by,
+    ...events.map((e) => e.actor_user_id),
+  ]);
 
   const hasPaidPayment = b.payments.some((p) => p.status === 'paid');
   const lastPaidPayment = [...b.payments]
@@ -230,6 +244,16 @@ export default async function AdminBookingDetailPage({
               {b.confirmation_email_sent_at && (
                 <Field label="E-mail enviado em">
                   {DATETIME.format(new Date(b.confirmation_email_sent_at))}
+                </Field>
+              )}
+              {b.checked_in_at && (
+                <Field label="Check-in (embarque)">
+                  {DATETIME.format(new Date(b.checked_in_at))}
+                  {b.checked_in_by && (
+                    <span className="ml-2 text-xs text-[var(--color-charcoal-500)]">
+                      por {operatorLabels.get(b.checked_in_by) ?? '—'}
+                    </span>
+                  )}
                 </Field>
               )}
               {seller && (
@@ -422,6 +446,9 @@ export default async function AdminBookingDetailPage({
                       </div>
                       <div className="text-xs text-[var(--color-charcoal-500)] mt-0.5">
                         {DATETIME.format(new Date(e.created_at))}
+                        {e.actor_user_id
+                          ? ` · por ${operatorLabels.get(e.actor_user_id) ?? '—'}`
+                          : ''}
                       </div>
                       {payload && 'reason' in payload && payload.reason ? (
                         <div className="text-xs text-[var(--color-charcoal-700)] mt-1 italic">
