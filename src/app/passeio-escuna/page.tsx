@@ -259,6 +259,9 @@ export default async function PasseioEscunaPage() {
                     <RoteiroFact Icon={Utensils} text="Bar a bordo: drinks, bebidas e churrasquinho" />
                     <RoteiroFact Icon={Anchor} text={`Embarcação para até ${tour.max_capacity ?? 120} pessoas`} />
                   </div>
+                  <p className="text-xs text-[var(--color-charcoal-400)] leading-relaxed mt-4">
+                    O roteiro pode sofrer alterações dependendo da previsão climática.
+                  </p>
                 </div>
 
                 <div className="rounded-2xl border border-[var(--color-charcoal-100)] bg-white p-6 sm:p-8">
