@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { isAdminUser } from '@/lib/admin';
 import { sendEmail } from '@/lib/email';
 import { renderScheduleChanged } from '@/lib/email-templates/schedule-changed';
+import { renderPierChanged } from '@/lib/email-templates/pier-changed';
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -20,13 +21,30 @@ async function requireAdmin() {
   return { supabase, user };
 }
 
-export type SetPierResult = { ok: true } | { ok: false; error: string };
+export type SetPierResult =
+  | { ok: true; notified: number; skipped: number }
+  | { ok: false; error: string };
 
 export async function setPierAction(
   scheduleId: string,
   pierSlug: string
 ): Promise<SetPierResult> {
   const { supabase } = await requireAdmin();
+
+  // Píer atual ANTES da mudança — se for o mesmo, o RPC é noop e ninguém
+  // deve receber e-mail.
+  const admin = createAdminClient();
+  const { data: before } = await admin
+    .from('tour_schedules')
+    .select('departure_at, pier:embarkation_piers ( slug ), tour:tours ( name )')
+    .eq('id', scheduleId)
+    .maybeSingle();
+  type SlugJ = { slug: string } | { slug: string }[] | null;
+  type NameJ = { name: string } | { name: string }[] | null;
+  const beforePierJ = (before as { pier?: SlugJ } | null)?.pier;
+  const oldSlug = (Array.isArray(beforePierJ) ? beforePierJ[0] : beforePierJ)?.slug ?? null;
+  const tourJ = (before as { tour?: NameJ } | null)?.tour;
+  const tourName = (Array.isArray(tourJ) ? tourJ[0] : tourJ)?.name ?? 'Passeio Nautitour';
 
   const { error } = await supabase.rpc('admin_set_embarkation_pier', {
     p_schedule_id: scheduleId,
@@ -37,9 +55,67 @@ export async function setPierAction(
     return { ok: false, error: error.message };
   }
 
+  // Aviso automático de local de embarque pros clientes já reservados
+  // (pedido do dono, 30/set — clientes precisam saber onde fazer o check-in
+  // quando a escala de navios muda o píer). Falha de e-mail nunca desfaz a
+  // mudança do píer; só conta como skipped.
+  let notified = 0;
+  let skipped = 0;
+  if (oldSlug !== pierSlug) {
+    const { data: newPier } = await admin
+      .from('embarkation_piers')
+      .select('slug, name, address, google_maps_url, fee_cents')
+      .eq('slug', pierSlug)
+      .maybeSingle();
+    const { data: bookings } = await admin
+      .from('bookings')
+      .select('booking_code, passenger_count, customer:customers ( email, full_name )')
+      .eq('tour_schedule_id', scheduleId)
+      .in('status', ['pending_payment', 'confirmed']);
+
+    if (newPier && bookings && bookings.length > 0) {
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL || 'https://nautitour-website.vercel.app';
+      type CustJoined =
+        | { email: string; full_name: string | null }
+        | { email: string; full_name: string | null }[]
+        | null;
+      for (const b of bookings) {
+        const cJ = (b as { customer?: CustJoined }).customer;
+        const customer = Array.isArray(cJ) ? cJ[0] : cJ;
+        // Reserva de vendedor pode ter placeholder .invalid — inentregável.
+        if (!customer?.email || customer.email.endsWith('.invalid')) {
+          skipped++;
+          continue;
+        }
+        const { subject, html, text } = renderPierChanged({
+          bookingCode: b.booking_code,
+          customerName: customer.full_name ?? '',
+          tourName,
+          departureAt: before?.departure_at ?? null,
+          passengerCount: b.passenger_count,
+          siteUrl,
+          pier: {
+            slug: newPier.slug,
+            name: newPier.name,
+            address: newPier.address,
+            mapsUrl: newPier.google_maps_url,
+            feeCents: newPier.fee_cents,
+          },
+        });
+        const r = await sendEmail({ to: customer.email, subject, html, text });
+        if (r.ok) notified++;
+        else {
+          console.error('[setPierAction] email fail', b.booking_code, r);
+          skipped++;
+        }
+      }
+    }
+  }
+
   revalidatePath(`/admin/manifesto/${scheduleId}`);
   revalidatePath('/admin/manifesto');
-  return { ok: true };
+  return { ok: true, notified, skipped };
 }
 
 // ============================================================

@@ -84,7 +84,7 @@ export default async function ReservaPage({
       created_at,
       expires_at,
       tour:tours ( name, slug ),
-      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( slug, name, fee_cents, address, notes ) ),
+      schedule:tour_schedules ( departure_at, pier:embarkation_piers ( slug, name, fee_cents, address, google_maps_url, notes ) ),
       customer:customers ( email, full_name, phone, auth_user_id )
     `
     )
@@ -107,15 +107,15 @@ export default async function ReservaPage({
       | {
           departure_at: string;
           pier:
-            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
-            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
+            | { slug: string; name: string; fee_cents: number; address: string | null; google_maps_url: string | null; notes: string | null }
+            | { slug: string; name: string; fee_cents: number; address: string | null; google_maps_url: string | null; notes: string | null }[]
             | null;
         }
       | {
           departure_at: string;
           pier:
-            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }
-            | { slug: string; name: string; fee_cents: number; address: string | null; notes: string | null }[]
+            | { slug: string; name: string; fee_cents: number; address: string | null; google_maps_url: string | null; notes: string | null }
+            | { slug: string; name: string; fee_cents: number; address: string | null; google_maps_url: string | null; notes: string | null }[]
             | null;
         }[]
       | null;
@@ -268,6 +268,16 @@ export default async function ReservaPage({
                     <p className="text-sm text-[var(--color-charcoal-500)] mt-0.5">
                       {pier.address}
                     </p>
+                  )}
+                  {pier.google_maps_url && (
+                    <a
+                      href={pier.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-sm font-semibold text-[var(--color-red-600)] underline underline-offset-2 mt-1"
+                    >
+                      Ver local de check-in no mapa
+                    </a>
                   )}
                   {pier.fee_cents > 0 ? (
                     <p className="text-sm text-[var(--color-charcoal-700)] mt-3 leading-relaxed">

@@ -8,6 +8,7 @@ export type BookingReminderPayload = {
   pier?: {
     name: string;
     address: string | null;
+    mapsUrl?: string | null;
     feeCents: number;
   } | null;
   ticketUrl: string;
@@ -69,11 +70,13 @@ export function renderBookingReminder(p: BookingReminderPayload): {
         <p style="margin:0;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:#555;">Local de embarque</p>
         <p style="margin:4px 0 0;font-size:15px;font-weight:bold;">${safePierName}</p>
         ${safeAddr ? `<p style="margin:2px 0 0;font-size:13px;color:#555;">${safeAddr}</p>` : ''}
+        ${p.pier.mapsUrl ? `<p style="margin:8px 0 0;"><a href="${p.pier.mapsUrl}" style="color:#096EAB;font-size:13px;font-weight:bold;">📍 Ver local de check-in no mapa</a></p>` : ''}
         ${feeNote}
       </div>`;
     pierText = [
       `Embarque: ${p.pier.name}`,
       ...(p.pier.address ? [p.pier.address] : []),
+      ...(p.pier.mapsUrl ? [`Mapa (local de check-in): ${p.pier.mapsUrl}`] : []),
       ...(p.pier.feeCents > 0
         ? [
             `Taxa de embarque R$ ${(p.pier.feeCents / 100).toFixed(2).replace('.', ',')}/pessoa paga presencialmente.`,
