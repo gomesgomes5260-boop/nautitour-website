@@ -1,0 +1,11 @@
+{
+  "nome": "escuna-anuncio",
+  "molde": "A",
+  "formatos": ["4x5", "1200x628"],
+  "foto_hero": "public/images/photos/aerea/drone-joao-fernandes-01.jpg",
+  "titulo": "12 praias em 2h30.",
+  "fato": "Sáb e dom, 9h30 e 12h. R$ 60 por pessoa.",
+  "cta": { "texto": "Chama no WhatsApp", "tipo": "whatsapp", "destino": "https://nautitour.com.br/api/wa?s=ads-escuna-anuncio" },
+  "assinatura": "escuna+nautitour",
+  "seed": 3
+}

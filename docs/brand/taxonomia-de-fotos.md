@@ -40,3 +40,9 @@ certa pra cada molde sem olhar a imagem. Slug minúsculo, sem acento, hífen (re
 1. As ~55 fotos de lancha de 2025 no Drive: subir, tagear `lancha` + assunto + `hero`/`polaroid`.
 2. As 279 de `fotos-passeio` e 240 de `clientes` no bucket: `pessoas`, `rosto-identificavel`, consentimento.
 3. As 82 de `aerea`: `drone` + local + `hero`.
+
+## Fotos banidas (decisão do dono, 09/out/2026)
+
+| Foto | Onde estava | Regra |
+|---|---|---|
+| **Homem no caiaque** (colete rosa, caiaque amarelo, escuna ao fundo) — no repo era `public/images/photos/ilhas/snorkel-ilha-01.jpg` (nome errado); no bucket `site-images` são `ilhas/snorkel-ilha-001-*`, `-002-*` e `-003-*` (webp e jpg) | galerias do site (home e escuna) e biblioteca | **Nunca usar: nem em post, nem em anúncio, nem no site.** Tiradas das galerias em 09/out. Qualquer agente que monte criativo ou galeria deve conferir a foto antes de usar, não só o nome do arquivo. |

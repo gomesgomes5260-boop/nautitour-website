@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Molde A — Foto + faixa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap">
+<style>
+  /* Tokens da Escuna Estrela (docs/brand/sistema-visual-social.md) */
+  :root {
+    --ee-petroleo: #075A5E; --ee-petroleo-escuro: #072A2E; --ee-turquesa: #09959C; --ee-turquesa-clara: #5FB3B8;
+    --ee-kraft: #E7E5DD; --ee-kraft-escuro: #D0C9B8; --ee-offwhite: #E9E6DF; --ee-estrela: #20C098;
+    --font: "Poppins", "Montserrat", sans-serif;
+    /* preenchidos pelo renderizador */
+    --W: 1080px; --H: 1350px; --hero-h: 62%; --sea-top: 56%; --sea-bottom: 86%; --title-size: 86px; --fact-size: 36px; --cta-size: 34px; --logo-w: 230px; --safe: 60px;
+  }
+  html, body { margin: 0; padding: 0; background: #000; }
+  body { font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  .card { position: relative; width: var(--W); height: var(--H); overflow: hidden; background: var(--ee-kraft); }
+  /* papel kraft: cor + grão (ruído) + leve vinheta */
+  .kraft { position: absolute; inset: 0; background: var(--ee-kraft); }
+  .kraft::after { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.40 0 0 0 0 0.36 0 0 0 0 0.28 0 0 0 0.7 0'/></filter><rect width='400' height='400' filter='url(%23n)'/></svg>"); opacity: .55; mix-blend-mode: multiply; }
+  /* fibras longas do papel (segunda camada de ruído, esticada na horizontal) */
+  .kraft::before { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='120'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.4' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.30 0 0 0 0 0.22 0 0 0 0.5 0'/></filter><rect width='600' height='120' filter='url(%23f)'/></svg>"); opacity: .28; mix-blend-mode: multiply; }
+  .kraft-vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, transparent 50%, rgba(110,95,70,.22) 100%); }
+  /* foto hero */
+  .hero { position: absolute; left: 0; top: 0; width: 100%; height: var(--hero-h); overflow: hidden; }
+  .hero img { width: 100%; height: 100%; object-fit: cover; object-position: var(--hero-pos, 50% 50%); display: block; }
+  /* bloco de mar: SVG com bordas rasgadas, degradê e sombra */
+  .sea { position: absolute; left: -2%; top: calc(var(--sea-top) - 4%); width: 104%; height: calc(var(--sea-bottom) - var(--sea-top) + 8%); filter: drop-shadow(0 -4px 6px rgba(7,42,46,.45)) drop-shadow(0 12px 16px rgba(7,42,46,.4)); }
+  .sea svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  /* marca d'água: rosa dos ventos em traço */
+    /* rosa dos ventos de madeira (reconstruída em SVG; trocar pelo PNG original quando sair do PSD) */
+  .wood { position: absolute; width: 44%; aspect-ratio: 1; right: -15%; bottom: -13%; filter: drop-shadow(-6px 10px 12px rgba(0,0,0,.45)); transform: rotate(14deg); }
+  .wood svg, .wood img { width: 100%; height: 100%; overflow: visible; display: block; }
+  .wood img { object-fit: contain; }
+  /* textos */
+  .copy { position: absolute; left: var(--safe); right: var(--safe); top: calc(var(--sea-top) + 3.5%); bottom: calc(100% - var(--sea-bottom) + 2%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: .3em; }
+  .title { font-weight: 700; font-size: var(--title-size); line-height: 1.04; letter-spacing: -.005em; color: var(--ee-offwhite); text-wrap: balance; max-width: 94%; text-shadow: 0 2px 8px rgba(7,42,46,.35); }
+  .fact { font-weight: 600; font-size: var(--fact-size); line-height: 1.25; color: var(--ee-turquesa-clara); max-width: 92%; }
+  /* CTA dentro da faixa, logo centralizada no kraft (como nos posts 1 e 6) */
+  .cta { margin-top: .55em; background: #fff; color: var(--ee-petroleo); font-weight: 700; font-size: var(--cta-size); line-height: 1; padding: .62em 1.15em; border-radius: 999px; box-shadow: 0 8px 20px rgba(7,42,46,.35); white-space: nowrap; display: inline-flex; align-items: center; gap: .45em; }
+  .foot { position: absolute; left: var(--safe); right: var(--safe); top: var(--sea-bottom); bottom: var(--safe); display: flex; align-items: center; justify-content: center; }
+  .cta .ico { width: 1.05em; height: 1.05em; }
+  .logos { display: flex; align-items: center; gap: 36px; }
+  .logos svg, .logos img { height: auto; display: block; }
+  .logo-ee { width: var(--logo-w); }
+  .logo-nt { width: calc(var(--logo-w) * .98); }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="kraft"></div><div class="kraft-vignette"></div>
+  <div class="hero"><img id="hero" alt=""></div>
+  <div class="sea"><svg id="sea" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#0A4A4E"/><stop offset=".5" stop-color="#0F5F63"/><stop offset="1" stop-color="#17777B"/></linearGradient><filter id="fiber" x="-2%" y="-10%" width="104%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.05 0.9" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="fiber2" x="-2%" y="-10%" width="104%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.08 0.7" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.35 0"/><feComposite in2="SourceGraphic" operator="in"/></filter><clipPath id="seaClip"><path id="seaClipPath"/></clipPath></defs><path id="paperPath" fill="#EFEDE6" filter="url(#fiber)"/><path id="seaPath" fill="url(#g)" filter="url(#fiber2)"/><path id="seaGrain" filter="url(#grain)" fill="#000" opacity=".16" style="mix-blend-mode:overlay"/><g clip-path="url(#seaClip)" id="wm" fill="none" stroke="#E9E6DF" stroke-width="1.6" opacity=".13"><g id="wmInner"><circle cx="200" cy="200" r="150"/><circle cx="200" cy="200" r="118"/><circle cx="200" cy="200" r="34"/><g id="ticks"></g><path d="M200 40 L214 186 L360 200 L214 214 L200 360 L186 214 L40 200 L186 186 Z"/><path d="M200 60 L230 170 L340 200 L230 230 L200 340 L170 230 L60 200 L170 170 Z" stroke-width=".9"/><path d="M200 200 L300 100 M200 200 L100 100 M200 200 L300 300 M200 200 L100 300" stroke-width=".9"/></g></g></svg></div>
+  <div class="wood"><img id="woodImg" alt="" hidden><svg id="woodSvg" viewBox="-20 -20 240 240"><defs><linearGradient id="wd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D9A66A"/><stop offset=".5" stop-color="#A86F3E"/><stop offset="1" stop-color="#6B421F"/></linearGradient><linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0C48C"/><stop offset="1" stop-color="#C58A52"/></linearGradient><filter id="veins" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.25" numOctaves="3" seed="2"/><feColorMatrix values="0 0 0 0 0.25 0 0 0 0 0.14 0 0 0 0 0.05 0 0 0 0.55 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs><g id="woodRose"><path id="wStarBig" fill="url(#wd)" stroke="#4A2B12" stroke-width="2.5" stroke-linejoin="round"/><path id="wStarHi" fill="#F2CC98" opacity=".9"/><path id="wStarSmall" fill="url(#wl)" stroke="#4A2B12" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="100" r="58" fill="none" stroke="#4A2B12" stroke-width="5"/><circle cx="100" cy="100" r="46" fill="none" stroke="#4A2B12" stroke-width="2.5"/><g id="wticks" stroke="#4A2B12" stroke-width="2.5"></g><path id="wStarMid" fill="url(#wd)" stroke="#4A2B12" stroke-width="2.5" stroke-linejoin="round"/><circle cx="100" cy="100" r="7" fill="#4A2B12"/><g id="wGrainClip"><path id="wStarBig2" filter="url(#veins)" fill="#000"/></g></g></svg></div>
+  <div class="copy"><div class="title" id="title"></div><div class="fact" id="fact"></div><div class="cta" id="cta"></div></div>
+  <div class="foot" id="foot"><div class="logos" id="logos"></div></div>
+</div>
+<script>
+  // Preenchido pelo renderizador via window.SPEC. Mantém um fallback pra abrir o arquivo direto no navegador.
+  const SPEC = window.SPEC || { formato: '4x5', titulo: 'Sáb e dom, 9h30 e 12h.', fato: '12 praias, 3 ilhas, 2h30. R$ 60 por pessoa.', cta: { texto: 'Reserve pelo link', tipo: 'site' }, assinatura: 'escuna', seed: 7 };
+  const F = { '4x5': { W: 1080, H: 1350, hero: 60, seaTop: 54, seaBottom: 87, title: 84, fact: 36, cta: 34, logo: 240, safe: 60 },
+              '1x1': { W: 1080, H: 1080, hero: 56, seaTop: 50, seaBottom: 85, title: 76, fact: 33, cta: 32, logo: 220, safe: 60 },
+              '9x16': { W: 1080, H: 1920, hero: 56, seaTop: 50, seaBottom: 81, title: 100, fact: 40, cta: 38, logo: 260, safe: 60, top: 250, bottom: 250 },
+              '1200x628': { W: 1200, H: 628, hero: 100, seaTop: 0, seaBottom: 100, title: 62, fact: 30, cta: 28, logo: 180, safe: 40 } };
+  const f = F[SPEC.formato] || F['4x5'];
+  const r = document.documentElement.style;
+  r.setProperty('--W', f.W + 'px'); r.setProperty('--H', f.H + 'px'); r.setProperty('--hero-h', f.hero + '%');
+  r.setProperty('--sea-top', f.seaTop + '%'); r.setProperty('--sea-bottom', f.seaBottom + '%');
+  r.setProperty('--title-size', f.title + 'px'); r.setProperty('--fact-size', f.fact + 'px'); r.setProperty('--cta-size', f.cta + 'px');
+  r.setProperty('--logo-w', f.logo + 'px'); r.setProperty('--safe', f.safe + 'px');
+  if (SPEC.heroPos) r.setProperty('--hero-pos', SPEC.heroPos);
+  // gerador determinístico (mesmo seed = mesmo rasgo)
+  let s = (SPEC.seed || 1) * 9301 + 49297; const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  // bordas rasgadas: polígono com ruído em duas escalas
+  // rasgo: onda larga + onda média + ruído fino (fibras curtas) com deriva amortecida
+  function torn(y0, amp, n, W) { const pts = []; const p1 = rnd() * 9, p2 = rnd() * 9, p3 = rnd() * 9; let drift = 0; for (let i = 0; i <= n; i++) { const t = i / n; const x = W * t; drift += (rnd() - .5) * amp * .22; drift *= .9; const y = y0 + Math.sin(t * 19 + p1) * amp * .5 + Math.sin(t * 53 + p2) * amp * .25 + Math.sin(t * 160 + p3) * amp * .08 + drift + (rnd() - .5) * amp * .2; pts.push([x, y]); } return pts; }
+  const toD = (pts) => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L') + ' Z';
+  const svg = document.getElementById('sea'); const seaH = (f.seaBottom - f.seaTop + 8) / 100 * f.H; const seaW = f.W * 1.04;
+  svg.setAttribute('viewBox', `0 0 ${seaW} ${seaH}`);
+  // camada de papel (branca) um pouco maior, rasgada com outro ruído: a diferença entre as duas vira a fibra branca de largura variável
+  // o papel segue o mesmo traçado do mar, deslocado pra fora alguns px com jitter fino (fibra branca de 3 a 14 px, com farpas esparsas)
+  const fiber = (pts, dir) => pts.map(p => [p[0], p[1] + dir * (4 + rnd() * 6 + (rnd() < .07 ? 8 + rnd() * 8 : 0))]);
+  const topSea = torn(seaH * .115, seaH * .08, 240, seaW), botSea = torn(seaH * .885, seaH * .075, 240, seaW);
+  const seaD = toD([...topSea, ...[...botSea].reverse()]);
+  const paperD = toD([...fiber(topSea, -1), ...fiber(botSea, 1).reverse()]);
+  const setSea = (dSea, dPaper) => { ['seaPath', 'seaGrain', 'seaClipPath'].forEach(id => document.getElementById(id).setAttribute('d', dSea)); document.getElementById('paperPath').setAttribute('d', dPaper || dSea); };
+  setSea(seaD, paperD);
+  const wm = document.getElementById('wmInner'); const wmScale = (seaH * 1.9) / 400; wm.setAttribute('transform', `translate(${seaW * .02} ${-seaH * .35}) scale(${wmScale})`);
+  // 1200x628: mar à esquerda em vez de faixa (layout paisagem)
+  if (SPEC.formato === '1200x628') {
+    document.querySelector('.hero').style.cssText = 'left:46%;width:54%;height:100%';
+    document.querySelector('.sea').style.cssText = 'left:-4%;top:-6%;width:56%;height:112%';
+    svg.setAttribute('viewBox', `0 0 ${f.W * .56} ${f.H * 1.12}`);
+    const vert = (x0, amp, n, H) => torn(x0, amp, n, H).map(p => [p[1], p[0]]); // rasgo vertical: troca eixos
+    const HH = f.H * 1.12, WW = f.W * .56;
+    const edge = vert(WW * .9, 34, 140, HH); const edgeP = edge.map(p => [p[0] + 4 + rnd() * 6 + (rnd() < .07 ? 8 + rnd() * 8 : 0), p[1]]);
+    setSea('M0 0 L' + edge.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L') + ` L0 ${HH} Z`,
+           'M0 0 L' + edgeP.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L') + ` L0 ${HH} Z`);
+    wm.setAttribute('transform', `translate(${-f.W * .18} ${f.H * .05}) scale(${(f.H * 1.5) / 400})`);
+    document.querySelector('.copy').style.cssText = 'left:40px;right:52%;top:50px;bottom:130px;align-items:flex-start;text-align:left';
+    document.querySelector('.foot').style.cssText = 'left:40px;right:auto;width:44%;top:auto;bottom:30px;justify-content:flex-start';
+    document.querySelector('.wood').style.cssText = 'width:30%;right:-9%;bottom:-16%;transform:rotate(14deg)';
+  }
+  if (SPEC.formato === '9x16') { document.querySelector('.foot').style.bottom = f.bottom + 'px'; }
+  // ticks das rosas dos ventos
+  const tk = document.getElementById('ticks'); let h = ''; for (let i = 0; i < 72; i++) { const a = (i / 72) * Math.PI * 2; const R = i % 6 === 0 ? 140 : 146; h += `<line x1="${200 + Math.cos(a) * 150}" y1="${200 + Math.sin(a) * 150}" x2="${200 + Math.cos(a) * R}" y2="${200 + Math.sin(a) * R}"/>`; } tk.innerHTML = h;
+  const wt = document.getElementById('wticks'); h = ''; for (let i = 0; i < 48; i++) { const a = (i / 48) * Math.PI * 2; const R = i % 4 === 0 ? 48 : 52; h += `<line x1="${100 + Math.cos(a) * 58}" y1="${100 + Math.sin(a) * 58}" x2="${100 + Math.cos(a) * R}" y2="${100 + Math.sin(a) * R}"/>`; } wt.innerHTML = h;
+  // rosa de madeira: estrela de 8 pontas (4 longas + 4 curtas) com faces claras/escuras
+  const star = (n, rOut, rIn, rot) => { const p = []; for (let i = 0; i < n * 2; i++) { const a = rot + (i / (n * 2)) * Math.PI * 2; const R = i % 2 === 0 ? rOut : rIn; p.push((100 + Math.cos(a) * R).toFixed(1) + ' ' + (100 + Math.sin(a) * R).toFixed(1)); } return 'M' + p.join(' L') + ' Z'; };
+  document.getElementById('wStarBig').setAttribute('d', star(4, 118, 22, -Math.PI / 2));
+  document.getElementById('wStarBig2').setAttribute('d', star(4, 118, 22, -Math.PI / 2));
+  document.getElementById('wStarSmall').setAttribute('d', star(4, 80, 16, -Math.PI / 4));
+  document.getElementById('wStarMid').setAttribute('d', star(4, 118, 22, -Math.PI / 2));
+  // meia face iluminada de cada ponta longa
+  { let d = ''; for (let i = 0; i < 4; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 2; const b = a - Math.PI / 4; d += `M100 100 L${(100 + Math.cos(a) * 118).toFixed(1)} ${(100 + Math.sin(a) * 118).toFixed(1)} L${(100 + Math.cos(b) * 22).toFixed(1)} ${(100 + Math.sin(b) * 22).toFixed(1)} Z `; } document.getElementById('wStarHi').setAttribute('d', d); }
+  // anel central por cima das pontas longas: desenha o disco sobre a estrela grande, depois a estrela média
+  document.getElementById('wStarMid').setAttribute('d', star(4, 68, 14, -Math.PI / 2));
+  // conteúdo
+  document.getElementById('hero').src = SPEC.heroSrc || '';
+  document.getElementById('title').textContent = SPEC.titulo || '';
+  const fact = document.getElementById('fact'); if (SPEC.fato) fact.textContent = SPEC.fato; else fact.remove();
+  const cta = document.getElementById('cta');
+  if (SPEC.cta && SPEC.cta.texto) { const wa = SPEC.cta.tipo === 'whatsapp'; cta.innerHTML = (wa ? '<svg class="ico" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4 5.3 5.3 0 0 0 3.2.7 2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>' : '') + '<span></span>'; cta.querySelector('span').textContent = SPEC.cta.texto; if (wa) cta.style.color = '#1E8B4C'; } else { cta.remove(); }
+  const logos = document.getElementById('logos');
+  logos.innerHTML = `<div class="logo-ee">${SPEC.logoEE || ''}</div>` + (SPEC.assinatura === 'escuna+nautitour' ? `<div class="logo-nt">${SPEC.logoNT || ''}</div>` : '');
+  logos.querySelectorAll('svg').forEach(el => { el.removeAttribute('width'); el.removeAttribute('height'); el.style.width = '100%'; });
+  // rosa de madeira: PNG gerado (public/brand/escuna-estrela/elementos) quando o renderizador passa woodSrc; senão fica o SVG desenhado
+  const woodImg = document.getElementById('woodImg');
+  if (SPEC.woodSrc) { woodImg.src = SPEC.woodSrc; woodImg.hidden = false; document.getElementById('woodSvg').remove(); } else { woodImg.remove(); }
+  const loaded = (im) => new Promise(res => { if (!im || im.complete) res(); else { im.onload = res; im.onerror = res; } });
+  window.__ready = Promise.all([document.fonts.ready, loaded(document.getElementById('hero')), loaded(SPEC.woodSrc ? woodImg : null)]);
+</script>
+</body>
+</html>

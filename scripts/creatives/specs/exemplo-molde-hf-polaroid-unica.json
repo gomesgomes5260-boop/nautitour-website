@@ -1,0 +1,39 @@
+{
+  "nome": "hf-escuna-polaroid-unica",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 2,
+      "w": 68,
+      "h": 15,
+      "alinhar": "esquerda",
+      "titulo": 5.2,
+      "fato": 2.8,
+      "cta": 2.8
+    },
+    "logo": {
+      "x": 32,
+      "y": 90,
+      "w": 36,
+      "h": 7
+    },
+    "rotulos": [
+      {
+        "x": 14,
+        "y": 74,
+        "w": 72,
+        "h": 7,
+        "texto": "12 praias, 3 ilhas e 3 paradas pra mergulho.",
+        "tamanho": 3.0,
+        "girar": -1.5
+      }
+    ]
+  },
+  "titulo": "Você sabe quantas praias a gente passa?",
+  "assinatura": "escuna"
+}

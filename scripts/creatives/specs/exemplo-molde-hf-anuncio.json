@@ -1,0 +1,34 @@
+{
+  "nome": "hf-escuna-anuncio",
+  "molde": "HF",
+  "formatos": [
+    "1200x628"
+  ],
+  "arte_base": "scripts/creatives/bases/anuncio-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 4,
+      "y": 8,
+      "w": 33,
+      "h": 60,
+      "alinhar": "esquerda",
+      "titulo": 4.6,
+      "fato": 2.2,
+      "cta": 2.2
+    },
+    "logo": {
+      "x": 4,
+      "y": 74,
+      "w": 32,
+      "h": 18
+    }
+  },
+  "titulo": "12 praias em 2h30.",
+  "fato": "Sáb e dom, 9h30 e 12h. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Chama no WhatsApp",
+    "tipo": "whatsapp",
+    "destino": "https://nautitour.com.br/api/wa?s=ads-escuna-anuncio"
+  },
+  "assinatura": "escuna+nautitour"
+}
