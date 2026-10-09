@@ -33,15 +33,18 @@ const outDir = args.includes('--out') ? args[args.indexOf('--out') + 1] : join(r
 mkdirSync(outDir, { recursive: true });
 
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
-const molde = (spec.molde || 'A').toUpperCase();
+const molde = (spec.molde || 'A').toUpperCase(); // 'HF' = arte base gerada (Higgsfield) + texto/logo por cima
 const templatePath = join(here, 'templates', `molde-${molde.toLowerCase()}.html`);
 if (!existsSync(templatePath)) { console.error(`molde ${molde} não existe (${templatePath})`); process.exit(1); }
 const template = readFileSync(templatePath, 'utf8');
 const formatos = spec.formatos || ['4x5'];
 const nome = spec.nome || basename(specPath, '.json');
 
+const rosaPath = resolve(repo, spec.rosa || 'public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-01.png');
 const assets = {
   heroSrc: spec.foto_hero ? dataUrl(resolve(repo, spec.foto_hero)) : '',
+  woodSrc: existsSync(rosaPath) ? dataUrl(rosaPath) : '',
+  baseSrc: spec.arte_base ? dataUrl(resolve(repo, spec.arte_base)) : '',
   logoEE: inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor.svg')),
   logoNT: inlineSvg(join(repo, 'public/brand/nautitour-horizontal-cor.svg')),
 };

@@ -32,7 +32,9 @@ de renderizar, então precisa de rede.
 
 | Campo | Valores |
 |---|---|
-| `molde` | `A` (foto + faixa): foto hero → rasgo → faixa petróleo com título, fato e CTA → kraft com logo centralizada e rosa de madeira entrando pelo canto (posts 1 e 6 de referência). B a E entram nas próximas PRs |
+| `molde` | `HF` (**fluxo principal**, decisão 09/out): arte base SEM texto gerada no Higgsfield a partir dos posts reais + nossas fotos (`bases/`, prompts em `prompts/`), e título/fato/CTA/logo desenhados por cima em HTML nas `zonas` do spec. `A` (foto + faixa 100% em HTML/CSS) fica como fallback sem custo |
+| `arte_base` | (molde HF) caminho da arte base JPEG/PNG já no formato final |
+| `zonas` | (molde HF) caixas em % da arte: `texto {x,y,w,h,alinhar:'centro'|'esquerda',titulo,fato,cta}` (tamanhos em % da largura) e `logo {x,y,w,h}` |
 | `formatos` | `4x5` 1080×1350 · `1x1` 1080×1080 · `9x16` 1080×1920 (área segura de 250 px) · `1200x628` anúncio paisagem |
 | `foto_hero` | caminho relativo à raiz do repo (ou absoluto) |
 | `heroPos` | `object-position` da foto, opcional |
@@ -41,6 +43,15 @@ de renderizar, então precisa de rede.
 | `cta.tipo` | `site` (cartão branco) ou `whatsapp` (cartão com ícone e texto verde). `destino` fica no spec pra legenda e rastreio; não é desenhado |
 | `assinatura` | `escuna` (feed orgânico) ou `escuna+nautitour` (anúncio pago) |
 | `seed` | inteiro; mesmo seed = mesmo rasgo |
+
+## Fluxo Higgsfield → HTML (molde HF)
+
+1. Referências sobem pro Higgsfield por URL pública (raw do GitHub: `docs/social/refs/post-N.jpg`, fotos em `public/images/photos/`) — o upload direto daqui é bloqueado pelo proxy, então o PUT roda no sandbox do Higgsfield.
+2. `generate_image` com `gpt_image_2_5` + referências (2 posts reais + fotos) e o prompt de `prompts/` pedindo arte **sem texto** com as áreas do título e da logo vazias.
+3. A arte volta como JPEG 1080 px (via `sandbox_exec` + `image_paths`, limite 512 KB por chamada) e vai pra `bases/`.
+4. `node scripts/creatives/render.mjs specs/<spec>.json` desenha texto, CTA e logo por cima.
+
+Comparação feita em 09/out: Higgsfield gerando o post inteiro (com texto) acerta o texto na maioria das vezes mas pode redesenhar a logo e trocar fotos; por isso texto e logo ficam no HTML.
 
 ## Elementos
 

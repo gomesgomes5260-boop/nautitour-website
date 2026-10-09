@@ -1,0 +1,14 @@
+{
+  "nome": "hf-escuna-polaroids",
+  "molde": "HF",
+  "formatos": ["4x5"],
+  "arte_base": "scripts/creatives/bases/polaroids-01.jpg",
+  "zonas": {
+    "texto": { "x": 5, "y": 4, "w": 62, "h": 34, "alinhar": "esquerda", "titulo": 6.6, "fato": 3.0, "cta": 2.9 },
+    "logo": { "x": 32, "y": 89, "w": 36, "h": 8 }
+  },
+  "titulo": "12 praias, 3 ilhas e 2h30 de passeio.",
+  "fato": "Sáb e dom, 9h30 e 12h. R$ 60 por pessoa.",
+  "cta": { "texto": "Chama no WhatsApp", "tipo": "whatsapp", "destino": "https://nautitour.com.br/api/wa?s=ig-polaroids" },
+  "assinatura": "escuna"
+}
