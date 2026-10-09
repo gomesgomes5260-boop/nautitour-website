@@ -100,7 +100,11 @@ Texto por peça: **1 título de até 4 palavras, 1 fato, 1 CTA.** O folheto cabe
 Quem tem o Photoshop exporta isso em uma hora. Com esses 8 itens em `public/brand/escuna-estrela/`,
 os templates HTML da opção 2 do inventário reproduzem o sistema sem depender do PSD.
 
-## 9. Material relacionado no Drive (não analisado)
+## 9. Posts de referência
+
+Os 7 posts do @escunaestrelaoficial analisados em `02-posts-referencia.md` confirmam que este sistema já roda nas redes. Os 5 moldes de layout extraídos de lá (A foto + faixa · B foto + coluna de polaroids · C mar em cima, polaroids no kraft · D pergunta com opções · E polaroid única) substituem a tabela genérica da seção 6 como base dos templates.
+
+## 10. Material relacionado no Drive (não analisado)
 
 - `Impresso/A4/`: `impresso-passeio-de-barco-escuna-estrela.png` (10,7 MB, frente) e `-verso.png` (9 MB), mais `cardápio-br.psd` (cardápio do bar, out/2025). Ficaram acima do limite de download daqui.
 - `Impresso/City Tour/Editáveis/`: PSDs de 500–700 MB dos city tours (Rio, Cabo Frio, Arraial) + `logo.png`/`logo2.png` (etiqueta de couro com a logo Nautitour).
