@@ -20,6 +20,7 @@
   .cta .ico { width: 1.05em; height: 1.05em; }
   .logos { position: absolute; display: flex; align-items: center; justify-content: center; gap: 36px; }
   .logos svg { height: auto; display: block; }
+  .rotulo { position: absolute; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--ee-petroleo); text-align: center; line-height: 1.1; }
 </style>
 </head>
 <body>
@@ -27,6 +28,7 @@
   <img class="base" id="base" alt="">
   <div class="zone" id="zone"><div class="title" id="title"></div><div class="fact" id="fact"></div><div class="cta" id="cta"></div></div>
   <div class="logos" id="logos"></div>
+  <div id="rotulos"></div>
 </div>
 <script>
   // SPEC vem do renderizador. Zonas em % (x, y, w, h). Defaults batem com a arte base "foto + faixa" 4:5.
@@ -48,6 +50,9 @@
   logos.innerHTML = `<div class="logo-ee">${SPEC.logoEE || ''}</div>` + (SPEC.assinatura === 'escuna+nautitour' ? `<div class="logo-nt">${SPEC.logoNT || ''}</div>` : '');
   const n = logos.children.length; [...logos.children].forEach(d => { d.style.width = (n === 1 ? 100 : 48) + '%'; const s = d.querySelector('svg'); if (s) { s.removeAttribute('width'); s.removeAttribute('height'); s.style.width = '100%'; s.style.maxHeight = '100%'; } });
   if (SPEC.assinatura === 'nenhuma') logos.remove();
+  // rótulos (enquete): caixas pequenas em % com texto em petróleo, tamanho em % da largura
+  const rot = document.getElementById('rotulos');
+  (Z.rotulos || []).forEach(z => { const d = document.createElement('div'); d.className = 'rotulo'; pct(d, z); d.style.fontSize = vw(z.tamanho || 2.6); if (z.girar) d.style.transform = `rotate(${z.girar}deg)`; d.textContent = z.texto || ''; rot.appendChild(d); });
   window.__ready = Promise.all([document.fonts.ready, new Promise(res => { if (base.complete) res(); else { base.onload = res; base.onerror = res; } })]);
 </script>
 </body>
