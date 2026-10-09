@@ -69,7 +69,7 @@ Duas marcas, dois guias visuais, uma voz. Os folhetos impressos de 2024 (`Impres
 | Item | Estado | Observação |
 |---|---|---|
 | Google Ads conta "Escuna" `4882012999` | ✅ | Skill dedicada em `.claude/skills/google-ads-expert-escuna/` + doc de medição `docs/ads-medicao-google-ads.md`. Regras duras do dono: nunca deletar, mudar só com aprovação por item. Adspirer com cota de 15 chamadas/mês (o servidor Adspirer **não conectou nesta sessão**) |
-| Meta Ads / Instagram / Facebook | 🔴 | Nenhuma conta vista. Os 3 ícones sociais do rodapé apontam pra `href="#"` — **o site não linka nenhuma rede social** |
+| Instagram **@escunaestrelaoficial** (confirmado pelo dono 09/out) | 🟡 | Conta existe e é a voz da Escuna Estrela nas redes. **Não consegui abrir daqui**: o proxy de rede desta sessão bloqueia instagram.com, então a análise dos posts depende de prints do dono. Os 3 ícones sociais do rodapé do site seguem apontando pra `href="#"` — ligar pelo menos o Instagram é um fix de 1 linha. Meta Ads: nenhuma conta vista |
 | Conversão WhatsApp rastreável | ✅ | `/api/wa?s=<source>` registra em `whatsapp_clicks` (391 cliques até hoje, com `source`). Dá pra criar um `source` por criativo/campanha sem código novo |
 | Dados de demanda | ✅ | Últimos 90 dias: 19 reservas pagas online, 2,8 pax médio. Base pequena — a maior parte do funil fecha no WhatsApp/loja, o que reforça criativos com CTA de WhatsApp |
 | Analytics | ✅ | GA4 + Microsoft Clarity (gated por consent), Enhanced Conversions na Compra |
@@ -120,7 +120,7 @@ Curadoria do banco bruto do Drive: selecionar as melhores das ~55 fotos de lanch
 
 ## 7. Decisões que só o dono pode tomar
 
-1. **Quais redes sociais existem** (Instagram/Facebook/TikTok, @ de cada) e quem publica hoje. O rodapé do site não linka nenhuma.
+1. **Quais redes existem**: Instagram é @escunaestrelaoficial (respondido). Falta: Facebook/TikTok existem? Quem publica hoje? Há conta de Meta Ads e pixel instalado?
 2. **Uso de imagem de clientes em anúncio pago**: adotar termo de autorização no embarque/voucher, ou restringir ads a fotos sem rosto identificável e drone?
 3. **Destino padrão do CTA por produto**: escuna → checkout online; lancha/locação → WhatsApp (já é a regra do site). Confirmar se vale também pra ads.
 4. **Idioma**: só PT-BR ou também ES (público argentino) desde o início?
