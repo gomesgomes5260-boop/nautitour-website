@@ -1,0 +1,20 @@
+{
+  "lote": "2026-10-lancamento",
+  "criado": "2026-10-09",
+  "status": "em revisão",
+  "regra": "Nada é publicado automaticamente. Cada peça sai só com aprovação do dono.",
+  "pecas": [
+    "01-venda-horarios",
+    "02-venda-preco",
+    "03-prova-experiencia",
+    "04-prova-boia-bar",
+    "05-enquete-parada",
+    "06-enquete-momento",
+    "07-curiosidade-praias",
+    "08-educativo-como-funciona",
+    "09-story-horarios",
+    "10-story-amanha",
+    "11-anuncio-whatsapp",
+    "12-anuncio-site"
+  ]
+}

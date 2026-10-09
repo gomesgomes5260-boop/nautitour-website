@@ -30,3 +30,11 @@ impressos (`docs/social/01-sistema-visual-impressos.md`) e dos posts de referên
 - `design/research/02-fase2-sistema-visual.html`: paleta azul/sunset de uma fase de pesquisa, contradiz a marca.
 - `design/research/01-fase1-personas.html`: personas boas, mas citam Maragogi. A versão corrigida está em `pilares-e-personas.md`.
 - `docs/design-system/README.md`, seção *Content fundamentals*: voz em inglês para UI do site. Substituída por `voz.md`.
+
+## Processo de aprovação (decisão do dono, 09/out/2026)
+
+- **Nada é publicado automaticamente.** Nenhum agente posta, agenda ou liga anúncio sozinho.
+- Fase atual: **produção e aprovação**. Um criativo só está "completo" com arte + legenda + hashtags + CTA + link
+  rastreado, e só sai da fila com aprovação explícita do dono por peça.
+- Lotes vivem em `scripts/creatives/lotes/<lote>/` (um spec por peça). A revisão acontece numa página de revisão
+  por lote; as decisões voltam como ajustes nos specs.

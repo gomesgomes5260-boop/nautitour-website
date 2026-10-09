@@ -1,0 +1,46 @@
+{
+  "nome": "03-prova-experiencia",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroids-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 5,
+      "y": 5,
+      "w": 64,
+      "h": 32,
+      "alinhar": "esquerda",
+      "titulo": 6.6,
+      "fato": 3.0,
+      "cta": 2.9
+    },
+    "logo": {
+      "x": 30,
+      "y": 90,
+      "w": 40,
+      "h": 7
+    }
+  },
+  "titulo": "12 praias, 3 ilhas e 2h30 de passeio.",
+  "fato": "Sáb e dom, 9h30 e 12h.",
+  "cta": {
+    "texto": "Reserve pelo link",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-prova"
+  },
+  "assinatura": "escuna",
+  "pilar": "2. Prova",
+  "canal": "feed",
+  "persona": "Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-prova",
+  "legenda": "O passeio de escuna de um jeito só: a escuna cheia, a boia na água e João Fernandes vista de cima.\nSão 3 paradas de 20 min pra mergulho, com colete pra quem quiser e bar a bordo.\nReserva pelo link da bio.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#JoaoFernandes"
+  ],
+  "observacoes": ""
+}

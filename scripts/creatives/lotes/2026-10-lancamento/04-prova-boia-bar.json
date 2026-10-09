@@ -1,0 +1,46 @@
+{
+  "nome": "04-prova-boia-bar",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroids-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 5,
+      "y": 5,
+      "w": 64,
+      "h": 32,
+      "alinhar": "esquerda",
+      "titulo": 6.6,
+      "fato": 3.0,
+      "cta": 2.9
+    },
+    "logo": {
+      "x": 30,
+      "y": 90,
+      "w": 40,
+      "h": 7
+    }
+  },
+  "titulo": "Boia, mergulho e bar a bordo.",
+  "fato": "Tudo incluso nos R$ 60.",
+  "cta": {
+    "texto": "Ver datas",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-prova-boia"
+  },
+  "assinatura": "escuna",
+  "pilar": "2. Prova",
+  "canal": "feed",
+  "persona": "Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-prova-boia",
+  "legenda": "A boia fica na água em cada parada, o bar fica aberto o passeio inteiro e o mergulho é com colete pra quem quiser.\nCriança paga meia e embarca com responsável.\nVer datas no link da bio. ☀️",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#IlhaFeia"
+  ],
+  "observacoes": "Conferir a regra de meia pra criança antes de publicar (fatos-do-produto.md)."
+}

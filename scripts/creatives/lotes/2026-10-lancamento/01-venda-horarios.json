@@ -1,0 +1,46 @@
+{
+  "nome": "01-venda-horarios",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/foto-faixa-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 58,
+      "w": 88,
+      "h": 25,
+      "alinhar": "centro",
+      "titulo": 7.4,
+      "fato": 3.1,
+      "cta": 3.0
+    },
+    "logo": {
+      "x": 32,
+      "y": 87,
+      "w": 36,
+      "h": 9
+    }
+  },
+  "titulo": "Sáb e dom, 9h30 e 12h.",
+  "fato": "12 praias, 3 ilhas, 2h30. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Reserve pelo link",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-venda-horarios"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "feed",
+  "persona": "Felipe (grupo) / Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-venda-horarios",
+  "legenda": "Sábado e domingo tem saída às 9h30 e às 12h. ⛵\nR$ 60 por pessoa, bar a bordo e 3 paradas pra mergulho de 20 min.\nReserva pelo link da bio, em 1 minuto. Tudo claro, sem letras miúdas.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "observacoes": "Publicar quinta ou sexta. Texto do link da bio: nautitour.com.br/passeio-escuna"
+}

@@ -1,0 +1,52 @@
+{
+  "nome": "08-educativo-como-funciona",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 2,
+      "w": 68,
+      "h": 15,
+      "alinhar": "esquerda",
+      "titulo": 5.2,
+      "fato": 2.8,
+      "cta": 2.8
+    },
+    "logo": {
+      "x": 32,
+      "y": 90,
+      "w": 36,
+      "h": 7
+    },
+    "rotulos": [
+      {
+        "x": 10,
+        "y": 77,
+        "w": 78,
+        "h": 7,
+        "texto": "3 paradas de 20 min e volta ao píer em 2h30.",
+        "tamanho": 2.6,
+        "girar": 1
+      }
+    ]
+  },
+  "titulo": "Como funciona o passeio?",
+  "assinatura": "escuna",
+  "pilar": "4. Educativo",
+  "canal": "feed",
+  "persona": "Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-como-funciona",
+  "legenda": "Você embarca no Píer da Rua das Pedras, sem taxa. A escuna passa por 12 praias e 3 ilhas e para 3 vezes pra mergulho, 20 min cada.\nBar a bordo, colete pra quem quiser, volta ao píer em 2h30.\nReserva online pelo link da bio e apresenta o voucher no celular.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "observacoes": "Conferir a posição da legenda na borda da polaroid-unica-02 (polaroid mais baixa que a 01).",
+  "cta": null
+}

@@ -1,0 +1,46 @@
+{
+  "nome": "02-venda-preco",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/foto-faixa-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 61,
+      "w": 88,
+      "h": 24,
+      "alinhar": "centro",
+      "titulo": 7.4,
+      "fato": 3.1,
+      "cta": 3.0
+    },
+    "logo": {
+      "x": 32,
+      "y": 88,
+      "w": 36,
+      "h": 9
+    }
+  },
+  "titulo": "12 praias por R$ 60.",
+  "fato": "Seg a sex, 11h30. Sáb e dom, 9h30 e 12h.",
+  "cta": {
+    "texto": "Chama no WhatsApp",
+    "tipo": "whatsapp",
+    "destino": "https://nautitour.com.br/api/wa?s=ig-lote1-preco"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "feed",
+  "persona": "Felipe (grupo)",
+  "destino": "https://nautitour.com.br/api/wa?s=ig-lote1-preco",
+  "legenda": "R$ 60 por pessoa pra passar por 12 praias e 3 ilhas em 2h30.\nGrupo de 8? Fica R$ 480 pra todo mundo, com bar a bordo.\nChama no WhatsApp que a gente responde rápido. 🌊",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "observacoes": "Segundo post de venda da semana. Não publicar colado no 01."
+}
