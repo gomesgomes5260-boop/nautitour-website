@@ -19,3 +19,5 @@ Zonas (spec `exemplo-molde-hf-polaroids.json`): texto `x5 y4 w62 h34` alinhado �
 
 ⚠️ Observado: o modelo às vezes troca uma foto fornecida por outra parecida (o snorkel virou caiaque em 2 de 4
 gerações). Conferir as fotos antes de publicar.
+
+Rosa de madeira: usar `public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-02.png` como referência extra e trocar "a carved wooden compass rose" por "the wooden compass rose exactly like reference image N" (modelo escolhido pelo dono).

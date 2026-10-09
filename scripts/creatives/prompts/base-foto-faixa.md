@@ -15,3 +15,5 @@ hand-made paper collage feel. Absolutely no typography of any kind.
 ```
 
 Zonas que funcionaram com essa arte (spec `exemplo-molde-hf.json`): texto `x6 y58 w88 h25`, logo `x32 y87 w36 h9`.
+
+Rosa de madeira: usar `public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-02.png` como referência extra e trocar "a carved wooden compass rose" por "the wooden compass rose exactly like reference image N" (modelo escolhido pelo dono).

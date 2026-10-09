@@ -40,7 +40,7 @@ const template = readFileSync(templatePath, 'utf8');
 const formatos = spec.formatos || ['4x5'];
 const nome = spec.nome || basename(specPath, '.json');
 
-const rosaPath = resolve(repo, spec.rosa || 'public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-01.png');
+const rosaPath = resolve(repo, spec.rosa || 'public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-02.png');
 const assets = {
   heroSrc: spec.foto_hero ? dataUrl(resolve(repo, spec.foto_hero)) : '',
   woodSrc: existsSync(rosaPath) ? dataUrl(rosaPath) : '',
