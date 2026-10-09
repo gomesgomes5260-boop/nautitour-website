@@ -17,7 +17,7 @@ hand-made collage feel. Absolutely no typography of any kind.
 
 Zonas (spec `exemplo-molde-hf-polaroids.json`): texto `x5 y4 w62 h34` alinhado à esquerda, logo `x32 y89 w36 h8`.
 
-⚠️ Observado: o modelo às vezes troca uma foto fornecida por outra parecida (o snorkel virou caiaque em 2 de 4
-gerações). Conferir as fotos antes de publicar.
+⚠️ A foto `ilhas/snorkel-ilha-01.jpg` da biblioteca é um homem de caiaque (nome errado) e está **banida** pelo dono:
+nunca usar em post nem no site (`docs/brand/taxonomia-de-fotos.md`). Conferir as fotos antes de publicar.
 
 Rosa de madeira: usar `public/brand/escuna-estrela/elementos/rosa-dos-ventos-madeira-02.png` como referência extra e trocar "a carved wooden compass rose" por "the wooden compass rose exactly like reference image N" (modelo escolhido pelo dono).
