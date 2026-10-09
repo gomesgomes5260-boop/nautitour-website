@@ -59,9 +59,9 @@ Hospitalidade de praia com a calma de quem sabe o que está fazendo. Engraçada 
 
 ## Espanhol
 
-Búzios recebe muito argentino. **Decisão pendente do dono** (ver `docs/social/00-inventario-assets.md`, seção 7).
-Enquanto não decidir: peças em português. Se liberar: a mesma peça em espanhol rioplatense neutro, nunca tradução automática
-literal. Fatos e preços idênticos; CTA "Reservá por el link" / "Escribinos por WhatsApp".
+Búzios recebe muito argentino. **Decisão do dono (09/out): só português por enquanto.** Espanhol fica para uma segunda fase,
+provavelmente só na alta temporada (jan e fev). Quando entrar: a mesma peça em espanhol rioplatense neutro, nunca tradução
+automática literal. Fatos e preços idênticos; CTA "Reservá por el link" / "Escribinos por WhatsApp".
 
 ## Teste final antes de publicar
 

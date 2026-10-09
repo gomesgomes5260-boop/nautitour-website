@@ -22,7 +22,7 @@ impressos (`docs/social/01-sistema-visual-impressos.md`) e dos posts de referên
 3. Texto na arte: **um título de até 5 palavras, um fato, um CTA.** Fato vence adjetivo.
 4. Todo criativo que sai como anúncio tem **destino rastreável**: link do site com UTM ou `/api/wa?s=<id-do-criativo>` para WhatsApp.
 5. Preço, horário e roteiro só saem de `fatos-do-produto.md`. Se não está lá, não vai pra arte.
-6. Rosto identificável de cliente em anúncio pago só com autorização registrada (ver `taxonomia-de-fotos.md`).
+6. Fotos de clientes podem ir pra anúncio pago: a empresa já colhe autorização de uso de imagem (decisão do dono, 09/out). A tag `consentimento-ok` marca as fotos cobertas; sem a tag, não vai pra anúncio (ver `taxonomia-de-fotos.md`).
 7. Nada de emoji dentro da arte. Na legenda, só náutico e pouco.
 
 ## Documentos obsoletos (não usar como referência)

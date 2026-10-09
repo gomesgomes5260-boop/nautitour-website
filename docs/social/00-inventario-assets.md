@@ -120,7 +120,7 @@ Curadoria do banco bruto do Drive: selecionar as melhores das ~55 fotos de lanch
 
 ## 7. Decisões que só o dono pode tomar
 
-1. **Quais redes existem**: Instagram é @escunaestrelaoficial (respondido). Falta: Facebook/TikTok existem? Quem publica hoje? Há conta de Meta Ads e pixel instalado?
+1. **Quais redes existem**: Instagram é @escunaestrelaoficial. Meta Ads: conta ativa com pixel (respondido 09/out); pixel ainda não instalado no site. Falta: Facebook/TikTok existem? Quem publica hoje?
 2. **Uso de imagem de clientes em anúncio pago**: adotar termo de autorização no embarque/voucher, ou restringir ads a fotos sem rosto identificável e drone?
 3. **Destino padrão do CTA por produto**: escuna → checkout online; lancha/locação → WhatsApp (já é a regra do site). Confirmar se vale também pra ads.
 4. **Idioma**: só PT-BR ou também ES (público argentino) desde o início?

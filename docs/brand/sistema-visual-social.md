@@ -71,7 +71,7 @@ assinatura       escuna | escuna+nautitour
 - Sol alto, água visível, gente de verdade em ação. Nada de banco de imagem.
 - Molde A e B: a foto hero mostra o barco inteiro ou a água com gente.
 - Polaroids: variar assunto (barco, ilha, drink, pessoas, drone). Nunca 3 drones iguais.
-- Rosto identificável em anúncio pago só com consentimento registrado na tag da foto (`taxonomia-de-fotos.md`).
+- Rosto identificável em anúncio pago só com a tag `consentimento-ok` (a empresa colhe autorização; ver `taxonomia-de-fotos.md`).
 - Foto de lancha nos moldes A e E; a coluna do molde B é a melhor pra mostrar "o dia inteiro" da lancha.
 
 ## O que não fazer

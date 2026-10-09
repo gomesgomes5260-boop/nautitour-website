@@ -25,7 +25,7 @@ A única fonte para números em criativos. Conferido em 09/out/2026 contra o ban
 |---|---|
 | Preço | **A partir de R$ 1.200** (meia diária) |
 | Duração | **3 horas** |
-| Capacidade | **Até 10 pessoas** no banco; a página pública diz "até 12". **Confirmar com o dono antes de usar o número em anúncio** |
+| Capacidade | **Até 12 pessoas** (confirmado pelo dono em 09/out). O banco ainda diz 10 em `tours.max_capacity` da `lancha-privativa`: corrigir no próximo PR de código |
 | Roteiro | Sob medida, parte norte da península, com paradas para mergulho |
 | Inclui | Água mineral, gelo e carvão (impresso 2024) |
 | Como fecha | Escolhe data e horário no site e finaliza **pelo WhatsApp**; pagamento combinado com o atendimento |
@@ -61,6 +61,7 @@ A única fonte para números em criativos. Conferido em 09/out/2026 contra o ban
 | WhatsApp | Rodízio de 4 números da equipe via `/api/wa?s=<origem>` (nunca colocar um número fixo na arte; usar o link ou QR do rodízio) |
 | Site | nautitour.com.br |
 | Instagram | @escunaestrelaoficial |
+| Meta Ads | Conta ativa com pixel (confirmado pelo dono em 09/out). O pixel ainda não está no site: instalar gateado por consentimento, como o GA4, no próximo PR de código |
 | Selos | Cadastur, Marinha do Brasil, Prefeitura de Búzios, Turista Seguro |
 
 ## Ganchos de conteúdo já publicados no blog (verdadeiros, podem virar post)

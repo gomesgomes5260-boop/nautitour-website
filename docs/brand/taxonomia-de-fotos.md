@@ -11,7 +11,7 @@ certa pra cada molde sem olhar a imagem. Slug minúsculo, sem acento, hífen (re
 | Assunto | `barco-inteiro` · `deck` · `bar` · `drink` · `pessoas` · `familia` · `casal` · `grupo` · `criancas` · `agua` · `mergulho` · `boia` · `pulo` · `ilha` · `praia` · `drone` · `pier` · `por-do-sol` · `equipe` | Sim, pode ter mais de uma |
 | Orientação | `horizontal` · `vertical` · `quadrada` | Sim |
 | Pessoas | `sem-pessoas` · `pessoas-longe` (não identificáveis) · `rosto-identificavel` | Sim |
-| Consentimento | `consentimento-ok` (autorização registrada) · `consentimento-pendente` | Obrigatória quando `rosto-identificavel` |
+| Consentimento | `consentimento-ok` (coberta pela autorização de uso de imagem que a empresa colhe) · `consentimento-pendente` (foto antiga ou de origem incerta) | Obrigatória quando `rosto-identificavel` |
 | Local | `joao-fernandes` · `ilha-feia` · `tartaruga` · `rua-das-pedras` · `porto-veleiro` · `azeda` · `ossos` · `centro` | Quando souber |
 | Luz | `sol-alto` · `fim-de-tarde` · `nublado` | Opcional |
 | Qualidade | `hero` (serve de foto principal) · `polaroid` (serve só pequena) · `descartar` | Opcional, mas `hero` ajuda muito |
@@ -20,7 +20,7 @@ certa pra cada molde sem olhar a imagem. Slug minúsculo, sem acento, hífen (re
 ## Regras
 
 - `anuncio-ok` só pode ser aplicada se a foto tiver `sem-pessoas`, `pessoas-longe` ou `rosto-identificavel` + `consentimento-ok`.
-- Uma foto `rosto-identificavel` sem `consentimento-ok` pode ir pro feed orgânico (decisão do dono, pendente), **nunca** pra anúncio pago.
+- Decisão do dono (09/out): a empresa já colhe autorização de uso de imagem, então as fotos de clientes **podem ir pra anúncio pago**. A tag `consentimento-ok` é aplicada por padrão nas fotos da operação atual; `consentimento-pendente` fica pra foto antiga ou de origem incerta, que vai só pro feed orgânico.
 - Nada de tag de sentimento ("linda", "incrível"). Só o que dá pra verificar na imagem.
 - Tag nova só se não couber nas acima; registrar aqui no mesmo PR.
 
