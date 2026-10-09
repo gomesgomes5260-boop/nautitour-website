@@ -1,0 +1,12 @@
+{
+  "nome": "escuna-sabado",
+  "molde": "A",
+  "formatos": ["4x5", "1x1", "9x16", "1200x628"],
+  "foto_hero": "public/images/photos/clientes/pulo-bordo-01.jpg",
+  "heroPos": "50% 40%",
+  "titulo": "Sáb e dom, 9h30 e 12h.",
+  "fato": "12 praias, 3 ilhas, 2h30. R$ 60 por pessoa.",
+  "cta": { "texto": "Reserve pelo link", "tipo": "site", "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=escuna-sabado" },
+  "assinatura": "escuna",
+  "seed": 7
+}
