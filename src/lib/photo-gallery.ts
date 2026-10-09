@@ -15,7 +15,6 @@ export const HOME_GALLERY: Photo[] = [
   { src: p('ilhas/ilha-falesia-01.jpg'), alt: 'Ilha com falésia nas águas de Búzios' },
   { src: p('clientes/familia-bordo-01.jpg'), alt: 'Família a bordo da escuna' },
   { src: p('aerea/drone-tartaruga-01.jpg'), alt: 'Vista aérea da Praia da Tartaruga' },
-  { src: p('ilhas/snorkel-ilha-01.jpg'), alt: 'Snorkel em ilha cristalina' },
   { src: p('clientes/pulo-bordo-01.jpg'), alt: 'Pulo da escuna pra água' },
   { src: p('aerea/drone-joao-fernandes-01.jpg'), alt: 'Vista aérea da praia de João Fernandes' },
   { src: p('clientes/casal-proa-01.jpg'), alt: 'Casal na proa da escuna' },
@@ -32,7 +31,6 @@ export const PASSEIO_ESCUNA_GALLERY: Photo[] = [
   { src: p('ilhas/ilha-falesia-01.jpg'), alt: 'Ilha com falésia visitada no passeio' },
   { src: p('escuna/escuna-transito-01.jpg'), alt: 'Escuna em trânsito pelas águas de Búzios' },
   { src: p('clientes/familia-bordo-01.jpg'), alt: 'Família curtindo o passeio a bordo' },
-  { src: p('ilhas/snorkel-ilha-01.jpg'), alt: 'Snorkel em ilha cristalina' },
   { src: p('escuna/rede-proa-01.jpg'), alt: 'Rede na proa da escuna' },
   { src: p('clientes/criancas-bordo-01.jpg'), alt: 'Crianças a bordo da escuna' },
   { src: p('ilhas/trampolim-01.jpg'), alt: 'Trampolim pra água cristalina' },
@@ -55,7 +53,6 @@ export const PASSEIO_LANCHA_GALLERY: Photo[] = [
   { src: p('aerea/drone-ilha-feia-01.jpg'), alt: 'Vista aérea da Ilha Feia' },
   { src: p('clientes/cliente-foto-proa-01.jpg'), alt: 'Cliente fotografando na proa' },
   { src: p('ilhas/ilha-rochosa-01.jpg'), alt: 'Ilha rochosa de Búzios' },
-  { src: p('ilhas/snorkel-ilha-01.jpg'), alt: 'Snorkel em ilha cristalina' },
   { src: p('drinks-bordo/drink-vista-01.jpg'), alt: 'Drink com vista pro mar' },
   { src: p('buzios/porto-buzios-01.jpg'), alt: 'Porto de Búzios' },
 ];
