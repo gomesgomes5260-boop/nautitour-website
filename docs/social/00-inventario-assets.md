@@ -120,10 +120,10 @@ Curadoria do banco bruto do Drive: selecionar as melhores das ~55 fotos de lanch
 
 ## 7. Decisões que só o dono pode tomar
 
-1. **Quais redes existem**: Instagram é @escunaestrelaoficial (respondido). Falta: Facebook/TikTok existem? Quem publica hoje? Há conta de Meta Ads e pixel instalado?
-2. **Uso de imagem de clientes em anúncio pago**: adotar termo de autorização no embarque/voucher, ou restringir ads a fotos sem rosto identificável e drone?
+1. **Quais redes existem**: Instagram é @escunaestrelaoficial. Meta Ads: conta ativa com pixel (respondido 09/out); pixel ainda não instalado no site. Falta: Facebook/TikTok existem? Quem publica hoje?
+2. **Uso de imagem de clientes em anúncio pago**: respondido 09/out — a empresa já colhe autorização, fotos de clientes liberadas para ads (tag `consentimento-ok`).
 3. **Destino padrão do CTA por produto**: escuna → checkout online; lancha/locação → WhatsApp (já é a regra do site). Confirmar se vale também pra ads.
-4. **Idioma**: só PT-BR ou também ES (público argentino) desde o início?
+4. **Idioma**: respondido 09/out — só português por enquanto; espanhol numa segunda fase (alta temporada).
 5. **Ponte entre as marcas**: (a) site ganha a Escuna Estrela na página do passeio e no rodapé ("Escuna Estrela by Nautitour"), (b) criativos ganham assinatura Nautitour discreta, ou (c) os dois. Recomendo (c): custa pouco e resolve o reconhecimento nos dois sentidos.
 6. Orçamento mensal pra ferramentas de geração (Higgsfield/Adobe) e pra mídia Meta.
 
