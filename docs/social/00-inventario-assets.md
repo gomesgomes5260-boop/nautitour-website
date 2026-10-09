@@ -19,7 +19,7 @@ Legenda: ✅ pronto pra usar · 🟡 existe mas precisa de ajuste · 🔴 não e
 
 **Consequência direta:** o criativo sai verde-água com estrela-do-mar e o clique cai num site charcoal e vermelho com timão. Hoje não existe ponte. Isso é a decisão nº 1 da seção 7 e vira a primeira regra do brand kit (opção 1 da seção 6): **o kit de social é da Escuna Estrela**, com o Nautitour como assinatura institucional ("by Nautitour Passeios") — ou o site ganha a Escuna Estrela na página do passeio. Fatos de produto, roteiro, preços e tom de voz são os mesmos; muda a camada visual.
 
-Duas marcas, dois guias visuais, uma voz. Os folhetos impressos de 2024 (`Impresso/`, frente/verso + A4, PSD e PNG) são a única amostra da identidade Escuna Estrela **aplicada** — não consegui pré-visualizar (arquivos de 2–10 MB); vale o dono abrir e dizer se ainda representam a marca.
+Duas marcas, dois guias visuais, uma voz. Os folhetos impressos de 2024 (`Impresso/`) são a identidade Escuna Estrela **aplicada**, e o dono confirmou que os criativos devem seguir esse sistema. Está destrinchado em **`01-sistema-visual-impressos.md`**. Detalhe importante: **o co-branding já existe nos impressos** (logo Nautitour ao lado da Escuna Estrela no rodapé), então a ponte entre as marcas está meio construída — falta só o site.
 
 ---
 
@@ -62,7 +62,7 @@ Duas marcas, dois guias visuais, uma voz. Os folhetos impressos de 2024 (`Impres
 | **Banco bruto no Drive (nunca entrou no site)** | 🟡 | `Estrela/lancha estrela/`: ensaio de **abr/2025** com ~55 fotos de câmera (DSC05xxx, 15–20 MB cada) + ~30 clipes 4K de mar/2025 (C1637–C1667, 70 MB a 1,1 GB cada). `Estrela/estrela 2025 Dimi/`: pastas `reel 1`, `reel 2`, `videos passeio`, `videos Bebiba e comida`, `drone joao fernandes`, `drone porto veleiro`, `fotos passeio`. `Escuna/Banco de IMG_VID Escuna/`: `DRONE PIER`, `Ilha feia Drone`, `João Fernandes Drone`, `tartaruga drone`, `videos celular barco`, `fotos Barco`. **A matéria-prima existe; está crua e fora do pipeline** |
 | Vídeo no repo/bucket | 🔴 | Zero. Os vídeos antigos `ESCUNA ESTRELA HD.mp4` (310 MB) e `ESCUNA ESTRELA SOCIAL MEDIA.mp4` (52 MB) são de **2020**; `NAUTI TOUR.mp4` é de dez/2023. Nenhum vertical pronto |
 | Direito de imagem dos clientes | 🔴 | ~250 fotos com clientes identificáveis. Pra **ads pagos** precisa de autorização de uso de imagem (LGPD + boas práticas Meta). Hoje não há registro de consentimento por foto |
-| Material impresso Escuna Estrela (folhetos frente/verso 2024 + A4, PSD/PNG; `lancha.pdf` 2021; panfleto 2020) | 🟡 | No Drive (`Impresso/`). Única amostra da identidade Escuna Estrela aplicada. Não pré-visualizado (arquivos grandes) |
+| **Impressos Escuna Estrela 2024** (folhetos frente/verso retrato + paisagem, A4, City Tours; PSDs editáveis) | ✅ | No Drive (`Impresso/`). **É a identidade dos criativos**: kraft + mar petróleo + polaroids rasgadas + mapa + co-branding Nautitour/Escuna Estrela. Sistema extraído em `01-sistema-visual-impressos.md`. Elementos ainda presos nos PSDs (ver seção 8 daquele doc) |
 
 ## 4. Canais, dados e ferramentas disponíveis
 
@@ -99,7 +99,7 @@ Consolidar em PT-BR, num só lugar e em markdown, **com a Escuna Estrela como ma
 - **Contras**: não produz nenhum criativo ainda; exige 3–4 decisões do dono (seção 7).
 
 ### 2º — Templates de criativo em HTML renderizáveis para PNG
-Converter logo pra SVG (a partir do `.ai` do Drive), criar 4–6 templates HTML com os tokens do `globals.css` (post 1:1, feed 4:5, story/reel capa 9:16, banner de anúncio 1200×628, carrossel), renderizados via Playwright (já pré-instalado no ambiente) ou Satori. Entrada: `{foto, headline, sub, cta, destino}`; saída: PNG. Isso é o "molde" que o agente designer preenche.
+Reproduzir o sistema dos impressos (kraft, mar petróleo, polaroids rasgadas, mapa, co-branding — ver `01-sistema-visual-impressos.md`) em 4–6 templates HTML com tokens próprios da Escuna Estrela, renderizados via Playwright (já pré-instalado no ambiente) ou Satori. Entrada: `{foto, headline, sub, cta, destino}`; saída: PNG. Isso é o "molde" que o agente designer preenche.
 - **Prós**: determinístico e 100% on-brand porque usa os mesmos tokens do site; versionado no repo; barato de gerar em lote (dezenas de variações por minuto).
 - **Contras**: depende do logo SVG; mais código que a opção 1; precisa de alguém validar visualmente os primeiros outputs.
 
