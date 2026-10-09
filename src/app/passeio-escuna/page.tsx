@@ -142,6 +142,14 @@ export default async function PasseioEscunaPage() {
             }}
           />
           <Container className="relative py-16 sm:py-20 md:py-24">
+            <Image
+              src="/brand/escuna-estrela/logo-horizontal-branco.svg"
+              alt="Escuna Estrela"
+              width={160}
+              height={69}
+              className="h-14 sm:h-16 w-auto mb-5 drop-shadow"
+              priority
+            />
             <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[var(--color-red-300)] mb-4">
               Passeio em grupo · Búzios
             </span>

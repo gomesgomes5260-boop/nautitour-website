@@ -25,7 +25,7 @@ A única fonte para números em criativos. Conferido em 09/out/2026 contra o ban
 |---|---|
 | Preço | **A partir de R$ 1.200** (meia diária) |
 | Duração | **3 horas** |
-| Capacidade | **Até 12 pessoas** (confirmado pelo dono em 09/out). O banco ainda diz 10 em `tours.max_capacity` da `lancha-privativa`: corrigir no próximo PR de código |
+| Capacidade | **Até 12 pessoas** (confirmado pelo dono em 09/out). `tours.max_capacity` da `lancha-privativa` atualizado pra 12 em 09/out |
 | Roteiro | Sob medida, parte norte da península, com paradas para mergulho |
 | Inclui | Água mineral, gelo e carvão (impresso 2024) |
 | Como fecha | Escolhe data e horário no site e finaliza **pelo WhatsApp**; pagamento combinado com o atendimento |
