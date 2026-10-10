@@ -4,13 +4,13 @@
   "formatos": [
     "1x1"
   ],
-  "arte_base": "scripts/creatives/bases/enquete-02.jpg",
+  "arte_base": "scripts/creatives/bases/fundo-enquete-01.jpg",
   "zonas": {
     "texto": {
       "x": 4,
       "y": 4,
       "w": 70,
-      "h": 23,
+      "h": 24,
       "alinhar": "centro",
       "titulo": 5.6,
       "fato": 2.8,
@@ -18,39 +18,10 @@
     },
     "logo": {
       "x": 35,
-      "y": 88,
+      "y": 89,
       "w": 30,
-      "h": 9
-    },
-    "rotulos": [
-      {
-        "x": 2,
-        "y": 73,
-        "w": 30,
-        "h": 5,
-        "texto": "A chegada",
-        "tamanho": 2.5,
-        "girar": -2
-      },
-      {
-        "x": 33,
-        "y": 72.5,
-        "w": 34,
-        "h": 4.5,
-        "texto": "O barco",
-        "tamanho": 2.5,
-        "girar": 0
-      },
-      {
-        "x": 69,
-        "y": 72,
-        "w": 30,
-        "h": 5,
-        "texto": "A boia",
-        "tamanho": 2.5,
-        "girar": 2
-      }
-    ]
+      "h": 8
+    }
   },
   "titulo": "Qual é o seu momento favorito?",
   "assinatura": "escuna",
@@ -65,6 +36,39 @@
     "#PasseioDeEscuna",
     "#RegiaoDosLagos"
   ],
-  "observacoes": "Conferir a posição dos rótulos na arte (polaroids da enquete-02 têm alturas diferentes).",
-  "cta": null
+  "observacoes": "Fotos provisórias (nº 3, 27, 32 da folha) — trocar pelos números que o dono escolher.",
+  "cta": null,
+  "polaroides": [
+    {
+      "foto": "public/images/photos/aerea/drone-praia-01.jpg",
+      "x": 3,
+      "y": 37,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": -4,
+      "legenda": "A chegada",
+      "tamanho": 2.4
+    },
+    {
+      "foto": "public/images/photos/escuna/rede-proa-01.jpg",
+      "x": 34.5,
+      "y": 34,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": 1.5,
+      "legenda": "O barco",
+      "tamanho": 2.4
+    },
+    {
+      "foto": "public/images/photos/ilhas/trampolim-01.jpg",
+      "x": 66,
+      "y": 37,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": 4,
+      "legenda": "A boia",
+      "tamanho": 2.4
+    }
+  ],
+  "seed": 12
 }

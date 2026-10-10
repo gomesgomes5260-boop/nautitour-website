@@ -1,41 +1,31 @@
 {
-  "nome": "08-educativo-como-funciona",
+  "nome": "08a-como-funciona-capa",
   "molde": "HF",
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "arte_base": "scripts/creatives/bases/fundo-petroleo-01.jpg",
   "zonas": {
     "texto": {
       "x": 6,
-      "y": 2,
-      "w": 68,
-      "h": 15,
+      "y": 5,
+      "w": 62,
+      "h": 18,
       "alinhar": "esquerda",
       "titulo": 5.2,
-      "fato": 2.8,
-      "cta": 2.8
+      "fato": 2.6,
+      "cta": 2.6
     },
     "logo": {
       "x": 32,
       "y": 90,
       "w": 36,
       "h": 7
-    },
-    "rotulos": [
-      {
-        "x": 10,
-        "y": 77,
-        "w": 78,
-        "h": 7,
-        "texto": "3 paradas de 20 min e volta ao píer em 2h30.",
-        "tamanho": 2.6,
-        "girar": 1
-      }
-    ]
+    }
   },
-  "titulo": "Como funciona o passeio?",
   "assinatura": "escuna",
+  "cta": null,
+  "carrossel": "08-educativo-como-funciona",
   "pilar": "4. Educativo",
   "canal": "feed",
   "persona": "Carolina (família)",
@@ -47,6 +37,21 @@
     "#PasseioDeEscuna",
     "#RegiaoDosLagos"
   ],
-  "observacoes": "Conferir a posição da legenda na borda da polaroid-unica-02 (polaroid mais baixa que a 01).",
-  "cta": null
+  "card": 1,
+  "titulo": "Como funciona o passeio?",
+  "fato": "Em 3 passos.",
+  "polaroides": [
+    {
+      "foto": "public/images/photos/escuna/escuna-pier-01.jpg",
+      "x": 28,
+      "y": 27,
+      "w": 60,
+      "prop": "1 / 1",
+      "girar": 2,
+      "legenda": "Arrasta pro lado →",
+      "tamanho": 2.6
+    }
+  ],
+  "seed": 31,
+  "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer)."
 }

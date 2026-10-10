@@ -1,0 +1,57 @@
+{
+  "nome": "08b-como-funciona-embarque",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/fundo-petroleo-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 5,
+      "w": 60,
+      "h": 18,
+      "alinhar": "esquerda",
+      "titulo": 4.8,
+      "fato": 2.6,
+      "cta": 2.6
+    },
+    "logo": {
+      "x": 32,
+      "y": 90,
+      "w": 36,
+      "h": 7
+    }
+  },
+  "assinatura": "escuna",
+  "cta": null,
+  "carrossel": "08-educativo-como-funciona",
+  "pilar": "4. Educativo",
+  "canal": "feed",
+  "persona": "Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-como-funciona",
+  "legenda": "Você embarca no Píer da Rua das Pedras, sem taxa. A escuna passa por 12 praias e 3 ilhas e para 3 vezes pra mergulho, 20 min cada.\nBar a bordo, colete pra quem quiser, volta ao píer em 2h30.\nReserva online pelo link da bio e apresenta o voucher no celular.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "card": 2,
+  "titulo": "1. Embarque no Píer da Rua das Pedras.",
+  "fato": "Sem taxa. Voucher no celular.",
+  "polaroides": [
+    {
+      "foto": "public/images/photos/escuna/escuna-pier-02.jpg",
+      "x": 28,
+      "y": 27,
+      "w": 60,
+      "prop": "1 / 1",
+      "girar": -2,
+      "legenda": "Píer da Rua das Pedras",
+      "tamanho": 2.6
+    }
+  ],
+  "seed": 32,
+  "observacoes": "Card 2. Foto provisória nº 24."
+}

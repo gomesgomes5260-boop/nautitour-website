@@ -10,10 +10,15 @@
     "04-prova-boia-bar",
     "05-enquete-parada",
     "06-enquete-momento",
-    "07-curiosidade-praias",
-    "08-educativo-como-funciona",
+    "07a-curiosidade-praias-capa",
+    "07b-curiosidade-praias-12",
+    "07c-curiosidade-praias-paradas",
+    "07d-curiosidade-praias-cta",
+    "08a-como-funciona-capa",
+    "08b-como-funciona-embarque",
+    "08c-como-funciona-paradas",
+    "08d-como-funciona-bar",
     "09-story-horarios",
-    "10-story-amanha",
     "10a-story-amanha-9h30-12h",
     "10b-story-amanha-11h30",
     "10c-story-amanha-12h",
@@ -37,6 +42,20 @@
       "08-educativo-como-funciona",
       "10-story-amanha",
       "12-anuncio-site"
+    ]
+  },
+  "carrosseis": {
+    "07-curiosidade-praias": [
+      "07a-curiosidade-praias-capa",
+      "07b-curiosidade-praias-12",
+      "07c-curiosidade-praias-paradas",
+      "07d-curiosidade-praias-cta"
+    ],
+    "08-educativo-como-funciona": [
+      "08a-como-funciona-capa",
+      "08b-como-funciona-embarque",
+      "08c-como-funciona-paradas",
+      "08d-como-funciona-bar"
     ]
   }
 }
