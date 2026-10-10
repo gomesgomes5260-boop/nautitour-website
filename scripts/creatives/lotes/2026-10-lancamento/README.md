@@ -36,3 +36,16 @@ polaroides de 06/07/08 são **provisórias** (números da folha de fotos em `obs
 outro número e o spec só muda o `foto`.
 
 Falta: pilar **lancha privativa** (sem fotos curadas ainda) — entra no lote 2.
+
+## URL pública dos criativos (pro Adspirer / Meta)
+
+Os renders ficam em `public/criativos/2026-10-lancamento/` (JPEG q92 + `.txt` + `index.json`), servidos em
+`https://www.nautitour.com.br/criativos/2026-10-lancamento/<peça>.jpg`. Sem link em lugar nenhum, `noindex` no
+header e `/criativos/` no robots: é só pra ferramenta de anúncio buscar o arquivo. Regerar depois de mudar um spec:
+
+```bash
+node scripts/creatives/render.mjs scripts/creatives/lotes/2026-10-lancamento --out public/criativos/2026-10-lancamento --jpg
+```
+
+(e apagar o render de peças descartadas, ex. a 11). Enquanto a PR não está em produção, o mesmo arquivo serve
+pela URL do GitHub: `https://raw.githubusercontent.com/gomesgomes5260-boop/nautitour-website/main/public/criativos/...`.

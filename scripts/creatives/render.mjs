@@ -2,6 +2,7 @@
 // em scripts/creatives/templates/. Saída: PNG por formato.
 //
 //   node scripts/creatives/render.mjs scripts/creatives/specs/exemplo-molde-a.json --out /tmp/criativos
+//   node scripts/creatives/render.mjs scripts/creatives/lotes/<lote> --out public/criativos/<lote> --jpg   # publica em URL pública
 //
 // Requer Playwright + Chromium (local: `npx playwright install chromium`; na nuvem
 // já vem em /opt/node22). Não é dependência do site: nada disto entra no build.
@@ -30,6 +31,7 @@ const args = process.argv.slice(2);
 const target = args.find((a) => !a.startsWith('--'));
 if (!target) { console.error('uso: node scripts/creatives/render.mjs <spec.json | pasta-de-lote> [--out dir]'); process.exit(1); }
 const outDir = args.includes('--out') ? args[args.indexOf('--out') + 1] : join(repo, 'out', 'criativos');
+const jpg = args.includes('--jpg'); // JPEG q92 (publicação em public/criativos/ — leve pro git e pro Meta)
 mkdirSync(outDir, { recursive: true });
 
 // Um spec ou uma pasta de lote (todos os *.json menos lote.json)
@@ -78,8 +80,8 @@ try {
       await page.waitForTimeout(150);
       const box = await page.locator('#card').boundingBox();
       await page.setViewportSize({ width: Math.round(box.width), height: Math.round(box.height) });
-      const out = join(outDir, `${nome}-${formato}.png`);
-      await page.locator('#card').screenshot({ path: out, type: 'png' });
+      const out = join(outDir, `${nome}-${formato}.${jpg ? 'jpg' : 'png'}`);
+      await page.locator('#card').screenshot(jpg ? { path: out, type: 'jpeg', quality: 92 } : { path: out, type: 'png' });
       console.log('ok', out, `${Math.round(box.width)}x${Math.round(box.height)}`);
       await page.close();
       // legenda + hashtags + destino ao lado do PNG: é o que o agente de publicação (futuro) vai ler
