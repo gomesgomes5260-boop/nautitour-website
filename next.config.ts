@@ -81,6 +81,11 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+      {
+        // Criativos de redes sociais/anúncios: URL pública (o Adspirer e o Meta buscam daqui) mas fora dos buscadores.
+        source: '/criativos/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
     ];
   },
 };

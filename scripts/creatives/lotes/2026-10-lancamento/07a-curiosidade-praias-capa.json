@@ -1,0 +1,51 @@
+{
+  "nome": "07a-curiosidade-praias-capa",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 2,
+      "w": 70,
+      "h": 15,
+      "alinhar": "esquerda",
+      "titulo": 4.6,
+      "fato": 2.6,
+      "cta": 2.5
+    },
+    "logo": {
+      "x": 32,
+      "y": 90,
+      "w": 36,
+      "h": 7
+    }
+  },
+  "assinatura": "escuna",
+  "cta": null,
+  "carrossel": "07-curiosidade-praias",
+  "pilar": "3. Engajamento",
+  "canal": "feed",
+  "persona": "todas",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-curiosidade",
+  "legenda": "Doze. E três ilhas, tudo em 2h30 saindo do Píer da Rua das Pedras.\nA gente para em 3 delas pra mergulho: João Fernandes, Ilha Feia e Praia da Tartaruga.\nQual você já conhece?",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "card": 1,
+  "titulo": "Você sabe quantas praias a gente passa?",
+  "polaroides": [
+    {
+      "quadro": 0,
+      "foto": "public/images/photos/escuna/rede-proa-01.jpg",
+      "legenda": "Arrasta pro lado →",
+      "tamanho": 2.8
+    }
+  ],
+  "observacoes": "Capa do carrossel. Foto provisória nº 27 (rede da proa) — trocar pelo número da folha se preferir."
+}

@@ -34,6 +34,7 @@ de renderizar, então precisa de rede.
 |---|---|
 | `molde` | `HF` (**fluxo principal**, decisão 09/out): arte base SEM texto gerada no Higgsfield a partir dos posts reais + nossas fotos (`bases/`, prompts em `prompts/`), e título/fato/CTA/logo desenhados por cima em HTML nas `zonas` do spec. `A` (foto + faixa 100% em HTML/CSS) fica como fallback sem custo |
 | `arte_base` | (molde HF) caminho da arte base JPEG/PNG já no formato final |
+| `polaroides` | (molde HF) lista de `{foto, x, y, w, prop:"4 / 5", girar, legenda, tamanho, fotoPos}` em % da arte: o molde desenha a polaroide (borda branca rasgada + legenda na borda) sobre a arte base. Usar com os fundos `fundo-*.jpg` |
 | `zonas` | (molde HF) caixas em % da arte: `texto {x,y,w,h,alinhar:'centro'|'esquerda',titulo,fato,cta}` (tamanhos em % da largura) e `logo {x,y,w,h}` |
 | `formatos` | `4x5` 1080×1350 · `1x1` 1080×1080 · `9x16` 1080×1920 (área segura de 250 px) · `1200x628` anúncio paisagem |
 | `foto_hero` | caminho relativo à raiz do repo (ou absoluto) |

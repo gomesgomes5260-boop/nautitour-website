@@ -1,0 +1,52 @@
+{
+  "nome": "07b-curiosidade-praias-12",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 2,
+      "w": 70,
+      "h": 15,
+      "alinhar": "esquerda",
+      "titulo": 4.6,
+      "fato": 2.6,
+      "cta": 2.5
+    },
+    "logo": {
+      "x": 32,
+      "y": 90,
+      "w": 36,
+      "h": 7
+    }
+  },
+  "assinatura": "escuna",
+  "cta": null,
+  "carrossel": "07-curiosidade-praias",
+  "pilar": "3. Engajamento",
+  "canal": "feed",
+  "persona": "todas",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-curiosidade",
+  "legenda": "Doze. E três ilhas, tudo em 2h30 saindo do Píer da Rua das Pedras.\nA gente para em 3 delas pra mergulho: João Fernandes, Ilha Feia e Praia da Tartaruga.\nQual você já conhece?",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "card": 2,
+  "titulo": "12 praias e 3 ilhas em 2h30.",
+  "fato": "Saindo do Píer da Rua das Pedras.",
+  "polaroides": [
+    {
+      "quadro": 0,
+      "foto": "public/images/photos/aerea/drone-praia-01.jpg",
+      "legenda": "Vista de cima",
+      "tamanho": 2.8
+    }
+  ],
+  "observacoes": "Card 2. Foto provisória nº 3."
+}

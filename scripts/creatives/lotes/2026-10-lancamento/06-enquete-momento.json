@@ -1,0 +1,61 @@
+{
+  "nome": "06-enquete-momento",
+  "molde": "HF",
+  "formatos": [
+    "1x1"
+  ],
+  "arte_base": "scripts/creatives/bases/enquete-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 4,
+      "y": 4,
+      "w": 70,
+      "h": 23,
+      "alinhar": "centro",
+      "titulo": 5.6,
+      "fato": 2.8,
+      "cta": 2.8
+    },
+    "logo": {
+      "x": 35,
+      "y": 88,
+      "w": 30,
+      "h": 9
+    }
+  },
+  "titulo": "Qual é o seu momento favorito?",
+  "assinatura": "escuna",
+  "pilar": "3. Engajamento",
+  "canal": "feed",
+  "persona": "todas",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-enquete-momento",
+  "legenda": "Tem quem ame a chegada na praia vista de cima, quem só quer ficar no deck com um drink e quem passa o passeio inteiro na boia.\nQual é o seu? Conta nos comentários.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "observacoes": "Polaroides pintadas (enquete-02). Fotos provisórias nº 3, 27, 32 da folha — trocar pelos números que o dono escolher.",
+  "cta": null,
+  "polaroides": [
+    {
+      "quadro": 0,
+      "foto": "public/images/photos/aerea/drone-praia-01.jpg",
+      "legenda": "A chegada",
+      "tamanho": 2.3
+    },
+    {
+      "quadro": 1,
+      "foto": "public/images/photos/escuna/rede-proa-01.jpg",
+      "legenda": "O barco",
+      "tamanho": 2.3
+    },
+    {
+      "quadro": 2,
+      "foto": "public/images/photos/ilhas/trampolim-01.jpg",
+      "legenda": "A boia",
+      "tamanho": 2.3
+    }
+  ]
+}

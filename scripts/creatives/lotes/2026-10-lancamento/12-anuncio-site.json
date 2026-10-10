@@ -1,0 +1,41 @@
+{
+  "nome": "12-anuncio-site",
+  "molde": "HF",
+  "formatos": [
+    "1200x628"
+  ],
+  "arte_base": "scripts/creatives/bases/anuncio-kraft-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 4,
+      "y": 7,
+      "w": 34,
+      "h": 62,
+      "alinhar": "esquerda",
+      "titulo": 4.4,
+      "fato": 2.2,
+      "cta": 2.2
+    },
+    "logo": {
+      "x": 4,
+      "y": 80,
+      "w": 34,
+      "h": 16
+    }
+  },
+  "titulo": "Passeio de escuna em Búzios.",
+  "fato": "R$ 60 por pessoa. Reserva online em 1 minuto.",
+  "cta": {
+    "texto": "Reserve online",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=meta&utm_medium=paid&utm_campaign=lote1-anuncio-site"
+  },
+  "assinatura": "escuna+nautitour",
+  "pilar": "5. Venda",
+  "canal": "meta-ads",
+  "persona": "Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=meta&utm_medium=paid&utm_campaign=lote1-anuncio-site",
+  "legenda": "Passeio de escuna em Búzios: 12 praias, 3 ilhas, 2h30. R$ 60 por pessoa, criança paga meia. Reserve online e apresente o voucher no celular.",
+  "hashtags": [],
+  "observacoes": "Texto primário. Título: \"12 praias e 3 ilhas em 2h30\". Objetivo: vendas (pixel). Conferir regra de meia pra criança."
+}

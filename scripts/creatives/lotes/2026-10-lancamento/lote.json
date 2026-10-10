@@ -1,0 +1,61 @@
+{
+  "lote": "2026-10-lancamento",
+  "criado": "2026-10-09",
+  "status": "em revisão",
+  "regra": "Nada é publicado automaticamente. Cada peça sai só com aprovação do dono.",
+  "pecas": [
+    "01-venda-horarios",
+    "02-venda-preco",
+    "03-prova-experiencia",
+    "04-prova-boia-bar",
+    "05-enquete-parada",
+    "06-enquete-momento",
+    "07a-curiosidade-praias-capa",
+    "07b-curiosidade-praias-12",
+    "07c-curiosidade-praias-paradas",
+    "07d-curiosidade-praias-cta",
+    "08a-como-funciona-capa",
+    "08b-como-funciona-embarque",
+    "08c-como-funciona-paradas",
+    "08d-como-funciona-bar",
+    "09-story-horarios",
+    "10a-story-amanha-9h30-12h",
+    "10b-story-amanha-11h30",
+    "10c-story-amanha-12h",
+    "12-anuncio-site"
+  ],
+  "revisao_2026-10-10": {
+    "aprovadas": [
+      "01-venda-horarios",
+      "02-venda-preco",
+      "03-prova-experiencia",
+      "09-story-horarios"
+    ],
+    "descartadas": [
+      "11-anuncio-whatsapp"
+    ],
+    "ajustar": [
+      "04-prova-boia-bar",
+      "05-enquete-parada",
+      "06-enquete-momento",
+      "07-curiosidade-praias",
+      "08-educativo-como-funciona",
+      "10-story-amanha",
+      "12-anuncio-site"
+    ]
+  },
+  "carrosseis": {
+    "07-curiosidade-praias": [
+      "07a-curiosidade-praias-capa",
+      "07b-curiosidade-praias-12",
+      "07c-curiosidade-praias-paradas",
+      "07d-curiosidade-praias-cta"
+    ],
+    "08-educativo-como-funciona": [
+      "08a-como-funciona-capa",
+      "08b-como-funciona-embarque",
+      "08c-como-funciona-paradas",
+      "08d-como-funciona-bar"
+    ]
+  }
+}

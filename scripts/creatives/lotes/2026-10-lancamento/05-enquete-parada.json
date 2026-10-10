@@ -1,0 +1,62 @@
+{
+  "nome": "05-enquete-parada",
+  "molde": "HF",
+  "formatos": [
+    "1x1"
+  ],
+  "arte_base": "scripts/creatives/bases/enquete-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 4,
+      "y": 4,
+      "w": 70,
+      "h": 23,
+      "alinhar": "centro",
+      "titulo": 5.6,
+      "fato": 2.8,
+      "cta": 2.8
+    },
+    "logo": {
+      "x": 35,
+      "y": 88,
+      "w": 30,
+      "h": 9
+    }
+  },
+  "titulo": "Qual parada você mais quer conhecer?",
+  "assinatura": "escuna",
+  "pilar": "3. Engajamento",
+  "canal": "feed",
+  "persona": "todas",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-enquete",
+  "legenda": "São 3 paradas de 20 min pra mergulho: João Fernandes, Ilha Feia e Praia da Tartaruga.\nQual delas você escolheria pra ficar a tarde inteira? Responde aqui embaixo.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#JoaoFernandes",
+    "#PraiaDaTartaruga"
+  ],
+  "observacoes": "Polaroides pintadas pelo Higgsfield (rasgo natural); fotos 1/2/4 escolhidas pelo dono encaixadas nos quadros medidos. Responder todos os comentários no mesmo dia.",
+  "cta": null,
+  "polaroides": [
+    {
+      "quadro": 0,
+      "foto": "public/images/photos/aerea/drone-joao-fernandes-01.jpg",
+      "legenda": "João Fernandes",
+      "tamanho": 2.3
+    },
+    {
+      "quadro": 1,
+      "foto": "public/images/photos/aerea/drone-ilha-feia-01.jpg",
+      "legenda": "Ilha Feia",
+      "tamanho": 2.3
+    },
+    {
+      "quadro": 2,
+      "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
+      "legenda": "Praia da Tartaruga",
+      "tamanho": 2.3
+    }
+  ]
+}

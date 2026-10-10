@@ -1,0 +1,41 @@
+{
+  "nome": "09-story-horarios",
+  "molde": "HF",
+  "formatos": [
+    "9x16"
+  ],
+  "arte_base": "scripts/creatives/bases/story-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 7,
+      "y": 51,
+      "w": 86,
+      "h": 31,
+      "alinhar": "centro",
+      "titulo": 7.4,
+      "fato": 3.3,
+      "cta": 3.3
+    },
+    "logo": {
+      "x": 30,
+      "y": 88,
+      "w": 40,
+      "h": 8
+    }
+  },
+  "titulo": "Sáb e dom, 9h30 e 12h.",
+  "fato": "12 praias, 3 ilhas, 2h30. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Reserve pelo link",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-story-horarios"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "story",
+  "persona": "Felipe (grupo)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=lote1-story-horarios",
+  "legenda": "Sticker de link apontando pro destino. Texto do sticker: \"Reservar\".",
+  "hashtags": [],
+  "observacoes": "Story não leva hashtag. Publicar sexta à tarde."
+}
