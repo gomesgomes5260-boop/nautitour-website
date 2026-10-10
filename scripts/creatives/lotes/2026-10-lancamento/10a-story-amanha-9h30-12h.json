@@ -1,0 +1,41 @@
+{
+  "nome": "10a-story-amanha-9h30-12h",
+  "molde": "HF",
+  "formatos": [
+    "9x16"
+  ],
+  "arte_base": "scripts/creatives/bases/story-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 7,
+      "y": 55,
+      "w": 86,
+      "h": 28,
+      "alinhar": "centro",
+      "titulo": 7.4,
+      "fato": 3.3,
+      "cta": 3.3
+    },
+    "logo": {
+      "x": 30,
+      "y": 88,
+      "w": 40,
+      "h": 8
+    }
+  },
+  "titulo": "Amanhã, 9h30 e 12h.",
+  "fato": "Ainda tem lugar. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Chama no WhatsApp",
+    "tipo": "whatsapp",
+    "destino": "https://nautitour.com.br/api/wa?s=ig-story-amanha"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "story",
+  "persona": "Felipe (grupo)",
+  "destino": "https://nautitour.com.br/api/wa?s=ig-story-amanha",
+  "legenda": "Sticker de link pro WhatsApp. Texto do sticker: \"Chamar\".",
+  "hashtags": [],
+  "observacoes": "Sábado e domingo. Usar só quando a saída de amanhã tiver vaga de verdade (conferir no admin)."
+}

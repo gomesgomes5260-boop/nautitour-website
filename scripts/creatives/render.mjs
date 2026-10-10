@@ -56,6 +56,7 @@ try {
       heroSrc: spec.foto_hero ? dataUrl(resolve(repo, spec.foto_hero)) : '',
       woodSrc: existsSync(rosaPath) ? dataUrl(rosaPath) : '',
       baseSrc: spec.arte_base ? dataUrl(resolve(repo, spec.arte_base)) : '',
+      polaroides: (spec.polaroides || []).map((pz) => ({ ...pz, fotoSrc: pz.foto ? dataUrl(resolve(repo, pz.foto)) : '' })),
       logoEE, logoNT,
     };
     for (const formato of formatos) {

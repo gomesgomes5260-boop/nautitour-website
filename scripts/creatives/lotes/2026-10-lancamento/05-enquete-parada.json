@@ -4,13 +4,13 @@
   "formatos": [
     "1x1"
   ],
-  "arte_base": "scripts/creatives/bases/enquete-01.jpg",
+  "arte_base": "scripts/creatives/bases/fundo-enquete-01.jpg",
   "zonas": {
     "texto": {
       "x": 4,
       "y": 4,
       "w": 70,
-      "h": 23,
+      "h": 24,
       "alinhar": "centro",
       "titulo": 5.6,
       "fato": 2.8,
@@ -18,39 +18,10 @@
     },
     "logo": {
       "x": 35,
-      "y": 88,
+      "y": 89,
       "w": 30,
-      "h": 9
-    },
-    "rotulos": [
-      {
-        "x": 2,
-        "y": 73.5,
-        "w": 30,
-        "h": 5.5,
-        "texto": "João Fernandes",
-        "tamanho": 2.5,
-        "girar": -2.5
-      },
-      {
-        "x": 33,
-        "y": 78.5,
-        "w": 34,
-        "h": 5.5,
-        "texto": "Ilha Feia",
-        "tamanho": 2.5,
-        "girar": 0.5
-      },
-      {
-        "x": 69,
-        "y": 73.5,
-        "w": 30,
-        "h": 5,
-        "texto": "Praia da Tartaruga",
-        "tamanho": 2.5,
-        "girar": 2.5
-      }
-    ]
+      "h": 8
+    }
   },
   "titulo": "Qual parada você mais quer conhecer?",
   "assinatura": "escuna",
@@ -66,6 +37,39 @@
     "#JoaoFernandes",
     "#PraiaDaTartaruga"
   ],
-  "observacoes": "Responder todos os comentários no mesmo dia.",
-  "cta": null
+  "observacoes": "Fotos escolhidas pelo dono em 10/out (1 Ilha Feia, 2 João Fernandes, 4 Tartaruga). Responder todos os comentários no mesmo dia.",
+  "cta": null,
+  "polaroides": [
+    {
+      "foto": "public/images/photos/aerea/drone-joao-fernandes-01.jpg",
+      "x": 3,
+      "y": 37,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": -4,
+      "legenda": "João Fernandes",
+      "tamanho": 2.4
+    },
+    {
+      "foto": "public/images/photos/aerea/drone-ilha-feia-01.jpg",
+      "x": 34.5,
+      "y": 34,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": 1.5,
+      "legenda": "Ilha Feia",
+      "tamanho": 2.4
+    },
+    {
+      "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
+      "x": 66,
+      "y": 37,
+      "w": 31,
+      "prop": "4 / 5",
+      "girar": 4,
+      "legenda": "Praia da Tartaruga",
+      "tamanho": 2.4
+    }
+  ],
+  "seed": 11
 }

@@ -20,6 +20,11 @@
   .cta .ico { width: 1.05em; height: 1.05em; }
   .logos { position: absolute; display: flex; align-items: center; justify-content: center; gap: 36px; }
   .logos svg { height: auto; display: block; }
+  /* polaroides montadas no molde: foto + borda branca rasgada + legenda na borda, tudo gira junto */
+  .pol-wrap { position: absolute; filter: drop-shadow(0 10px 14px rgba(7,42,46,.35)) drop-shadow(0 2px 3px rgba(7,42,46,.25)); transform-origin: center; }
+  .pol { background: #F3F1EA; position: relative; box-sizing: border-box; }
+  .pol-photo { width: 100%; display: block; object-fit: cover; }
+  .pol-cap { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--ee-petroleo); line-height: 1.1; padding: 0 4%; }
   .rotulo { position: absolute; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--ee-petroleo); text-align: center; line-height: 1.1; }
 </style>
 </head>
@@ -29,6 +34,7 @@
   <div class="zone" id="zone"><div class="title" id="title"></div><div class="fact" id="fact"></div><div class="cta" id="cta"></div></div>
   <div class="logos" id="logos"></div>
   <div id="rotulos"></div>
+  <div id="polaroides"></div>
 </div>
 <script>
   // SPEC vem do renderizador. Zonas em % (x, y, w, h). Defaults batem com a arte base "foto + faixa" 4:5.
@@ -50,10 +56,26 @@
   logos.innerHTML = `<div class="logo-ee">${SPEC.logoEE || ''}</div>` + (SPEC.assinatura === 'escuna+nautitour' ? `<div class="logo-nt">${SPEC.logoNT || ''}</div>` : '');
   const n = logos.children.length; [...logos.children].forEach(d => { d.style.width = (n === 1 ? 100 : 48) + '%'; const s = d.querySelector('svg'); if (s) { s.removeAttribute('width'); s.removeAttribute('height'); s.style.width = '100%'; s.style.maxHeight = '100%'; } });
   if (SPEC.assinatura === 'nenhuma') logos.remove();
+  // polaroides: [{fotoSrc, x, y, w, prop:'1 / 1', girar, legenda, tamanho, seed}] — x/y/w em % da arte, w = largura da polaroide
+  let ps = (SPEC.seed || 1) * 7919 + 104729; const prnd = () => { ps = (ps * 9301 + 49297) % 233280; return ps / 233280; };
+  const tornPoly = (W, H, amp, n) => { const pts = []; const edge = (x0, y0, x1, y1, inward) => { for (let i = 0; i <= n; i++) { const t = i / n; const x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t; const d = (Math.sin(t * 17 + prnd() * 6) * .5 + (prnd() - .5)) * amp; pts.push([x + inward[0] * d, y + inward[1] * d]); } };
+    edge(0, 0, W, 0, [0, 1]); edge(W, 0, W, H, [-1, 0]); edge(W, H, 0, H, [0, -1]); edge(0, H, 0, 0, [1, 0]);
+    return 'polygon(' + pts.map(p => `${Math.max(0, Math.min(W, p[0])).toFixed(1)}px ${Math.max(0, Math.min(H, p[1])).toFixed(1)}px`).join(',') + ')'; };
+  const polBox = document.getElementById('polaroides');
+  (SPEC.polaroides || []).forEach((pz, i) => {
+    const W = f.W * (pz.w || 40) / 100; const [pw, ph] = String(pz.prop || '1 / 1').split('/').map(Number); const border = W * .045; const bottom = W * (pz.legenda ? .17 : .07);
+    const photoW = W - 2 * border; const photoH = photoW * (ph / pw); const H = photoH + border + bottom;
+    const wrap = document.createElement('div'); wrap.className = 'pol-wrap'; wrap.style.left = (f.W * pz.x / 100) + 'px'; wrap.style.top = (f.H * pz.y / 100) + 'px'; wrap.style.width = W + 'px'; wrap.style.height = H + 'px'; wrap.style.transform = `rotate(${pz.girar || 0}deg)`;
+    const pol = document.createElement('div'); pol.className = 'pol'; pol.style.width = W + 'px'; pol.style.height = H + 'px'; pol.style.padding = `${border}px ${border}px ${bottom}px`; pol.style.clipPath = tornPoly(W, H, W * .012, 90);
+    const im = document.createElement('img'); im.className = 'pol-photo'; im.alt = ''; im.src = pz.fotoSrc || ''; im.style.height = photoH + 'px'; if (pz.fotoPos) im.style.objectPosition = pz.fotoPos; pol.appendChild(im);
+    if (pz.legenda) { const cap = document.createElement('div'); cap.className = 'pol-cap'; cap.style.top = (border + photoH) + 'px'; cap.style.height = bottom + 'px'; cap.style.fontSize = vw(pz.tamanho || 2.4); cap.textContent = pz.legenda; pol.appendChild(cap); }
+    wrap.appendChild(pol); polBox.appendChild(wrap); wrap.dataset.i = i;
+  });
   // rótulos (enquete): caixas pequenas em % com texto em petróleo, tamanho em % da largura
   const rot = document.getElementById('rotulos');
   (Z.rotulos || []).forEach(z => { const d = document.createElement('div'); d.className = 'rotulo'; pct(d, z); d.style.fontSize = vw(z.tamanho || 2.6); if (z.girar) d.style.transform = `rotate(${z.girar}deg)`; d.textContent = z.texto || ''; rot.appendChild(d); });
-  window.__ready = Promise.all([document.fonts.ready, new Promise(res => { if (base.complete) res(); else { base.onload = res; base.onerror = res; } })]);
+  const waitImg = (im) => new Promise(res => { if (im.complete) res(); else { im.onload = res; im.onerror = res; } });
+  window.__ready = Promise.all([document.fonts.ready, waitImg(base), ...[...document.querySelectorAll('.pol-photo')].map(waitImg)]);
 </script>
 </body>
 </html>

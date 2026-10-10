@@ -4,13 +4,13 @@
   "formatos": [
     "1200x628"
   ],
-  "arte_base": "scripts/creatives/bases/anuncio-02.jpg",
+  "arte_base": "scripts/creatives/bases/anuncio-kraft-01.jpg",
   "zonas": {
     "texto": {
       "x": 4,
-      "y": 8,
+      "y": 7,
       "w": 34,
-      "h": 60,
+      "h": 62,
       "alinhar": "esquerda",
       "titulo": 4.4,
       "fato": 2.2,
@@ -18,9 +18,9 @@
     },
     "logo": {
       "x": 4,
-      "y": 74,
-      "w": 32,
-      "h": 18
+      "y": 80,
+      "w": 34,
+      "h": 16
     }
   },
   "titulo": "Passeio de escuna em Búzios.",
