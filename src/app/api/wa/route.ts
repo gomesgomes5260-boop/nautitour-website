@@ -67,7 +67,15 @@ function messageFor(source: string, req: NextRequest): string | null {
       if (!BOOKING_CODE_RE.test(code)) return null;
       return `Olá! Acabei de fazer o passeio da reserva ${code} e gostaria de falar com vocês.`;
     }
+    case 'ig-story-amanha':
+    case 'meta-story-amanha':
+      // Story/anúncio "Amanhã, 9h30 e 12h" (lote de lançamento, out/2026).
+      return 'Olá! Vi o story da Escuna Estrela. Ainda tem lugar no passeio de amanhã?';
     default:
+      // Posts e anúncios de redes sociais (`s=ig-…` / `s=meta-…`): texto genérico, contado por origem.
+      if (/^(ig|meta)-[a-z0-9-]{1,40}$/.test(source)) {
+        return 'Olá! Vi o post da Escuna Estrela e quero saber mais sobre o passeio.';
+      }
       return null;
   }
 }
