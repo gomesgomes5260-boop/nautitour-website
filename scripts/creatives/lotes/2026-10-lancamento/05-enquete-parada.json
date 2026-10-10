@@ -4,13 +4,13 @@
   "formatos": [
     "1x1"
   ],
-  "arte_base": "scripts/creatives/bases/fundo-enquete-01.jpg",
+  "arte_base": "scripts/creatives/bases/enquete-01.jpg",
   "zonas": {
     "texto": {
       "x": 4,
       "y": 4,
       "w": 70,
-      "h": 24,
+      "h": 23,
       "alinhar": "centro",
       "titulo": 5.6,
       "fato": 2.8,
@@ -18,9 +18,9 @@
     },
     "logo": {
       "x": 35,
-      "y": 89,
+      "y": 88,
       "w": 30,
-      "h": 8
+      "h": 9
     }
   },
   "titulo": "Qual parada você mais quer conhecer?",
@@ -37,39 +37,26 @@
     "#JoaoFernandes",
     "#PraiaDaTartaruga"
   ],
-  "observacoes": "Fotos escolhidas pelo dono em 10/out (1 Ilha Feia, 2 João Fernandes, 4 Tartaruga). Responder todos os comentários no mesmo dia.",
+  "observacoes": "Polaroides pintadas pelo Higgsfield (rasgo natural); fotos 1/2/4 escolhidas pelo dono encaixadas nos quadros medidos. Responder todos os comentários no mesmo dia.",
   "cta": null,
   "polaroides": [
     {
+      "quadro": 0,
       "foto": "public/images/photos/aerea/drone-joao-fernandes-01.jpg",
-      "x": 3,
-      "y": 37,
-      "w": 31,
-      "prop": "4 / 5",
-      "girar": -4,
       "legenda": "João Fernandes",
-      "tamanho": 2.4
+      "tamanho": 2.3
     },
     {
+      "quadro": 1,
       "foto": "public/images/photos/aerea/drone-ilha-feia-01.jpg",
-      "x": 34.5,
-      "y": 34,
-      "w": 31,
-      "prop": "4 / 5",
-      "girar": 1.5,
       "legenda": "Ilha Feia",
-      "tamanho": 2.4
+      "tamanho": 2.3
     },
     {
+      "quadro": 2,
       "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
-      "x": 66,
-      "y": 37,
-      "w": 31,
-      "prop": "4 / 5",
-      "girar": 4,
       "legenda": "Praia da Tartaruga",
-      "tamanho": 2.4
+      "tamanho": 2.3
     }
-  ],
-  "seed": 11
+  ]
 }

@@ -21,9 +21,9 @@ por peça; o resultado volta pra cá como ajuste nos specs.
 | 02 | venda-preco | Venda | feed | 4:5 | aprovada |
 | 03 | prova-experiencia | Prova | feed | 4:5 | aprovada |
 | 04 | prova-boia-bar | Prova | feed | 4:5 | refeita: "tapete flutuante" no lugar de "mergulho" |
-| 05 | enquete-parada | Engajamento | feed | 1:1 | refeita: fundo-enquete + polaroides em HTML, fotos 1/2/4 escolhidas pelo dono |
-| 06 | enquete-momento | Engajamento | feed | 1:1 | refeita: idem 05, fotos provisórias (3/27/32) |
-| 07a–d | curiosidade-praias | Engajamento | feed | 4:5 ×4 | virou carrossel de 4 cards (fundo-petroleo + 1 polaroide por card, CTA no último) |
+| 05 | enquete-parada | Engajamento | feed | 1:1 | refeita: polaroides pintadas (enquete-01) com fotos 1/2/4 escolhidas pelo dono encaixadas nos quadros |
+| 06 | enquete-momento | Engajamento | feed | 1:1 | refeita: idem 05 na enquete-02, fotos provisórias (3/27/32) |
+| 07a–d | curiosidade-praias | Engajamento | feed | 4:5 ×4 | virou carrossel de 4 cards (polaroid-unica-01/02 pintada + foto encaixada no quadro, CTA no último) |
 | 08a–d | como-funciona | Educativo | feed | 4:5 ×4 | virou carrossel de 4 cards (embarque → paradas → bar + CTA) |
 | 09 | story-horarios | Venda | story | 9:16 | aprovada |
 | 10a/b/c | story-amanha | Venda | story | 9:16 ×3 | 3 versões (9h30 e 12h / 11h30 / 12h) pedidas pelo dono; o 10 original saiu |

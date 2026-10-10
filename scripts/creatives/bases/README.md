@@ -17,8 +17,16 @@ logo são desenhados por cima em HTML (texto e logo sempre exatos). Prompts em `
 
 Na 1ª tentativa de polaroids apareceu um caiaque: a foto da biblioteca `ilhas/snorkel-ilha-01.jpg` ERA o caiaque (nome errado), o modelo não inventou nada. Essa foto é **banida** (ver `docs/brand/taxonomia-de-fotos.md`); a versão atual usa a foto da escuna no píer. Conferir sempre as fotos antes de publicar.
 
-**Desde 10/out as polaroides NÃO vêm mais pintadas na arte**: o Higgsfield gera só o fundo e o molde monta as polaroides
-(`polaroides` no spec: foto, posição, largura, proporção, giro, legenda). Assim a legenda fica sempre dentro da borda,
-com a mesma rotação da foto, e a foto é trocada só apontando outro arquivo.
+**Polaroides (decisão do dono, 10/out): o rasgo natural pintado pelo Higgsfield é a cara da marca.** Então as
+polaroides continuam pintadas na arte (`enquete-01/02`, `polaroid-unica-01/02`) e o molde só **encaixa a foto escolhida
+e a legenda por cima**: `scripts/creatives/quadros.py --todas` mede o quadro de cada polaroide pintada (retângulo da
+foto, giro, borda branca) e grava em `quadros.json`; no spec, `polaroides: [{quadro: 0, foto, legenda, tamanho}]`
+(quadro = índice da esquerda pra direita). A foto cobre o quadro (3 px a mais por lado) e a legenda cai centralizada
+na borda inferior, com o mesmo giro. Trocar a foto é mudar o campo `foto`. Rodar o `quadros.py` de novo sempre que
+entrar uma base nova com polaroides (conferir a contagem; `polaroids-01/02` não medem certo porque as fotos se
+sobrepõem — não usar `quadro` nelas).
+
+A versão "polaroide montada 100% em HTML" (`fundo-enquete-*`, `fundo-petroleo-*` + `polaroides` com x/y/w/prop/girar)
+continua disponível no molde, mas o dono preferiu as pintadas.
 
 Originais em 2K ficam na conta Higgsfield (histórico de gerações de 09/out/2026).

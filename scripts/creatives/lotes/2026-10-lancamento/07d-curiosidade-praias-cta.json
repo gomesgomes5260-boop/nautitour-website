@@ -4,17 +4,17 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/fundo-petroleo-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
       "x": 6,
-      "y": 5,
-      "w": 60,
-      "h": 24,
+      "y": 2,
+      "w": 70,
+      "h": 17,
       "alinhar": "esquerda",
-      "titulo": 4.8,
+      "titulo": 4.2,
       "fato": 2.6,
-      "cta": 2.6
+      "cta": 2.5
     },
     "logo": {
       "x": 32,
@@ -46,16 +46,11 @@
   "fato": "R$ 60 por pessoa.",
   "polaroides": [
     {
+      "quadro": 0,
       "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
-      "x": 30,
-      "y": 31,
-      "w": 54,
-      "prop": "1 / 1",
-      "girar": 2.5,
       "legenda": "Praia da Tartaruga",
-      "tamanho": 2.6
+      "tamanho": 2.8
     }
   ],
-  "seed": 24,
   "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 4."
 }

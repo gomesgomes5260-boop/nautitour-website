@@ -4,17 +4,17 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/fundo-petroleo-01.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
       "x": 6,
-      "y": 5,
-      "w": 62,
-      "h": 18,
+      "y": 2,
+      "w": 70,
+      "h": 15,
       "alinhar": "esquerda",
-      "titulo": 5.2,
+      "titulo": 4.6,
       "fato": 2.6,
-      "cta": 2.6
+      "cta": 2.5
     },
     "logo": {
       "x": 32,
@@ -42,16 +42,11 @@
   "fato": "Em 3 passos.",
   "polaroides": [
     {
+      "quadro": 0,
       "foto": "public/images/photos/escuna/escuna-pier-01.jpg",
-      "x": 28,
-      "y": 27,
-      "w": 60,
-      "prop": "1 / 1",
-      "girar": 2,
       "legenda": "Arrasta pro lado →",
-      "tamanho": 2.6
+      "tamanho": 2.8
     }
   ],
-  "seed": 31,
   "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer)."
 }

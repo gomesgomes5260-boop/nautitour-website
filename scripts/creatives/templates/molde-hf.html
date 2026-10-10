@@ -25,6 +25,10 @@
   .pol { background: #F3F1EA; position: relative; box-sizing: border-box; }
   .pol-photo { width: 100%; display: block; object-fit: cover; }
   .pol-cap { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--ee-petroleo); line-height: 1.1; padding: 0 4%; }
+  /* polaroide pintada na arte: a foto escolhida cobre o quadro medido (quadros.json) e a legenda cai na borda inferior */
+  .q-wrap { position: absolute; transform-origin: center; overflow: hidden; }
+  .q-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .q-cap { position: absolute; transform-origin: center; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--ee-petroleo); line-height: 1.1; padding: 0 3%; box-sizing: border-box; }
   .rotulo { position: absolute; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--ee-petroleo); text-align: center; line-height: 1.1; }
 </style>
 </head>
@@ -63,6 +67,15 @@
     return 'polygon(' + pts.map(p => `${Math.max(0, Math.min(W, p[0])).toFixed(1)}px ${Math.max(0, Math.min(H, p[1])).toFixed(1)}px`).join(',') + ')'; };
   const polBox = document.getElementById('polaroides');
   (SPEC.polaroides || []).forEach((pz, i) => {
+    if (pz.quadro) { // polaroide pintada: {quadro:{foto:{cx,cy,w,h},girar,borda:{baixo}}, fotoSrc, legenda, tamanho, fotoPos}
+      const q = pz.quadro, over = 3; // 3px a mais por lado pra cobrir a foto pintada até a borda
+      const W = f.W * q.foto.w / 100 + 2 * over, H = f.H * q.foto.h / 100 + 2 * over, cx = f.W * q.foto.cx / 100, cy = f.H * q.foto.cy / 100;
+      const wrap = document.createElement('div'); wrap.className = 'q-wrap'; wrap.style.left = (cx - W / 2) + 'px'; wrap.style.top = (cy - H / 2) + 'px'; wrap.style.width = W + 'px'; wrap.style.height = H + 'px'; wrap.style.transform = `rotate(${q.girar}deg)`;
+      const im = document.createElement('img'); im.className = 'pol-photo'; im.alt = ''; im.src = pz.fotoSrc || ''; if (pz.fotoPos) im.style.objectPosition = pz.fotoPos; wrap.appendChild(im); polBox.appendChild(wrap);
+      if (pz.legenda) { const bB = f.W * q.borda.baixo / 100; const r = q.girar * Math.PI / 180; const dx = -Math.sin(r) * (H / 2 - over + bB / 2), dy = Math.cos(r) * (H / 2 - over + bB / 2);
+        const cap = document.createElement('div'); cap.className = 'q-cap'; cap.style.width = (W - 2 * over) + 'px'; cap.style.height = bB + 'px'; cap.style.left = (cx + dx - (W - 2 * over) / 2) + 'px'; cap.style.top = (cy + dy - bB / 2) + 'px'; cap.style.transform = `rotate(${q.girar}deg)`; cap.style.fontSize = vw(pz.tamanho || 2.4); cap.textContent = pz.legenda; polBox.appendChild(cap); }
+      return;
+    }
     const W = f.W * (pz.w || 40) / 100; const [pw, ph] = String(pz.prop || '1 / 1').split('/').map(Number); const border = W * .045; const bottom = W * (pz.legenda ? .17 : .07);
     const photoW = W - 2 * border; const photoH = photoW * (ph / pw); const H = photoH + border + bottom;
     const wrap = document.createElement('div'); wrap.className = 'pol-wrap'; wrap.style.left = (f.W * pz.x / 100) + 'px'; wrap.style.top = (f.H * pz.y / 100) + 'px'; wrap.style.width = W + 'px'; wrap.style.height = H + 'px'; wrap.style.transform = `rotate(${pz.girar || 0}deg)`;

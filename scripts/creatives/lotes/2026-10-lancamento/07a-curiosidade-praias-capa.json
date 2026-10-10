@@ -4,17 +4,17 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/fundo-petroleo-01.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
   "zonas": {
     "texto": {
       "x": 6,
-      "y": 5,
-      "w": 62,
-      "h": 18,
+      "y": 2,
+      "w": 70,
+      "h": 15,
       "alinhar": "esquerda",
-      "titulo": 5.2,
+      "titulo": 4.6,
       "fato": 2.6,
-      "cta": 2.6
+      "cta": 2.5
     },
     "logo": {
       "x": 32,
@@ -41,16 +41,11 @@
   "titulo": "Você sabe quantas praias a gente passa?",
   "polaroides": [
     {
+      "quadro": 0,
       "foto": "public/images/photos/escuna/rede-proa-01.jpg",
-      "x": 28,
-      "y": 26,
-      "w": 60,
-      "prop": "1 / 1",
-      "girar": -2.5,
       "legenda": "Arrasta pro lado →",
-      "tamanho": 2.6
+      "tamanho": 2.8
     }
   ],
-  "seed": 21,
   "observacoes": "Capa do carrossel. Foto provisória nº 27 (rede da proa) — trocar pelo número da folha se preferir."
 }

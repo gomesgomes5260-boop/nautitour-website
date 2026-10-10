@@ -4,17 +4,17 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/fundo-petroleo-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
   "zonas": {
     "texto": {
       "x": 6,
-      "y": 5,
-      "w": 60,
-      "h": 18,
+      "y": 2,
+      "w": 70,
+      "h": 15,
       "alinhar": "esquerda",
-      "titulo": 4.8,
+      "titulo": 4.6,
       "fato": 2.6,
-      "cta": 2.6
+      "cta": 2.5
     },
     "logo": {
       "x": 32,
@@ -42,16 +42,11 @@
   "fato": "Sem taxa. Voucher no celular.",
   "polaroides": [
     {
+      "quadro": 0,
       "foto": "public/images/photos/escuna/escuna-pier-02.jpg",
-      "x": 28,
-      "y": 27,
-      "w": 60,
-      "prop": "1 / 1",
-      "girar": -2,
       "legenda": "Píer da Rua das Pedras",
-      "tamanho": 2.6
+      "tamanho": 2.8
     }
   ],
-  "seed": 32,
   "observacoes": "Card 2. Foto provisória nº 24."
 }

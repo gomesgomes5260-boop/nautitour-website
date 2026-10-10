@@ -37,6 +37,7 @@ const specPaths = statSync(target).isDirectory()
   ? readdirSync(target).filter((f) => f.endsWith('.json') && f !== 'lote.json').sort().map((f) => join(target, f))
   : [target];
 
+const quadros = existsSync(join(here, 'bases', 'quadros.json')) ? JSON.parse(readFileSync(join(here, 'bases', 'quadros.json'), 'utf8')) : {};
 const logoEE = inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor.svg'));
 const logoNT = inlineSvg(join(repo, 'public/brand/nautitour-horizontal-cor.svg'));
 
@@ -56,7 +57,16 @@ try {
       heroSrc: spec.foto_hero ? dataUrl(resolve(repo, spec.foto_hero)) : '',
       woodSrc: existsSync(rosaPath) ? dataUrl(rosaPath) : '',
       baseSrc: spec.arte_base ? dataUrl(resolve(repo, spec.arte_base)) : '',
-      polaroides: (spec.polaroides || []).map((pz) => ({ ...pz, fotoSrc: pz.foto ? dataUrl(resolve(repo, pz.foto)) : '' })),
+      // polaroides: montadas em HTML (x/y/w/prop) ou encaixadas numa polaroide pintada (`quadro: n` = n-ésimo quadro da arte base em bases/quadros.json, da esquerda pra direita)
+      polaroides: (spec.polaroides || []).map((pz) => {
+        const out = { ...pz, fotoSrc: pz.foto ? dataUrl(resolve(repo, pz.foto)) : '' };
+        if (typeof pz.quadro === 'number') {
+          const q = (quadros[basename(spec.arte_base || '')] || [])[pz.quadro];
+          if (!q) { console.error(`quadro ${pz.quadro} não existe pra ${spec.arte_base} (rode scripts/creatives/quadros.py --todas)`); process.exit(1); }
+          out.quadro = q;
+        }
+        return out;
+      }),
       logoEE, logoNT,
     };
     for (const formato of formatos) {
