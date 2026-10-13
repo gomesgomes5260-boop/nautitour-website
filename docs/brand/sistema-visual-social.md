@@ -27,7 +27,7 @@ formatos de social, com os 5 moldes extraídos dos posts reais (`docs/social/02-
 3. Marca d'água de rosa dos ventos em traço fino, 8 a 12% de opacidade, grande, sangrando pela borda.
 4. Rosa dos ventos de madeira entrando por um canto, metade pra fora.
 5. Polaroids com os 4 lados rasgados, sombra suave.
-6. Logo Escuna Estrela no rodapé (sozinha no orgânico; com a Nautitour no pago).
+6. Logo Escuna Estrela no rodapé (sozinha no orgânico; com a Nautitour no pago). Sobre kraft: logo colorida padrão. **Sobre petróleo: variante com ESCUNA em branco** (`logo-horizontal-cor-petroleo.svg`; regra em `arquitetura-de-marca.md`).
 
 Opcionais por molde: folha desfocada no canto, mapa do roteiro, ícones petróleo (palmeira, barco, drinks, check), cartão branco de CTA.
 
