@@ -4,14 +4,14 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-paisagem-01.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
-      "x": 6,
+      "x": 24,
       "y": 2,
-      "w": 72,
-      "h": 16,
-      "alinhar": "esquerda",
+      "w": 70,
+      "h": 15,
+      "alinhar": "direita",
       "titulo": 4.6,
       "fato": 2.6,
       "cta": 2.5
@@ -48,5 +48,6 @@
       "tamanho": 4.2
     }
   ],
-  "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer). Orientação: horizontal (polaroid-paisagem-01)."
+  "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer). Giro: horário (base espelhada, título à direita) (polaroid-unica-02).",
+  "espelhar": true
 }

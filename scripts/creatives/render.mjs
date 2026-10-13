@@ -65,7 +65,10 @@ try {
         if (typeof pz.quadro === 'number') {
           const q = (quadros[basename(spec.arte_base || '')] || [])[pz.quadro];
           if (!q) { console.error(`quadro ${pz.quadro} não existe pra ${spec.arte_base} (rode scripts/creatives/quadros.py --todas)`); process.exit(1); }
-          out.quadro = q;
+          // `espelhar: true` no spec: a arte base é espelhada no molde (scaleX(-1)), então o quadro espelha junto — giro invertido, bordas trocadas
+          out.quadro = spec.espelhar
+            ? { ...q, foto: { ...q.foto, cx: 100 - q.foto.cx }, girar: -q.girar, borda: { ...q.borda, esq: q.borda.dir, dir: q.borda.esq }, recorte: (q.recorte || []).map(([x, y]) => [100 - x, y]) }
+            : q;
         }
         return out;
       }),

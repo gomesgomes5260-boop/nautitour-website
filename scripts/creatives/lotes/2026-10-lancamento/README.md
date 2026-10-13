@@ -23,7 +23,7 @@ por peça; o resultado volta pra cá como ajuste nos specs.
 | 04 | prova-boia-bar | Prova | feed | 4:5 | refeita: "tapete flutuante" no lugar de "mergulho" |
 | 05 | enquete-parada | Engajamento | feed | 1:1 | refeita: polaroides pintadas (enquete-01) com fotos 1/2/4 escolhidas pelo dono encaixadas nos quadros. Rodada 3: legenda maior em Kalam, recorte sem sobreposição |
 | 06 | enquete-momento | Engajamento | feed | 1:1 | refeita: idem 05 na enquete-02, fotos provisórias (3/27/32). Rodada 3: idem 05 |
-| 07a–d | curiosidade-praias | Engajamento | feed | 4:5 ×4 | virou carrossel de 4 cards (polaroide pintada + foto encaixada no quadro, CTA no último). Rodada 3: cards alternam quadrada / vertical / horizontal (`polaroid-unica`, `-retrato`, `-paisagem`), legenda maior em Kalam |
+| 07a–d | curiosidade-praias | Engajamento | feed | 4:5 ×4 | virou carrossel de 4 cards (polaroide pintada + foto encaixada no quadro, CTA no último). Rodada 3: legenda maior em Kalam; o giro da polaroide alterna entre os cards (ímpares anti-horário, pares horário via `espelhar`, título à direita) |
 | 08a–d | como-funciona | Educativo | feed | 4:5 ×4 | virou carrossel de 4 cards (embarque → paradas → bar + CTA) |
 | 09 | story-horarios | Venda | story | 9:16 | aprovada |
 | 10a/b/c | story-amanha | Venda | story | 9:16 ×3 | 3 versões (9h30 e 12h / 11h30 / 12h) pedidas pelo dono; o 10 original saiu |

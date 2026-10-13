@@ -4,12 +4,12 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-retrato-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
       "x": 6,
       "y": 2,
-      "w": 72,
+      "w": 70,
       "h": 17,
       "alinhar": "esquerda",
       "titulo": 4.2,
@@ -18,7 +18,7 @@
     },
     "logo": {
       "x": 32,
-      "y": 91,
+      "y": 90,
       "w": 36,
       "h": 7
     }
@@ -52,5 +52,5 @@
       "tamanho": 4.2
     }
   ],
-  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 16. Orientação: vertical (polaroid-retrato-02)."
+  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 16. Giro: anti-horário (polaroid-unica-02)."
 }
