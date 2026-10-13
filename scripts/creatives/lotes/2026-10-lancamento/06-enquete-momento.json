@@ -43,19 +43,19 @@
       "quadro": 0,
       "foto": "public/images/photos/aerea/drone-praia-01.jpg",
       "legenda": "A chegada",
-      "tamanho": 2.3
+      "tamanho": 3.4
     },
     {
       "quadro": 1,
       "foto": "public/images/photos/escuna/rede-proa-01.jpg",
       "legenda": "O barco",
-      "tamanho": 2.3
+      "tamanho": 3.4
     },
     {
       "quadro": 2,
       "foto": "public/images/photos/ilhas/trampolim-01.jpg",
       "legenda": "A boia",
-      "tamanho": 2.3
+      "tamanho": 3.4
     }
   ]
 }

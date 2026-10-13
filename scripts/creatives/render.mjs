@@ -74,7 +74,8 @@ try {
     for (const formato of formatos) {
       const page = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
       const SPEC = { ...spec, formato, ...assets };
-      const html = template.replace('<script>', `<script>window.SPEC = ${JSON.stringify(SPEC)};</script><script>`);
+      const html = template.replace('<script>', `<script>window.SPEC = ${JSON.stringify(SPEC)};</script><script>`)
+        .replace('<style>', `<style>:root{--fonte-legenda:${JSON.stringify(spec.fonte_legenda || 'Kalam')}, cursive;}</style><style>`);
       await page.setContent(html, { waitUntil: 'load' });
       await page.evaluate(() => window.__ready);
       await page.waitForTimeout(150);

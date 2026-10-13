@@ -4,13 +4,13 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-paisagem-01.jpg",
   "zonas": {
     "texto": {
       "x": 6,
       "y": 2,
-      "w": 70,
-      "h": 15,
+      "w": 72,
+      "h": 16,
       "alinhar": "esquerda",
       "titulo": 4.6,
       "fato": 2.6,
@@ -45,8 +45,8 @@
       "quadro": 0,
       "foto": "public/images/photos/escuna/escuna-pier-01.jpg",
       "legenda": "Arrasta pro lado →",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer)."
+  "observacoes": "Capa do carrossel. Foto provisória nº 23 (escuna no píer). Orientação: horizontal (polaroid-paisagem-01)."
 }

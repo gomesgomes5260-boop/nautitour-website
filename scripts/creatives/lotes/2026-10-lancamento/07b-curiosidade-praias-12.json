@@ -4,12 +4,12 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-retrato-02.jpg",
   "zonas": {
     "texto": {
       "x": 6,
       "y": 2,
-      "w": 70,
+      "w": 72,
       "h": 15,
       "alinhar": "esquerda",
       "titulo": 4.6,
@@ -18,7 +18,7 @@
     },
     "logo": {
       "x": 32,
-      "y": 90,
+      "y": 91,
       "w": 36,
       "h": 7
     }
@@ -45,8 +45,8 @@
       "quadro": 0,
       "foto": "public/images/photos/aerea/drone-praia-01.jpg",
       "legenda": "Vista de cima",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Card 2. Foto provisória nº 3."
+  "observacoes": "Card 2. Foto provisória nº 3. Orientação: vertical (polaroid-retrato-02)."
 }
