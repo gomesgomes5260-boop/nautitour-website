@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Montserrat, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import WhatsAppClickTracker from "@/components/WhatsAppClickTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
@@ -16,23 +16,31 @@ const SITE_URL =
 // - Fraunces (display, h1-h6) — opsz variável 9-144, peso 300-900
 // - Montserrat (body) — heavy pra wordmark, regular pra leitura
 // - JetBrains Mono — booking codes, recibos, dados monoespaçados
-const fraunces = Fraunces({
-  subsets: ["latin"],
+//
+// Servidas LOCALMENTE (next/font/local) desde out/2026: o download das
+// fontes do Google Fonts durante o build falhava de forma intermitente na
+// Vercel (Turbopack/Next 16: "font/google queries have exactly one entry").
+// Os .woff2 em ./fonts/ são os mesmos arquivos variáveis (subset latin)
+// que o Google Fonts servia pra essas famílias — licença OFL ao lado.
+const fraunces = localFont({
+  src: [
+    { path: "./fonts/fraunces-latin.woff2", weight: "400 800", style: "normal" },
+    { path: "./fonts/fraunces-italic-latin.woff2", weight: "400 800", style: "italic" },
+  ],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800"],
-  style: ["normal", "italic"],
+  adjustFontFallback: "Times New Roman",
 });
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
+const montserrat = localFont({
+  src: [{ path: "./fonts/montserrat-latin.woff2", weight: "400 900", style: "normal" }],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+// Mono só aparece em códigos de reserva/recibos (abaixo da dobra) — sem preload.
+const jetbrainsMono = localFont({
+  src: [{ path: "./fonts/jetbrains-mono-latin.woff2", weight: "400 700", style: "normal" }],
   variable: "--font-mono",
-  weight: ["400", "500", "700"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
