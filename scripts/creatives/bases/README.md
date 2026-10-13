@@ -31,6 +31,8 @@ sobrepõem — não usar `quadro` nelas).
 num carrossel, `espelhar: true` no spec espelha a arte base no molde (giro vira horário, folha e bússola trocam de canto) e o
 `render.mjs` espelha o quadro junto; nesses cards use `alinhar: "direita"` no texto, porque a folha vai pro canto superior esquerdo.
 
+Logo sobre petróleo: `logo_variante: "petroleo"` no spec usa `logo-horizontal-cor-petroleo.svg` (ESCUNA em branco); sobre kraft fica a logo colorida padrão.
+
 Legenda das polaroides: fonte manuscrita **Kalam** 700 (Google Fonts) por padrão (`fonte_legenda` no spec troca; Caveat, Patrick Hand e Permanent Marker também carregam), tamanho 3.4 % nas enquetes e 4.2 % na polaroide única. O `recorte` em `quadros.json` é o polígono visível da foto: tira o pedaço que fica por baixo de outra polaroide pintada (ordem de empilhamento detectada pela cor do papel), senão a foto nova cobre a borda da vizinha.
 
 A versão "polaroide montada 100% em HTML" (`fundo-enquete-*`, `fundo-petroleo-*` + `polaroides` com x/y/w/prop/girar)

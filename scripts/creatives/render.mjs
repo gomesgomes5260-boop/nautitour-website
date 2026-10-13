@@ -41,6 +41,7 @@ const specPaths = statSync(target).isDirectory()
 
 const quadros = existsSync(join(here, 'bases', 'quadros.json')) ? JSON.parse(readFileSync(join(here, 'bases', 'quadros.json'), 'utf8')) : {};
 const logoEE = inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor.svg'));
+const logoEEPetroleo = inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor-petroleo.svg')); // ESCUNA em branco (fundo petróleo)
 const logoNT = inlineSvg(join(repo, 'public/brand/nautitour-horizontal-cor.svg'));
 
 const { chromium } = loadPlaywright();
@@ -72,7 +73,7 @@ try {
         }
         return out;
       }),
-      logoEE, logoNT,
+      logoEE: spec.logo_variante === 'petroleo' ? logoEEPetroleo : logoEE, logoNT,
     };
     for (const formato of formatos) {
       const page = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
