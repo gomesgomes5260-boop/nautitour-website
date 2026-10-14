@@ -23,7 +23,11 @@ Pipeline de edição de vídeo rodando no **sandbox do Higgsfield** (ffmpeg 5.1)
 
 Specs de exemplo em `specs/`. Fontes baixadas do repositório `google/fonts` (Kalam estática; Montserrat e Fraunces instanciadas em wght=600 com `fonttools varLib.instancer`).
 
+## Inventário dos clipes do Drive (14/out)
+
+`ingest.sh` baixa cada clipe da pasta liberada por link, gera proxy 720p + folha de 12 frames com timecode e apaga o original (o sandbox tem ~20 GB). Rodou em 3 trabalhadores paralelos (8 núcleos). Resultado: 103 de 105 clipes; 5 ficaram presos na cota de download do Google (ver `docs/social/videos/inventario-clipes.md`). `inventario-build.py` monta a página de seleção (folhas embutidas em base64 + decisão por clipe gravada no banco do artifact, coleção `clipes`).
+
 ## Pendências
 
-- Vídeos reais do Drive (`Videos Para Edição/Escuna`) só entram quando a pasta estiver com "qualquer pessoa com o link"; o sandbox baixa com `gdown`.
+- Pasta do Drive liberada por link em 14/out; lembrar de voltar pra Restrito quando a edição acabar.
 - Sem trilha/áudio ainda (ver opções de áudio no doc da rodada).
