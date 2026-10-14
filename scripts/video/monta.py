@@ -65,7 +65,12 @@ for i, c in enumerate(clips):
 
 # cartão final (degradê petróleo da marca)
 e = spec.get('final', {}); ed = float(e.get('dur', 2.6))
-g = f"gradients=s={W}x{H}:c0=#072A2E:c1=#075A5E:c2=#09959C:n=3:x0=0:y0=0:x1={W}:y1={H}:d={ed}:speed=0.002,fps={FR},format=yuv420p[g0];"
+if e.get('fundo'):  # imagem de fundo do cartão (ex.: bases/fundo-petroleo-01.jpg), recorte cover com foco fx/fy
+    fb = e['fundo']; inputs += ['-loop', '1', '-t', str(ed), '-i', fb['src']]; fi = n + 3
+    fx, fy = fb.get('fx', 0.5), fb.get('fy', 0.5)
+    g = f"[{fi}:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}:x=(iw-{W})*{fx}:y=(ih-{H})*{fy},setsar=1,fps={FR},format=yuv420p,trim=duration={ed},setpts=PTS-STARTPTS[g0];"
+else:
+    g = f"gradients=s={W}x{H}:c0=#072A2E:c1=#075A5E:c2=#09959C:n=3:x0=0:y0=0:x1={W}:y1={H}:d={ed}:speed=0.002,fps={FR},format=yuv420p[g0];"
 g += f"[lg{n}]scale={int(W*e.get('logo_tam',0.5))}:-1[lgE];[g0][lgE]overlay=({W}-w)/2:{H}*{e.get('logo_y',0.40)}-h/2[g1];"
 g += f"[{n+2}:v]scale={int(W*0.12)}:-1[nt];[g1][nt]overlay=({W}-w)/2:{H}-h-{int(H*0.05)}[g2];"
 dt = ",".join(drawtext(t, ed) for t in e.get('textos', [])) or "null"

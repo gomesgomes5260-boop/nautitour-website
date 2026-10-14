@@ -8,6 +8,7 @@ Atualizado em 14/out/2026. Descreve o conteúdo de cada clipe e orienta onde ele
 - **Melhores takes** são os trechos (em segundos do clipe) que valem o corte; o resto costuma ser deslocamento do drone.
 - Verticais (V) servem pro story 9:16 sem recorte; horizontais (H) servem pro YouTube 16:9 e, com recorte central, pro feed 4:5.
 - Fora da lista por cota de download do Google (tentar em 24 h): DJI_0667, DJI_0671, DJI_0672, IMG_8653, IMG_8763.
+- **Atenção (14/out):** o dono apontou que a embarcação no píer em DJI_0920 **não é a Escuna Estrela**. Os clipes do mesmo dia no píer (DJI_0916–0929, 23/jan/2025) ficam em quarentena até confirmação; só os de 28/jan/2025 (DJI_0977–0993) e os do iPhone (IMG_87xx) estão confirmados como a Estrela (nome no casco). Pendente: confirmar se a escuna navegando em DJI_0930–0932 e os clipes de 2024 são a Estrela.
 
 ## Resumo por função
 
@@ -16,7 +17,7 @@ Atualizado em 14/out/2026. Descreve o conteúdo de cada clipe e orienta onde ele
 | Abertura / navegação | DJI_0930 (43–95 s), DJI_0476, DJI_0477, DJI_0480 (passagem perto), DJI_0931, DJI_0664 |
 | Chegada / parada pra mergulho | DJI_0984 (melhor de cima), DJI_0983, DJI_0550, DJI_0456, DJI_0457, DJI_0979 |
 | Story (vertical) | DJI_0988, DJI_0981, DJI_0980, DJI_0989, DJI_0987, DJI_0531, DJI_0552, DJI_0561, DJI_0468 |
-| Embarque / píer | DJI_0916, DJI_0920, DJI_0926 (reveal), DJI_0918 (saída), DJI_0927 |
+| Embarque / píer | **quarentena** (DJI_0916–0929 podem ser outra escuna); alternativa confirmada: IMG_8721 e IMG_8725 (escada e proa com o nome Estrela) |
 | Humano (pessoas de perto) | IMG_8655, IMG_8662, IMG_8722, IMG_8723, IMG_8724 |
 | Detalhe de marca (nome Estrela) | IMG_8725, IMG_8721 |
 | Bar a bordo | IMG_8661 (3 s, único) |
@@ -37,7 +38,7 @@ Atualizado em 14/out/2026. Descreve o conteúdo de cada clipe e orienta onde ele
 | DJI_0670 | H | 15 s | Horizontal, 15 s: escuna ancorada perto do píer da vila. | Escuna no píer da vila | 0–14 |
 | DJI_0678 | H | 69 s | Horizontal, 69 s: píer com a escuna e a vila, depois afasta pra ilhota. Longo. | Píer + vila + ilhota (longo) | 0–20, 45–68 |
 
-## Drone · 23/jan/2025 (píer e navegação)
+## Drone · 23/jan/2025 (píer e navegação) — QUARENTENA: a escuna no píer provavelmente não é a Estrela
 
 | Clipe | Ori. | Dur. | Conteúdo | Uso sugerido | Melhores takes |
 |---|---|---|---|---|---|
