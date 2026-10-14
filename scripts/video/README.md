@@ -27,6 +27,10 @@ Specs de exemplo em `specs/`. Fontes baixadas do repositório `google/fonts` (Ka
 
 `ingest.sh` baixa cada clipe da pasta liberada por link, gera proxy 720p + folha de 12 frames com timecode e apaga o original (o sandbox tem ~20 GB). Rodou em 3 trabalhadores paralelos (8 núcleos). Resultado: 103 de 105 clipes; 5 ficaram presos na cota de download do Google (ver `docs/social/videos/inventario-clipes.md`). `inventario-build.py` monta a página de seleção (folhas embutidas em base64 + decisão por clipe gravada no banco do artifact, coleção `clipes`).
 
+## Rodada 2 (14/out) — comercial com clipes reais
+
+Specs `specs/real-youtube.json`, `specs/real-feed.json`, `specs/real-story.json` (caminhos apontam pros proxies em `/home/user/escuna/proxy/`). Links e roteiro em `docs/social/videos/2026-10-rodada2.md`.
+
 ## Pendências
 
 - Pasta do Drive liberada por link em 14/out; lembrar de voltar pra Restrito quando a edição acabar.
