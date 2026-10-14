@@ -3,7 +3,7 @@
  "transicao": {
   "tipo": "rasgo",
   "dur": 0.6,
-  "tira": "/home/user/work/tira-kraft-1080.png",
+  "tira": "/home/user/work/tira-kraft-hf-1080.png",
   "direcao": "alterna"
  },
  "logo_tam": 0.3,
@@ -149,5 +149,5 @@
   "titulo": "/home/user/fonts/Poppins-Bold.ttf",
   "corpo": "/home/user/fonts/Poppins-Medium.ttf"
  },
- "_nota": "Teste da transição rasgo (14/out). Tira gerada por scripts/video/tira.py (1080x270, seed 11). Cartão final ainda o da v2."
+ "_nota": "Teste da transição rasgo (14/out). Tira de kraft rasgada GERADA NO HIGGSFIELD (gpt_image_2_5, fundo transparente, referência scripts/creatives/bases/fundo-enquete-02.jpg; prompt em scripts/video/README.md), com sombra adicionada por código. A tira procedural do tira.py foi reprovada pelo dono. Cartão final ainda o da v2."
 }
