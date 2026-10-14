@@ -2,7 +2,11 @@
 
 Pipeline de edição de vídeo rodando no **sandbox do Higgsfield** (ffmpeg 5.1). Nada aqui roda no Vercel.
 
-## Peças (13/out/2026 — rodada 1, teste)
+## Regra (14/out/2026)
+
+**Só takes de clipes reais.** Animação de foto (image-to-video) foi testada na rodada 1 e descartada pelo dono. Não gerar mais.
+
+## Peças (13/out/2026 — rodada 1, teste, DESCARTADA)
 
 | Peça | Fonte | Formato | Link de revisão |
 |---|---|---|---|
