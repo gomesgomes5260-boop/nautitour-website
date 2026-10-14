@@ -22,6 +22,17 @@ A voz é **uma só** (ver `voz.md`). O que muda entre as duas é a camada visual
 | Avatar do Instagram | Estrela-do-mar sozinha (símbolo), fundo petróleo ou kraft |
 | City Tour e produtos sem marca própria | Nautitour sozinha (etiqueta de couro dos impressos) |
 
+## Variante da logo por fundo (decisão do dono, 13/out/2026)
+
+| Fundo atrás da logo | Arquivo | Por quê |
+|---|---|---|
+| Papel kraft, branco, foto clara | `public/brand/escuna-estrela/logo-horizontal-cor.svg` (ESCUNA cinza `#666`) | É a logo original; o cinza lê bem sobre papel |
+| **Petróleo** (`#0F5F63`) ou qualquer fundo escuro | `public/brand/escuna-estrela/logo-horizontal-cor-petroleo.svg` (**ESCUNA em branco**, estrela e "estrela" iguais) | O cinza some no petróleo; o branco dá contraste sem brigar com o verde |
+| Foto escura / fundo onde nem o verde lê | `public/brand/escuna-estrela/logo-horizontal-branco.svg` (toda branca) | Último recurso |
+
+Nos specs de criativo (`scripts/creatives/`), `logo_variante: "petroleo"` liga a segunda. Regra pra qualquer agente que monte
+uma peça: olhe o que está atrás da logo, não o molde.
+
 ## Regras de co-branding
 
 - As duas logos nunca se misturam numa só. Nada de "Escuna Estrela by Nautitour" como lockup inventado; é uma ao lado da outra.

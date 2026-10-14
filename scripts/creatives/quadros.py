@@ -51,7 +51,8 @@ def medir(src, out=None):
         capc=np.array([cx,cy])+down*(rh/2+bB/2)
         cv2.polylines(dbg,[cv2.boxPoints(((float(capc[0]),float(capc[1])),(rw,bB),ang)).astype(int)],True,(0,200,0),2)
         res.append({'foto':{'cx':round(cx/W*100,2),'cy':round(cy/H*100,2),'w':round(rw/W*100,2),'h':round(rh/H*100,2)},'girar':round(float(ang),2),
-                    'borda':{'esq':round(bL/W*100,2),'dir':round(bR/W*100,2),'cima':round(bT/W*100,2),'baixo':round(bB/W*100,2)}})
+                    'borda':{'esq':round(bL/W*100,2),'dir':round(bR/W*100,2),'cima':round(bT/W*100,2),'baixo':round(bB/W*100,2)},
+                    '_px':{'cx':cx,'cy':cy,'rw':rw,'rh':rh,'ang':float(ang),'bL':bL,'bR':bR,'bT':bT,'bB':bB}})
     # junta pedaços da mesma foto (céu claro parte a foto ao meio): mesmo cx, ângulo parecido, encostados na vertical
     def merge(a,b):
         fa,fb=a['foto'],b['foto']; top=min(fa['cy']-fa['h']/2,fb['cy']-fb['h']/2); bot=max(fa['cy']+fa['h']/2,fb['cy']+fb['h']/2)
@@ -67,6 +68,31 @@ def medir(src, out=None):
                     res[i]=merge(a,b); del res[j]; changed=True; break
             if changed: break
     res.sort(key=lambda r:r['foto']['cx'])
+    # recorte: parte visível da foto = retângulo da foto menos a moldura (foto+bordas) das polaroides que estão POR CIMA.
+    # Quem está por cima: se a área onde a moldura de j cruza a foto de i é papel, j cobre i.
+    def rect_mask(cx,cy,w,h,ang):
+        m=np.zeros((H,W),np.uint8); cv2.fillPoly(m,[cv2.boxPoints(((cx,cy),(w,h),ang)).astype(np.int32)],255); return m
+    def frame_px(q):
+        p=q['_px']; r=np.deg2rad(p['ang']); right=np.array([np.cos(r),np.sin(r)]); down=np.array([-np.sin(r),np.cos(r)])
+        c=np.array([p['cx'],p['cy']])+right*(p['bR']-p['bL'])/2+down*(p['bB']-p['bT'])/2
+        return (float(c[0]),float(c[1]),p['rw']+p['bL']+p['bR'],p['rh']+p['bT']+p['bB'],p['ang'])
+    for q in res:  # (re)monta os px a partir dos % — entradas fundidas pelo merge não têm _px
+        q['_px']={'cx':q['foto']['cx']*W/100,'cy':q['foto']['cy']*H/100,'rw':q['foto']['w']*W/100,'rh':q['foto']['h']*H/100,'ang':q['girar'],
+                  'bL':q['borda']['esq']*W/100,'bR':q['borda']['dir']*W/100,'bT':q['borda']['cima']*W/100,'bB':q['borda']['baixo']*W/100}
+    for i,q in enumerate(res):
+        p=q['_px']; vis=rect_mask(p['cx'],p['cy'],p['rw'],p['rh'],p['ang'])
+        for j,o in enumerate(res):
+            if i==j: continue
+            fm=rect_mask(*frame_px(o)); inter=cv2.bitwise_and(vis,fm)
+            n=cv2.countNonZero(inter)
+            if n<200: continue
+            if cv2.countNonZero(cv2.bitwise_and(inter,paper))/n>0.5:  # j por cima de i
+                vis=cv2.bitwise_and(vis,cv2.bitwise_not(fm))
+        cs,_=cv2.findContours(vis,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        c=max(cs,key=cv2.contourArea); poly=cv2.approxPolyDP(c,2.0,True).reshape(-1,2)
+        q['recorte']=[[round(float(x)/W*100,2),round(float(y)/H*100,2)] for x,y in poly]
+        cv2.polylines(dbg,[poly.astype(np.int32)],True,(255,0,255),2)
+    for q in res: del q['_px']
     if out: cv2.imwrite(out,dbg)
     return res
 

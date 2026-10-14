@@ -1,0 +1,138 @@
+{
+ "formato": "youtube",
+ "transicao": 0.5,
+ "logo_tam": 0.17,
+ "clipes": [
+  {
+   "src": "/home/user/escuna/proxy/DJI_0930.mp4",
+   "in": 44.0,
+   "dur": 3.4,
+   "textos": [
+    {
+     "texto": "12 praias e 3 ilhas",
+     "fonte": "titulo",
+     "tam": 0.05,
+     "y": 0.78,
+     "inicio": 0.3,
+     "fim": 3.4
+    },
+    {
+     "texto": "em 2h30 de passeio",
+     "fonte": "corpo",
+     "tam": 0.022,
+     "y": 0.865,
+     "inicio": 0.7,
+     "fim": 3.4
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0983.mp4",
+   "in": 23.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "3 paradas pra mergulho",
+     "fonte": "titulo",
+     "tam": 0.05,
+     "y": 0.78,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "20 minutos em cada uma",
+     "fonte": "corpo",
+     "tam": 0.022,
+     "y": 0.865,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0984.mp4",
+   "in": 18.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "Boia e tapete flutuante",
+     "fonte": "titulo",
+     "tam": 0.05,
+     "y": 0.78,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "colete pra quem quiser",
+     "fonte": "corpo",
+     "tam": 0.022,
+     "y": 0.865,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0916.mp4",
+   "in": 30.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "Saídas sábado e domingo",
+     "fonte": "titulo",
+     "tam": 0.05,
+     "y": 0.78,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "9h30 e 12h  ·  R$ 60 por pessoa",
+     "fonte": "corpo",
+     "tam": 0.022,
+     "y": 0.865,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/IMG_8661.mp4",
+   "in": 0.0,
+   "dur": 1.6,
+   "textos": [
+    {
+     "texto": "Bar a bordo",
+     "fonte": "titulo",
+     "tam": 0.05,
+     "y": 0.82,
+     "inicio": 0.3,
+     "fim": 1.6
+    }
+   ]
+  }
+ ],
+ "final": {
+  "dur": 2.6,
+  "logo_tam": 0.5,
+  "logo_y": 0.4,
+  "textos": [
+   {
+    "texto": "Reserve em nautitour.com.br",
+    "fonte": "corpo",
+    "tam": 0.028,
+    "y": 0.68,
+    "inicio": 0.3,
+    "fim": 2.6
+   },
+   {
+    "texto": "Búzios, Rio de Janeiro",
+    "fonte": "mao",
+    "tam": 0.03,
+    "y": 0.78,
+    "inicio": 0.6,
+    "fim": 2.6,
+    "cor": "#5FB3B8"
+   }
+  ]
+ }
+}

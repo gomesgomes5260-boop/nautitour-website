@@ -7,11 +7,11 @@
   "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
-      "x": 6,
+      "x": 24,
       "y": 2,
       "w": 70,
       "h": 15,
-      "alinhar": "esquerda",
+      "alinhar": "direita",
       "titulo": 4.6,
       "fato": 2.6,
       "cta": 2.5
@@ -45,8 +45,10 @@
       "quadro": 0,
       "foto": "public/images/photos/aerea/drone-praia-01.jpg",
       "legenda": "Vista de cima",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Card 2. Foto provisória nº 3."
+  "observacoes": "Card 2. Foto provisória nº 3. Giro: horário (base espelhada, título à direita) (polaroid-unica-02).",
+  "espelhar": true,
+  "logo_variante": "petroleo"
 }

@@ -4,14 +4,14 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
   "zonas": {
     "texto": {
-      "x": 6,
+      "x": 24,
       "y": 2,
       "w": 70,
       "h": 17,
-      "alinhar": "esquerda",
+      "alinhar": "direita",
       "titulo": 4.2,
       "fato": 2.6,
       "cta": 2.5
@@ -49,8 +49,10 @@
       "quadro": 0,
       "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
       "legenda": "Praia da Tartaruga",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 4."
+  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 4. Giro: horário (base espelhada, título à direita) (polaroid-unica-01).",
+  "espelhar": true,
+  "logo_variante": "petroleo"
 }

@@ -44,19 +44,19 @@
       "quadro": 0,
       "foto": "public/images/photos/aerea/drone-joao-fernandes-01.jpg",
       "legenda": "João Fernandes",
-      "tamanho": 2.3
+      "tamanho": 3.4
     },
     {
       "quadro": 1,
       "foto": "public/images/photos/aerea/drone-ilha-feia-01.jpg",
       "legenda": "Ilha Feia",
-      "tamanho": 2.3
+      "tamanho": 3.4
     },
     {
       "quadro": 2,
       "foto": "public/images/photos/aerea/drone-tartaruga-01.jpg",
       "legenda": "Praia da Tartaruga",
-      "tamanho": 2.3
+      "tamanho": 3.4
     }
   ]
 }

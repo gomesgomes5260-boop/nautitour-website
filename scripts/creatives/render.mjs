@@ -41,6 +41,7 @@ const specPaths = statSync(target).isDirectory()
 
 const quadros = existsSync(join(here, 'bases', 'quadros.json')) ? JSON.parse(readFileSync(join(here, 'bases', 'quadros.json'), 'utf8')) : {};
 const logoEE = inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor.svg'));
+const logoEEPetroleo = inlineSvg(join(repo, 'public/brand/escuna-estrela/logo-horizontal-cor-petroleo.svg')); // ESCUNA em branco (fundo petróleo)
 const logoNT = inlineSvg(join(repo, 'public/brand/nautitour-horizontal-cor.svg'));
 
 const { chromium } = loadPlaywright();
@@ -65,16 +66,20 @@ try {
         if (typeof pz.quadro === 'number') {
           const q = (quadros[basename(spec.arte_base || '')] || [])[pz.quadro];
           if (!q) { console.error(`quadro ${pz.quadro} não existe pra ${spec.arte_base} (rode scripts/creatives/quadros.py --todas)`); process.exit(1); }
-          out.quadro = q;
+          // `espelhar: true` no spec: a arte base é espelhada no molde (scaleX(-1)), então o quadro espelha junto — giro invertido, bordas trocadas
+          out.quadro = spec.espelhar
+            ? { ...q, foto: { ...q.foto, cx: 100 - q.foto.cx }, girar: -q.girar, borda: { ...q.borda, esq: q.borda.dir, dir: q.borda.esq }, recorte: (q.recorte || []).map(([x, y]) => [100 - x, y]) }
+            : q;
         }
         return out;
       }),
-      logoEE, logoNT,
+      logoEE: spec.logo_variante === 'petroleo' ? logoEEPetroleo : logoEE, logoNT,
     };
     for (const formato of formatos) {
       const page = await browser.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
       const SPEC = { ...spec, formato, ...assets };
-      const html = template.replace('<script>', `<script>window.SPEC = ${JSON.stringify(SPEC)};</script><script>`);
+      const html = template.replace('<script>', `<script>window.SPEC = ${JSON.stringify(SPEC)};</script><script>`)
+        .replace('<style>', `<style>:root{--fonte-legenda:${JSON.stringify(spec.fonte_legenda || 'Kalam')}, cursive;}</style><style>`);
       await page.setContent(html, { waitUntil: 'load' });
       await page.evaluate(() => window.__ready);
       await page.waitForTimeout(150);

@@ -4,7 +4,7 @@
   "formatos": [
     "4x5"
   ],
-  "arte_base": "scripts/creatives/bases/polaroid-unica-01.jpg",
+  "arte_base": "scripts/creatives/bases/polaroid-unica-02.jpg",
   "zonas": {
     "texto": {
       "x": 6,
@@ -49,8 +49,9 @@
       "quadro": 0,
       "foto": "public/images/photos/drinks-bordo/bar-bordo-01.jpg",
       "legenda": "Bar a bordo",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 16."
+  "observacoes": "Card 4 (fecha com CTA). Foto provisória nº 16. Giro: anti-horário (polaroid-unica-02).",
+  "logo_variante": "petroleo"
 }

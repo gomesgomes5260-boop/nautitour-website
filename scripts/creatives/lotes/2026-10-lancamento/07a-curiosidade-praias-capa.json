@@ -44,8 +44,9 @@
       "quadro": 0,
       "foto": "public/images/photos/escuna/rede-proa-01.jpg",
       "legenda": "Arrasta pro lado →",
-      "tamanho": 2.8
+      "tamanho": 4.2
     }
   ],
-  "observacoes": "Capa do carrossel. Foto provisória nº 27 (rede da proa) — trocar pelo número da folha se preferir."
+  "observacoes": "Capa do carrossel. Foto provisória nº 27 (rede da proa) — trocar pelo número da folha se preferir. Giro: anti-horário (polaroid-unica-01).",
+  "logo_variante": "petroleo"
 }

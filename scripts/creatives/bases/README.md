@@ -12,6 +12,7 @@ logo são desenhados por cima em HTML (texto e logo sempre exatos). Prompts em `
 | `polaroid-unica-01.jpg`, `-02.jpg` | petróleo inteiro com marca d'água, 1 polaroid grande com borda inferior larga pra legenda, rosa no canto inferior esquerdo | drone João Fernandes | texto `6/2/68/15` (esq.), legenda como rótulo `14/74/72/7`, logo `32/90/36/7` |
 | `fundo-enquete-01.jpg`, `-02.jpg` (1080×1080) | **só fundo**: petróleo em cima, rasgo, kraft vazio embaixo, rosa no canto superior direito, folha | nenhuma (polaroides montadas em HTML via `polaroides`) | texto `4/4/70/24`, polaroides `w 31` em x 3 / 34.5 / 66, logo `35/89/30/8` |
 | `fundo-petroleo-01.jpg`, `-02.jpg` (1080×1350) | **só fundo**: petróleo com marca d'água, rosa no canto inferior esquerdo, folha no canto superior direito | nenhuma (polaroide única / cards de carrossel em HTML) | texto no topo, polaroide central, logo `32/90/36/7` |
+| `polaroid-retrato-01.jpg`, `-02.jpg`, `polaroid-paisagem-01.jpg` (1080×1350) | petróleo com marca d'água, 1 polaroide **vertical** (retrato) ou **horizontal** (paisagem), rosa num canto inferior, folha num canto superior | genérica (coberta pelo `quadro`) | texto `6/2/72/15` (esq.), logo `32/91/36/7`. Disponíveis, mas o dono preferiu as quadradas nos carrosséis |
 | `anuncio-kraft-01.jpg`, `-02.jpg` (1200×628) | painel petróleo à esquerda com faixa kraft embaixo (logos no papel), foto à direita | drone João Fernandes | texto `4/7/34/62` (esq.), logo `4/80/34/16` |
 | `anuncio-01.jpg`, `-02.jpg` (1200×628) | painel petróleo à esquerda com rasgo vertical, foto à direita, rosa no canto | drone João Fernandes | texto `4/8/33/60` (esq.), logo `4/74/32/18` (escuna+nautitour) |
 
@@ -25,6 +26,14 @@ foto, giro, borda branca) e grava em `quadros.json`; no spec, `polaroides: [{qua
 na borda inferior, com o mesmo giro. Trocar a foto é mudar o campo `foto`. Rodar o `quadros.py` de novo sempre que
 entrar uma base nova com polaroides (conferir a contagem; `polaroids-01/02` não medem certo porque as fotos se
 sobrepõem — não usar `quadro` nelas).
+
+**Giro da polaroide**: todas as bases do Higgsfield vieram inclinadas pro mesmo lado (3–4° anti-horário). Pra alternar o giro
+num carrossel, `espelhar: true` no spec espelha a arte base no molde (giro vira horário, folha e bússola trocam de canto) e o
+`render.mjs` espelha o quadro junto; nesses cards use `alinhar: "direita"` no texto, porque a folha vai pro canto superior esquerdo.
+
+Logo sobre petróleo: `logo_variante: "petroleo"` no spec usa `logo-horizontal-cor-petroleo.svg` (ESCUNA em branco); sobre kraft fica a logo colorida padrão.
+
+Legenda das polaroides: fonte manuscrita **Kalam** 700 (Google Fonts) por padrão (`fonte_legenda` no spec troca; Caveat, Patrick Hand e Permanent Marker também carregam), tamanho 3.4 % nas enquetes e 4.2 % na polaroide única. O `recorte` em `quadros.json` é o polígono visível da foto: tira o pedaço que fica por baixo de outra polaroide pintada (ordem de empilhamento detectada pela cor do papel), senão a foto nova cobre a borda da vizinha.
 
 A versão "polaroide montada 100% em HTML" (`fundo-enquete-*`, `fundo-petroleo-*` + `polaroides` com x/y/w/prop/girar)
 continua disponível no molde, mas o dono preferiu as pintadas.
