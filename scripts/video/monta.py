@@ -11,7 +11,10 @@ Uso: python3 monta.py spec.json saida.mp4
 Spec:
 {
   "formato": "youtube" | "feed" | "story" | "quadrado",
-  "transicao": 0.5,                 # xfade entre clipes, em segundos
+  "transicao": 0.5,                 # xfade entre clipes, em segundos — ou {"tipo": "rasgo", "dur": 0.6,
+                                    #   "tira": "/home/user/work/tira-kraft-1080.png", "direcao": "cima|baixo|alterna"}:
+                                    #   uma tira de kraft rasgada varre o quadro e troca o take atrás dela
+  "fontes": {"titulo": "...ttf"},   # opcional: troca as fontes (Escuna Estrela no social usa Poppins)
   "logo_tam": 0.17,                 # largura da logo em fração da largura do vídeo
   "clipes": [{"src": "...mp4", "in": 0, "dur": 4.6,
               "textos": [{"texto": "...", "fonte": "titulo|corpo|mao", "tam": 0.05, "y": 0.78,
@@ -25,7 +28,9 @@ spec = json.load(open(sys.argv[1])); out = sys.argv[2]
 FMT = {'youtube': (1920, 1080), 'feed': (1080, 1350), 'story': (1080, 1920), 'quadrado': (1080, 1080)}
 W, H = FMT[spec['formato']]
 FONTS = {'titulo': '/home/user/fonts/Fraunces-SemiBold.ttf', 'corpo': '/home/user/fonts/Montserrat-SemiBold.ttf', 'mao': '/home/user/fonts/Kalam-Bold.ttf'}
-FR = 30; XF = float(spec.get('transicao', 0.5)); OFF = '#E9E6DF'
+FONTS.update(spec.get('fontes', {}))
+TR = spec.get('transicao', 0.5); RASGO = TR if isinstance(TR, dict) else None
+FR = 30; XF = float(TR['dur'] if RASGO else TR); OFF = '#E9E6DF'
 LOGO = '/home/user/brand/logo-petroleo-sombra.png'; LOGO_NT = '/home/user/brand/logo-nautitour-white.png'
 
 
@@ -77,14 +82,35 @@ dt = ",".join(drawtext(t, ed) for t in e.get('textos', [])) or "null"
 g += f"[g2]{dt},format=yuv420p[vE]"
 filt.append(g)
 
-# xfade em cadeia
+# xfade em cadeia (fade, ou "rasgo": a tira de kraft sobe/desce e o take troca na linha escondida sob ela)
 durs = [float(c['dur']) for c in clips] + [ed]; labels = [f"v{i}" for i in range(n)] + ["vE"]
-cur = labels[0]; off = 0.0
+total = sum(durs) - XF * (len(durs) - 1)
+if RASGO:
+    import struct
+    tira = RASGO['tira']; hdr = open(tira, 'rb').read(24); tw, th = struct.unpack('>II', hdr[16:24])
+    hs = int(th * W / tw); ti = inputs.count('-i')
+    inputs += ['-loop', '1', '-t', str(total + 1), '-i', tira]
+    filt.append(f"[{ti}:v]scale={W}:-1,format=rgba,split={len(labels)-1}" + "".join(f"[tira{k}]" for k in range(1, len(labels))))
+    modo = RASGO.get('direcao', 'alterna')
+cur = labels[0]; off = 0.0; tiras = []
 for k in range(1, len(labels)):
     off += durs[k - 1] - XF
     nxt = f"x{k}"
-    filt.append(f"[{cur}][{labels[k]}]xfade=transition=fade:duration={XF}:offset={off:.3f}[{nxt}]")
+    if RASGO:
+        sobe = modo == 'cima' or (modo == 'alterna' and k % 2 == 1)
+        ease = "(1-P)*(1-P)*(3-2*(1-P))"   # P vai de 1 a 0 no xfade; ease-in-out
+        yb = f"(H+{hs})*(1-{ease})-{hs}/2" if sobe else f"(H+{hs})*{ease}-{hs}/2"
+        expr = f"if({'gt' if sobe else 'lt'}(Y,{yb}),B,A)"
+        filt.append(f"[{cur}][{labels[k]}]xfade=transition=custom:duration={XF}:offset={off:.3f}:expr='{expr}'[{nxt}]")
+        u = f"clip((t-{off:.3f})/{XF},0,1)"; E = f"({u}*{u}*(3-2*{u}))"
+        ytira = f"({H}+{hs})*(1-{E})-{hs}" if sobe else f"({H}+{hs})*{E}-{hs}"
+        tiras.append((k, off, ytira))
+    else:
+        filt.append(f"[{cur}][{labels[k]}]xfade=transition=fade:duration={XF}:offset={off:.3f}[{nxt}]")
     cur = nxt
+for k, off, ytira in tiras:   # a tira passa por cima de tudo (logo e textos inclusive), um overlay por corte
+    filt.append(f"[{cur}][tira{k}]overlay=x=0:y='{ytira}':enable='between(t,{off:.3f},{off+XF:.3f})'[t{k}]")
+    cur = f"t{k}"
 
 cmd = ['ffmpeg', '-v', 'error', '-y'] + inputs + ['-filter_complex', ";".join(filt), '-map', f'[{cur}]', '-r', str(FR),
        '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', out]

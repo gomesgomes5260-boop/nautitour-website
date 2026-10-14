@@ -1,0 +1,153 @@
+{
+ "formato": "story",
+ "transicao": {
+  "tipo": "rasgo",
+  "dur": 0.6,
+  "tira": "/home/user/work/tira-kraft-1080.png",
+  "direcao": "alterna"
+ },
+ "logo_tam": 0.3,
+ "clipes": [
+  {
+   "src": "/home/user/escuna/proxy/DJI_0988.mp4",
+   "in": 2.0,
+   "dur": 3.4,
+   "textos": [
+    {
+     "texto": "12 praias e 3 ilhas",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 0.3,
+     "fim": 3.4
+    },
+    {
+     "texto": "em 2h30 de passeio",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 0.7,
+     "fim": 3.4
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0981.mp4",
+   "in": 0.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "3 paradas pra mergulho",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "20 minutos em cada uma",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0989.mp4",
+   "in": 13.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "Boia e tapete flutuante",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "colete pra quem quiser",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/IMG_8725.mp4",
+   "in": 4.0,
+   "dur": 3.2,
+   "textos": [
+    {
+     "texto": "Saídas sábado e domingo",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 0.3,
+     "fim": 3.2
+    },
+    {
+     "texto": "9h30 e 12h  ·  R$ 60 por pessoa",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 0.7,
+     "fim": 3.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/IMG_8661.mp4",
+   "in": 0.0,
+   "dur": 1.6,
+   "textos": [
+    {
+     "texto": "Bar a bordo",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.74,
+     "inicio": 0.3,
+     "fim": 1.6
+    }
+   ]
+  }
+ ],
+ "final": {
+  "dur": 2.8,
+  "logo_tam": 0.5,
+  "logo_y": 0.42,
+  "fundo": {
+   "src": "/home/user/work/fundo-petroleo-01.jpg",
+   "fx": 0.2,
+   "fy": 0.5
+  },
+  "textos": [
+   {
+    "texto": "Reserve em nautitour.com.br",
+    "fonte": "corpo",
+    "tam": 0.038,
+    "y": 0.64,
+    "inicio": 0.3,
+    "fim": 2.8
+   },
+   {
+    "texto": "Búzios · Rio de Janeiro",
+    "fonte": "titulo",
+    "tam": 0.03,
+    "y": 0.71,
+    "inicio": 0.6,
+    "fim": 2.8,
+    "cor": "#5FB3B8"
+   }
+  ]
+ },
+ "fontes": {
+  "titulo": "/home/user/fonts/Poppins-Bold.ttf",
+  "corpo": "/home/user/fonts/Poppins-Medium.ttf"
+ },
+ "_nota": "Teste da transição rasgo (14/out). Tira gerada por scripts/video/tira.py (1080x270, seed 11). Cartão final ainda o da v2."
+}
