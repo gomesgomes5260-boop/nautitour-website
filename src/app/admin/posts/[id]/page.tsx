@@ -36,16 +36,18 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
 
   const { data: assets } = await admin
     .from('social_post_assets')
-    .select('id, storage_path, formato, ordem, largura, altura, mime')
+    .select('id, storage_path, url_publica, formato, ordem, largura, altura, mime')
     .eq('post_id', id)
     .order('ordem', { ascending: true });
   const lista = assets ?? [];
 
-  const { data: signed } = lista.length
-    ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(lista.map((a) => a.storage_path), 3600, { download: true })
+  // Só assina o que vive no bucket; asset com URL pública (public/criativos) usa ela direto.
+  const noBucket = lista.map((a) => a.storage_path).filter((p): p is string => !!p);
+  const { data: signed } = noBucket.length
+    ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(noBucket, 3600, { download: true })
     : { data: [] };
-  const { data: signedView } = lista.length
-    ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(lista.map((a) => a.storage_path), 3600)
+  const { data: signedView } = noBucket.length
+    ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(noBucket, 3600)
     : { data: [] };
   const downloadByPath = new Map((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
   const viewByPath = new Map((signedView ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
@@ -71,16 +73,20 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     estrategiaMd: post.estrategia_md,
   };
 
-  const assetsView = lista.map((a) => ({
-    id: a.id,
-    nome: a.storage_path.split('/').pop() ?? a.storage_path,
-    formato: a.formato,
-    mime: a.mime,
-    largura: a.largura,
-    altura: a.altura,
-    viewUrl: viewByPath.get(a.storage_path) ?? null,
-    downloadUrl: downloadByPath.get(a.storage_path) ?? null,
-  }));
+  const assetsView = lista.map((a) => {
+    const origem = a.storage_path ?? a.url_publica ?? '';
+    return {
+      id: a.id,
+      nome: origem.split('/').pop() ?? origem,
+      formato: a.formato,
+      mime: a.mime,
+      largura: a.largura,
+      altura: a.altura,
+      urlPublica: a.url_publica,
+      viewUrl: a.url_publica ?? (a.storage_path ? viewByPath.get(a.storage_path) : undefined) ?? null,
+      downloadUrl: a.url_publica ?? (a.storage_path ? downloadByPath.get(a.storage_path) : undefined) ?? null,
+    };
+  });
 
   return (
     <div>
@@ -118,6 +124,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
             legenda={post.legenda}
             hashtags={post.hashtags}
             assets={assetsView}
+            ctaUrl={post.cta_url}
             isOwner={isOwner}
           />
 

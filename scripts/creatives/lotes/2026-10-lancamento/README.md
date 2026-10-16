@@ -49,3 +49,15 @@ node scripts/creatives/render.mjs scripts/creatives/lotes/2026-10-lancamento --o
 
 (e apagar o render de peças descartadas, ex. a 11). Enquanto a PR não está em produção, o mesmo arquivo serve
 pela URL do GitHub: `https://raw.githubusercontent.com/gomesgomes5260-boop/nautitour-website/main/public/criativos/...`.
+
+## Material de posts (`/admin/posts`)
+
+As peças deste lote estão cadastradas na aba **Material de posts** do admin (16/out), com a estratégia por peça
+em markdown e os assets apontando pra essas URLs públicas (`social_post_assets.url_publica`) — é a URL que a
+automação de postagem consome. Pra recarregar depois de mudar spec/render:
+
+```bash
+# gera o SQL (idempotente: upsert por slug; status segue a última revisao_* do lote.json)
+node scripts/creatives/publica-posts.mjs 2026-10-lancamento --sql /tmp/posts.sql
+# roda via MCP Supabase (execute_sql) ou no SQL editor. Com env local, troque --sql por --publico.
+```

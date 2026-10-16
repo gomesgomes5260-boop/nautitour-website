@@ -59,17 +59,20 @@ export default async function AdminPostsPage({
   const { data: firstAssets } = rows.length
     ? await admin
         .from('social_post_assets')
-        .select('post_id, storage_path, mime, ordem')
+        .select('post_id, storage_path, url_publica, mime, ordem')
         .in('post_id', rows.map((r) => r.id))
         .order('ordem', { ascending: true })
-    : { data: [] as Array<{ post_id: string; storage_path: string; mime: string | null; ordem: number }> };
-  const thumbByPost = new Map<string, { path: string; mime: string | null }>();
+    : { data: [] as Array<{ post_id: string; storage_path: string | null; url_publica: string | null; mime: string | null; ordem: number }> };
+  const thumbByPost = new Map<string, { path: string | null; url: string | null; mime: string | null }>();
   const assetCount = new Map<string, number>();
   for (const a of firstAssets ?? []) {
     assetCount.set(a.post_id, (assetCount.get(a.post_id) ?? 0) + 1);
-    if (!thumbByPost.has(a.post_id)) thumbByPost.set(a.post_id, { path: a.storage_path, mime: a.mime });
+    if (!thumbByPost.has(a.post_id)) thumbByPost.set(a.post_id, { path: a.storage_path, url: a.url_publica, mime: a.mime });
   }
-  const paths = [...thumbByPost.values()].filter((t) => t.mime?.startsWith('image/')).map((t) => t.path);
+  // Só assina o que vive no bucket; asset com URL pública usa ela direto.
+  const paths = [...thumbByPost.values()]
+    .filter((t) => t.mime?.startsWith('image/') && !t.url && t.path)
+    .map((t) => t.path as string);
   const { data: signed } = paths.length
     ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(paths, 3600)
     : { data: [] };
@@ -175,7 +178,7 @@ export default async function AdminPostsPage({
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {rows.map((p) => {
             const thumb = thumbByPost.get(p.id);
-            const url = thumb ? urlByPath.get(thumb.path) : undefined;
+            const url = thumb ? (thumb.url ?? (thumb.path ? urlByPath.get(thumb.path) : undefined)) : undefined;
             const n = assetCount.get(p.id) ?? 0;
             const isVideo = thumb?.mime === 'video/mp4';
             return (

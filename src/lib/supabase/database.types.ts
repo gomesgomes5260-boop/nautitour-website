@@ -778,7 +778,8 @@ export type Database = {
           mime: string | null
           ordem: number
           post_id: string
-          storage_path: string
+          storage_path: string | null
+          url_publica: string | null
         }
         Insert: {
           altura?: number | null
@@ -789,7 +790,8 @@ export type Database = {
           mime?: string | null
           ordem?: number
           post_id: string
-          storage_path: string
+          storage_path?: string | null
+          url_publica?: string | null
         }
         Update: {
           altura?: number | null
@@ -800,7 +802,8 @@ export type Database = {
           mime?: string | null
           ordem?: number
           post_id?: string
-          storage_path?: string
+          storage_path?: string | null
+          url_publica?: string | null
         }
         Relationships: [
           {

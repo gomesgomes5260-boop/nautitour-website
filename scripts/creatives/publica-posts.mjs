@@ -4,11 +4,23 @@
 // subindo os arquivos pro bucket privado `social-posts`.
 //
 //   node scripts/creatives/publica-posts.mjs 2026-10-lancamento \
-//     [--assets criativos/2026-10-lancamento] [--dry-run] [--status aprovado] \
-//     [--forcar-estrategia]
+//     [--assets public/criativos/2026-10-lancamento] [--publico [base-url]] \
+//     [--sql saida.sql] [--dry-run] [--status aprovado|rascunho] [--forcar-estrategia]
 //
 // Env: NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (lê .env.local se
-// existir). Com --dry-run não precisa de env nem de rede.
+// existir). Com --dry-run ou --sql não precisa de env nem de rede.
+//
+// Modos de arquivo:
+// - padrão: sobe os arquivos pro bucket privado `social-posts` (storage_path).
+// - --publico [base]: NÃO sobe nada; cada asset aponta pra URL pública estável
+//   `<base>/<arquivo>` (default https://www.nautitour.com.br/criativos/<lote>,
+//   que é public/criativos/<lote>/ servido pelo site com noindex). É a URL que a
+//   automação de postagem consome — e o jeito de rodar de onde o Storage não alcança.
+// - --sql <arquivo>: em vez de chamar a API, grava as instruções SQL (upsert dos
+//   posts, assets e estratégia) pra rodar via MCP/SQL editor. Implica --publico.
+//   O MCP `execute_sql` trava em DELETE (pede confirmação ao dono e estoura o
+//   timeout): numa primeira carga, use --sem-delete; recargas (que precisam
+//   recriar os assets) vão pelo SQL editor.
 //
 // Regras:
 // - canal do spec → enum social_rede (feed→instagram_feed, story→instagram_story,
@@ -16,14 +28,17 @@
 // - specs de FEED que dividem o mesmo prefixo numérico (07a..07d) viram UM post
 //   tipo `carrossel` com os quadros como assets ordenados; stories com letras
 //   (10a..10d) são variantes independentes.
-// - status default `aprovado`; spec com "ATENÇÃO" nas observações entra como
-//   `rascunho` (ressalva pendente de confirmação do dono).
+// - status: spec com "ATENÇÃO" nas observações entra como `rascunho` (ressalva
+//   pendente de confirmação do dono). Se o lote.json tiver uma revisão
+//   (`revisao_*.aprovadas`), só o que está em `aprovadas` entra como `aprovado` e o
+//   resto fica `rascunho`; sem revisão, vale --status (default `aprovado`).
+// - specs com nome começando em `_` (descartados) são ignorados.
 // - estrategia_md por peça vem dos campos do spec + persona (pilares-e-personas.md)
 //   + fatos (fatos-do-produto.md). O .md geral (social_strategy) vem de voz.md +
 //   pilares-e-personas.md + sistema-visual-social.md e só é sobrescrito se estiver
 //   vazio (ou com --forcar-estrategia), pra não atropelar edição do owner.
 // - Idempotente: upsert por slug; assets são recriados; upload com x-upsert.
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve, join, dirname, extname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -39,8 +54,14 @@ if (!lote) {
 }
 const dryRun = args.includes('--dry-run');
 const forcarEstrategia = args.includes('--forcar-estrategia');
-const statusDefault = args.includes('--status') ? args[args.indexOf('--status') + 1] : 'aprovado';
-const assetsDir = resolve(repo, args.includes('--assets') ? args[args.indexOf('--assets') + 1] : join('criativos', lote));
+const statusExplicito = args.includes('--status');
+const statusDefault = statusExplicito ? args[args.indexOf('--status') + 1] : 'aprovado';
+const assetsDir = resolve(repo, args.includes('--assets') ? args[args.indexOf('--assets') + 1] : join('public', 'criativos', lote));
+const sqlOut = args.includes('--sql') ? resolve(process.cwd(), args[args.indexOf('--sql') + 1]) : null;
+const semDelete = args.includes('--sem-delete'); // 1ª carga via MCP: sem DELETE dos assets
+const publico = args.includes('--publico') || !!sqlOut;
+const publicoArg = args.includes('--publico') ? args[args.indexOf('--publico') + 1] : undefined;
+const publicoBase = (publicoArg && !publicoArg.startsWith('--') ? publicoArg : `https://www.nautitour.com.br/criativos/${lote}`).replace(/\/$/, '');
 
 // .env.local best-effort (sem dependência de dotenv)
 const envPath = join(repo, '.env.local');
@@ -52,16 +73,23 @@ if (existsSync(envPath)) {
 }
 const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-if (!dryRun && (!SUPABASE_URL || !SERVICE_KEY)) {
-  console.error('Faltam NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (ou use --dry-run).');
+if (!dryRun && !sqlOut && (!SUPABASE_URL || !SERVICE_KEY)) {
+  console.error('Faltam NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (ou use --dry-run / --sql).');
   process.exit(1);
 }
 
 // ----------------------------------------------------------------- specs
 const loteDir = join(repo, 'scripts', 'creatives', 'lotes', lote);
-const specFiles = readdirSync(loteDir).filter((f) => f.endsWith('.json') && f !== 'lote.json').sort();
+const specFiles = readdirSync(loteDir)
+  .filter((f) => f.endsWith('.json') && f !== 'lote.json' && !f.startsWith('_'))
+  .sort();
 if (specFiles.length === 0) { console.error(`nenhum spec em ${loteDir}`); process.exit(1); }
 const specs = specFiles.map((f) => ({ file: f, ...JSON.parse(readFileSync(join(loteDir, f), 'utf8')) }));
+
+// Revisão do dono registrada no lote.json (revisao_<data>.aprovadas) — a mais recente vale.
+const loteMeta = existsSync(join(loteDir, 'lote.json')) ? JSON.parse(readFileSync(join(loteDir, 'lote.json'), 'utf8')) : {};
+const revisoes = Object.keys(loteMeta).filter((k) => k.startsWith('revisao_')).sort();
+const aprovadasNoLote = revisoes.length ? new Set(loteMeta[revisoes.at(-1)].aprovadas ?? []) : null;
 
 const REDE = {
   feed: 'instagram_feed', story: 'instagram_story', stories: 'instagram_story',
@@ -202,12 +230,34 @@ function estrategiaGeralMd() {
 }
 
 // ----------------------------------------------------------------- assets
-function dimensoesPng(buf) {
+function dimensoes(buf) {
+  // PNG: IHDR
   if (buf.length > 24 && buf.readUInt32BE(12) === 0x49484452) {
     return { largura: buf.readUInt32BE(16), altura: buf.readUInt32BE(20) };
   }
+  // JPEG: anda pelos marcadores até um SOFn (C0–CF, menos C4/C8/CC)
+  if (buf.length > 4 && buf[0] === 0xff && buf[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < buf.length) {
+      if (buf[i] !== 0xff) { i++; continue; }
+      const m = buf[i + 1];
+      if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) {
+        return { altura: buf.readUInt16BE(i + 5), largura: buf.readUInt16BE(i + 7) };
+      }
+      i += 2 + buf.readUInt16BE(i + 2);
+    }
+  }
   return { largura: null, altura: null };
 }
+
+// SQL: literal com dollar-quoting (texto livre vira $sp$...$sp$; sem escape manual)
+const sqlLit = (v) => {
+  if (v === null || v === undefined) return 'null';
+  if (typeof v === 'number') return String(v);
+  if (Array.isArray(v)) return `array[${v.map(sqlLit).join(',')}]::text[]`;
+  const s = String(v);
+  return s.includes('$sp$') ? `'${s.replace(/'/g, "''")}'` : `$sp$${s}$sp$`;
+};
 
 function arquivosDoSpec(s) {
   // render.mjs grava <nome>-<formato>.<png|jpg>; vídeo exportado à parte vira <nome>-<formato>.mp4
@@ -252,7 +302,13 @@ async function main() {
     const todosArquivos = g.quadros.flatMap((q) => arquivosDoSpec(q).map((a) => ({ ...a, quadro: q })));
     const temVideo = todosArquivos.some((a) => extname(a.path) === '.mp4');
     const tipo = g.carrossel ? 'carrossel' : temVideo ? 'video' : 'imagem';
-    const status = /ATEN[ÇC][AÃ]O/i.test(s.observacoes ?? '') ? 'rascunho' : statusDefault;
+    const comRessalva = /ATEN[ÇC][AÃ]O/i.test(s.observacoes ?? '');
+    const aprovadaPeloDono = aprovadasNoLote && !statusExplicito
+      ? (aprovadasNoLote.has(g.nomeBase) || g.quadros.some((q) => aprovadasNoLote.has(q.nome)))
+      : null;
+    const status = comRessalva ? 'rascunho'
+      : aprovadaPeloDono === null ? statusDefault
+      : aprovadaPeloDono ? 'aprovado' : 'rascunho';
     const faltando = g.quadros.flatMap((q) =>
       (q.formatos ?? []).filter((f) => !arquivosDoSpec(q).some((a) => a.formato === f)).map((f) => `${q.nome}-${f}`));
     plano.push({
@@ -273,7 +329,7 @@ async function main() {
     });
   }
 
-  console.log(`Lote ${lote}: ${specs.length} specs → ${plano.length} posts`);
+  console.log(`Lote ${lote}: ${specs.length} specs → ${plano.length} posts${publico ? ` · assets por URL pública (${publicoBase})` : ''}`);
   for (const p of plano) {
     const marca = p.faltando.length ? ` (FALTAM: ${p.faltando.join(', ')})` : '';
     console.log(`- ${p.slug} · ${p.rede} · ${p.tipo} · ${p.status} · ${p.todosArquivos.length} arquivo(s)${marca}`);
@@ -281,9 +337,51 @@ async function main() {
   const semArquivo = plano.filter((p) => p.todosArquivos.length === 0);
   if (semArquivo.length) {
     console.warn(`\n! ${semArquivo.length} post(s) sem NENHUM export em ${assetsDir} — serão pulados.`);
-    console.warn('  Renderize antes: node scripts/creatives/render.mjs scripts/creatives/lotes/' + lote + ' --out criativos/' + lote);
+    console.warn('  Renderize antes: node scripts/creatives/render.mjs scripts/creatives/lotes/' + lote + ' --out public/criativos/' + lote + ' --jpg');
   }
   if (dryRun) { console.log('\n(dry-run: nada enviado)'); return; }
+
+  // ---- modo SQL: grava as instruções pra rodar via MCP / SQL editor
+  if (sqlOut) {
+    const linhas = [
+      `-- Material de posts · lote ${lote} · gerado por scripts/creatives/publica-posts.mjs em ${new Date().toISOString()}`,
+      `-- Assets apontam pra URL pública (${publicoBase}); nada vai pro bucket.`,
+      'begin;',
+    ];
+    for (const p of plano) {
+      if (p.todosArquivos.length === 0) continue;
+      const estrategia = estrategiaMd({ capa: p.g.capa, rede: p.rede, formato: p.formato, tipo: p.tipo }, p.g.quadros);
+      linhas.push(
+        '',
+        `-- ${p.slug}`,
+        `insert into public.social_posts (slug, titulo, pilar, persona, rede, formato, tipo, estrategia_md, legenda, hashtags, cta_texto, cta_url, status, lote)`,
+        `values (${[p.slug, p.titulo, p.pilar, p.persona].map(sqlLit).join(', ')}, ${sqlLit(p.rede)}::public.social_rede, ${sqlLit(p.formato)}, ${sqlLit(p.tipo)}::public.social_tipo, ${sqlLit(estrategia)}, ${sqlLit(p.legenda)}, ${sqlLit(p.hashtags)}, ${sqlLit(p.cta_texto)}, ${sqlLit(p.cta_url)}, ${sqlLit(p.status)}::public.social_status, ${sqlLit(p.lote)})`,
+        `on conflict (slug) do update set titulo = excluded.titulo, pilar = excluded.pilar, persona = excluded.persona, rede = excluded.rede, formato = excluded.formato, tipo = excluded.tipo, estrategia_md = excluded.estrategia_md, legenda = excluded.legenda, hashtags = excluded.hashtags, cta_texto = excluded.cta_texto, cta_url = excluded.cta_url, lote = excluded.lote;`,
+      );
+      if (!semDelete) {
+        linhas.push(`delete from public.social_post_assets where post_id = (select id from public.social_posts where slug = ${sqlLit(p.slug)});`);
+      }
+      let ordem = 0;
+      for (const a of p.todosArquivos) {
+        const ext = extname(a.path).toLowerCase();
+        const dims = ext === '.mp4' ? { largura: null, altura: null } : dimensoes(readFileSync(a.path));
+        linhas.push(
+          `insert into public.social_post_assets (post_id, storage_path, url_publica, formato, ordem, largura, altura, mime)`,
+          `select id, null, ${sqlLit(`${publicoBase}/${basename(a.path)}`)}, ${sqlLit(a.formato)}, ${ordem++}, ${sqlLit(dims.largura)}, ${sqlLit(dims.altura)}, ${sqlLit(MIME[ext])} from public.social_posts where slug = ${sqlLit(p.slug)};`,
+        );
+      }
+    }
+    linhas.push(
+      '',
+      '-- estratégia geral: só se vazia' + (forcarEstrategia ? ' (ou forçada)' : ''),
+      `update public.social_strategy set conteudo_md = ${sqlLit(estrategiaGeralMd())}, updated_at = now() where id = 1${forcarEstrategia ? '' : " and btrim(conteudo_md) = ''"};`,
+      'commit;',
+      '',
+    );
+    writeFileSync(sqlOut, linhas.join('\n'));
+    console.log(`\n✓ SQL gravado em ${sqlOut} (${plano.filter((p) => p.todosArquivos.length).length} posts). Rode via MCP Supabase (execute_sql) ou SQL editor.`);
+    return;
+  }
 
   for (const p of plano) {
     if (p.todosArquivos.length === 0) continue;
@@ -310,14 +408,16 @@ async function main() {
       const ext = extname(a.path).toLowerCase();
       const mime = MIME[ext];
       const destino = `${lote}/${basename(a.path)}`;
-      await upload(a.path, destino, mime);
-      const dims = ext === '.mp4' ? { largura: null, altura: null } : dimensoesPng(readFileSync(a.path));
+      if (!publico) await upload(a.path, destino, mime);
+      const dims = ext === '.mp4' ? { largura: null, altura: null } : dimensoes(readFileSync(a.path));
       await sb(`/rest/v1/social_post_assets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([{
-          post_id: row.id, storage_path: destino, formato: a.formato,
-          ordem: ordem++, mime, ...dims,
+          post_id: row.id,
+          storage_path: publico ? null : destino,
+          url_publica: publico ? `${publicoBase}/${basename(a.path)}` : null,
+          formato: a.formato, ordem: ordem++, mime, ...dims,
         }]),
       });
     }
