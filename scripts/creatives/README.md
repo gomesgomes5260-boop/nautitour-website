@@ -39,6 +39,7 @@ de renderizar, então precisa de rede.
 | `formatos` | `4x5` 1080×1350 · `1x1` 1080×1080 · `9x16` 1080×1920 (área segura de 250 px) · `1200x628` anúncio paisagem |
 | `foto_hero` | caminho relativo à raiz do repo (ou absoluto) |
 | `heroPos` | `object-position` da foto, opcional |
+| `chapeu` | (molde HF) linha curta em caixa-alta e turquesa-clara acima do título, ex.: a cidade. Tamanho em `zonas.texto.chapeu` (% da largura, padrão 2.8) |
 | `titulo` | até 5 palavras (regra do brand kit) |
 | `fato` | uma linha, opcional |
 | `cta.tipo` | `site` (cartão branco) ou `whatsapp` (cartão com ícone e texto verde). `destino` fica no spec pra legenda e rastreio; não é desenhado |

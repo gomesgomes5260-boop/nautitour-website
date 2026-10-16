@@ -15,6 +15,7 @@
   .zone { position: absolute; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: .3em; }
   .zone.left { align-items: flex-start; text-align: left; }
   .zone.right { align-items: flex-end; text-align: right; }
+  .kicker { font-weight: 700; line-height: 1.1; letter-spacing: .12em; text-transform: uppercase; color: var(--ee-turquesa-clara); text-shadow: 0 2px 8px rgba(7,42,46,.45); margin-bottom: .15em; }
   .title { font-weight: 700; line-height: 1.04; letter-spacing: -.005em; color: var(--ee-offwhite); text-wrap: balance; text-shadow: 0 2px 10px rgba(7,42,46,.45); }
   .fact { font-weight: 600; line-height: 1.25; color: var(--ee-turquesa-clara); text-shadow: 0 1px 6px rgba(7,42,46,.4); }
   .cta { margin-top: .5em; background: #fff; color: var(--ee-petroleo); font-weight: 700; line-height: 1; padding: .62em 1.15em; border-radius: 999px; box-shadow: 0 8px 20px rgba(7,42,46,.35); white-space: nowrap; display: inline-flex; align-items: center; gap: .45em; }
@@ -37,7 +38,7 @@
 <body>
 <div class="card" id="card">
   <img class="base" id="base" alt="">
-  <div class="zone" id="zone"><div class="title" id="title"></div><div class="fact" id="fact"></div><div class="cta" id="cta"></div></div>
+  <div class="zone" id="zone"><div class="kicker" id="kicker"></div><div class="title" id="title"></div><div class="fact" id="fact"></div><div class="cta" id="cta"></div></div>
   <div class="logos" id="logos"></div>
   <div id="rotulos"></div>
   <div id="polaroides"></div>
@@ -54,6 +55,7 @@
   const zone = document.getElementById('zone'); pct(zone, Z.texto); if (Z.texto.alinhar === 'esquerda') zone.classList.add('left'); if (Z.texto.alinhar === 'direita') zone.classList.add('right');
   // tamanhos em % da largura da arte: independem do formato
   const vw = (p) => (f.W * p / 100) + 'px';
+  const kicker = document.getElementById('kicker'); if (SPEC.chapeu) { kicker.textContent = SPEC.chapeu; kicker.style.fontSize = vw(Z.texto.chapeu || 2.8); } else kicker.remove(); // chapéu: linha curta acima do título (ex.: a cidade)
   const title = document.getElementById('title'); title.textContent = SPEC.titulo || ''; title.style.fontSize = vw(Z.texto.titulo);
   const fact = document.getElementById('fact'); if (SPEC.fato) { fact.textContent = SPEC.fato; fact.style.fontSize = vw(Z.texto.fato); } else fact.remove();
   const cta = document.getElementById('cta');
