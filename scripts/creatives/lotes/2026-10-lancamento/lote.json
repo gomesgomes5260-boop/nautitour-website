@@ -22,7 +22,8 @@
     "10a-story-amanha-9h30-12h",
     "10b-story-amanha-11h30",
     "10c-story-amanha-12h",
-    "12-anuncio-site"
+    "12-anuncio-site",
+    "10d-story-amanha-11h30-14h30"
   ],
   "revisao_2026-10-10": {
     "aprovadas": [
@@ -57,5 +58,8 @@
       "08c-como-funciona-paradas",
       "08d-como-funciona-bar"
     ]
-  }
+  },
+  "adicoes_2026-10-16": [
+    "10d-story-amanha-11h30-14h30 — versão 11h30 e 14h30 com Armação dos Búzios no texto (pedido do dono). Regra de dias pendente: fatos-do-produto.md lista 11h30 só seg–sex e não tem 14h30."
+  ]
 }

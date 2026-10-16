@@ -1,0 +1,176 @@
+{
+ "formato": "story",
+ "transicao": {
+  "tipo": "rasgo-video",
+  "dur": 1.5,
+  "borda": 30,
+  "videos": [
+   {
+    "src": "/home/user/work/tear-a.mp4",
+    "in": 0.8
+   },
+   {
+    "src": "/home/user/work/tear-vert.mp4",
+    "in": 0.8
+   },
+   {
+    "src": "/home/user/work/tear-a.mp4",
+    "in": 0.8,
+    "flip": "hv"
+   },
+   {
+    "src": "/home/user/work/tear-diag.mp4",
+    "in": 0.8
+   },
+   {
+    "src": "/home/user/work/tear-a.mp4",
+    "in": 0.8,
+    "flip": "h"
+   }
+  ]
+ },
+ "logo_tam": 0.3,
+ "fontes": {
+  "titulo": "/home/user/fonts/Poppins-Bold.ttf",
+  "corpo": "/home/user/fonts/Poppins-Medium.ttf"
+ },
+ "clipes": [
+  {
+   "src": "/home/user/escuna/proxy/DJI_0988.mp4",
+   "in": 2.0,
+   "dur": 4.2,
+   "textos": [
+    {
+     "texto": "Armação dos Búzios",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 0.3,
+     "fim": 4.2
+    },
+    {
+     "texto": "12 praias e 3 ilhas em 2h30 de escuna",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 0.7,
+     "fim": 4.2
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0981.mp4",
+   "in": 0.0,
+   "dur": 4.0,
+   "textos": [
+    {
+     "texto": "3 paradas pra mergulho",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 1.7,
+     "fim": 4.0
+    },
+    {
+     "texto": "20 minutos em cada uma",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 2.1,
+     "fim": 4.0
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/DJI_0989.mp4",
+   "in": 13.0,
+   "dur": 4.0,
+   "textos": [
+    {
+     "texto": "Boia e tapete flutuante",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 1.7,
+     "fim": 4.0
+    },
+    {
+     "texto": "colete pra quem quiser",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 2.1,
+     "fim": 4.0
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/IMG_8725.mp4",
+   "in": 4.0,
+   "dur": 4.0,
+   "textos": [
+    {
+     "texto": "Saídas 11h30 e 14h30",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.7,
+     "inicio": 1.7,
+     "fim": 4.0
+    },
+    {
+     "texto": "R$ 60 por pessoa",
+     "fonte": "corpo",
+     "tam": 0.034,
+     "y": 0.76,
+     "inicio": 2.1,
+     "fim": 4.0
+    }
+   ]
+  },
+  {
+   "src": "/home/user/escuna/proxy/IMG_8661.mp4",
+   "in": 0.0,
+   "dur": 3.3,
+   "textos": [
+    {
+     "texto": "Bar a bordo",
+     "fonte": "titulo",
+     "tam": 0.066,
+     "y": 0.74,
+     "inicio": 1.7,
+     "fim": 3.3
+    }
+   ]
+  }
+ ],
+ "final": {
+  "dur": 3.0,
+  "logo_tam": 0.5,
+  "logo_y": 0.42,
+  "fundo": {
+   "src": "/home/user/work/fundo-petroleo-01.jpg",
+   "fx": 0.2,
+   "fy": 0.5
+  },
+  "textos": [
+   {
+    "texto": "Reserve em nautitour.com.br",
+    "fonte": "corpo",
+    "tam": 0.038,
+    "y": 0.64,
+    "inicio": 1.6,
+    "fim": 3.0
+   },
+   {
+    "texto": "Armação dos Búzios · Rio de Janeiro",
+    "fonte": "titulo",
+    "tam": 0.03,
+    "y": 0.71,
+    "inicio": 1.9,
+    "fim": 3.0,
+    "cor": "#5FB3B8"
+   }
+  ]
+ },
+ "_nota": "v4 · versão horários 11h30 e 14h30 (pedido 16/out). Armação dos Búzios nomeada na abertura e no cartão. Horários sem dia da semana: fatos-do-produto.md lista 11h30 só seg–sex e não tem 14h30 — confirmar regra com o dono. Mesma mecânica rasgo-video da v4."
+}

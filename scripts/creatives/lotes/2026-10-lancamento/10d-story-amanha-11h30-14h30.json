@@ -1,0 +1,43 @@
+{
+  "nome": "10d-story-amanha-11h30-14h30",
+  "molde": "HF",
+  "formatos": [
+    "9x16"
+  ],
+  "arte_base": "scripts/creatives/bases/story-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 7,
+      "y": 53,
+      "w": 86,
+      "h": 31,
+      "alinhar": "centro",
+      "titulo": 6.9,
+      "fato": 3.3,
+      "cta": 3.3,
+      "chapeu": 3.4
+    },
+    "logo": {
+      "x": 30,
+      "y": 88,
+      "w": 40,
+      "h": 8
+    }
+  },
+  "titulo": "Amanhã, 11h30 e 14h30.",
+  "fato": "Ainda tem lugar. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Chama no WhatsApp",
+    "tipo": "whatsapp",
+    "destino": "https://nautitour.com.br/api/wa?s=ig-story-amanha"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "story",
+  "persona": "Felipe (grupo)",
+  "destino": "https://nautitour.com.br/api/wa?s=ig-story-amanha",
+  "legenda": "Sticker de link pro WhatsApp. Texto do sticker: \"Chamar\".",
+  "hashtags": [],
+  "observacoes": "Versão pedida em 16/out: horários 11h30 e 14h30 com Armação dos Búzios no texto. ATENÇÃO: fatos-do-produto.md lista 11h30 só de seg a sex e não tem 14h30 — confirmar a regra de dias antes de publicar e atualizar o doc de fatos. Usar só quando a saída de amanhã tiver vaga de verdade (conferir no admin).",
+  "chapeu": "Armação dos Búzios"
+}

@@ -35,3 +35,18 @@ Specs `specs/real-youtube.json`, `specs/real-feed.json`, `specs/real-story.json`
 
 - Pasta do Drive liberada por link em 14/out; lembrar de voltar pra Restrito quando a edição acabar.
 - Sem trilha/áudio ainda (ver opções de áudio no doc da rodada).
+
+## Transição "rasgo de kraft" (14/out)
+
+`monta.py` aceita `"transicao": {"tipo": "rasgo", "dur": 0.6, "tira": "<png com alpha>", "direcao": "cima|baixo|alterna"}`.
+A tira **oficial é gerada no Higgsfield** (`gpt_image_2_5`, `aspect_ratio` 21:9, `quality` high, `resolution` 2k,
+`background` transparent, `image_references` = `scripts/creatives/bases/fundo-enquete-02.jpg`) com o prompt:
+
+> A single horizontal strip of torn kraft paper spanning the entire width of the image, centered vertically, about
+> one third of the image height tall. Both the top edge and the bottom edge are irregularly hand-torn, with soft
+> fibrous white paper fibers along the tears, small jagged bits and gentle waves, like paper ripped by hand. The paper
+> has the same warm off-white kraft texture, grain and subtle fibers as the reference image. Flat, evenly lit, no
+> shadow, no other objects, no text, no leaves, no compass. Everything outside the strip is fully transparent.
+
+Depois: recortar pelo alpha, redimensionar pra largura do vídeo e adicionar sombra suave (6 px pra baixo, blur 10,
+55 %). `tira.py` (tira procedural) fica só como fallback sem crédito — o dono reprovou o visual dela.
