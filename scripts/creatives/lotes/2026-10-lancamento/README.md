@@ -26,7 +26,7 @@ por peça; o resultado volta pra cá como ajuste nos specs.
 | 07a–d | curiosidade-praias | Engajamento | feed | 4:5 ×4 | virou carrossel de 4 cards (polaroide pintada + foto encaixada no quadro, CTA no último). Rodada 3: legenda maior em Kalam; o giro da polaroide alterna entre os cards (ímpares anti-horário, pares horário via `espelhar`, título à direita) |
 | 08a–d | como-funciona | Educativo | feed | 4:5 ×4 | virou carrossel de 4 cards (embarque → paradas → bar + CTA) |
 | 09 | story-horarios | Venda | story | 9:16 | aprovada |
-| 10a/b/c | story-amanha | Venda | story | 9:16 ×3 | 3 versões (9h30 e 12h / 11h30 / 12h) pedidas pelo dono; o 10 original saiu |
+| 10a/b/c/d | story-amanha | Venda | story | 9:16 ×4 | 4 versões (9h30 e 12h / 11h30 / 12h / **11h30 e 14h30 com Armação dos Búzios**, 16/out) pedidas pelo dono; o 10 original saiu. A 10d fica com regra de dias pendente (fatos-do-produto não tem 14h30) |
 | 11 | anuncio-whatsapp | Venda | meta-ads | 1200×628 | **descartada** (`_descartado-11-…json`) |
 | 12 | anuncio-site | Venda | meta-ads | 1200×628 | refeita: anuncio-kraft (logos na faixa de papel) |
 
