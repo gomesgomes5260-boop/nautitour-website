@@ -768,6 +768,140 @@ export type Database = {
           },
         ]
       }
+      social_post_assets: {
+        Row: {
+          altura: number | null
+          created_at: string
+          formato: string | null
+          id: string
+          largura: number | null
+          mime: string | null
+          ordem: number
+          post_id: string
+          storage_path: string
+        }
+        Insert: {
+          altura?: number | null
+          created_at?: string
+          formato?: string | null
+          id?: string
+          largura?: number | null
+          mime?: string | null
+          ordem?: number
+          post_id: string
+          storage_path: string
+        }
+        Update: {
+          altura?: number | null
+          created_at?: string
+          formato?: string | null
+          id?: string
+          largura?: number | null
+          mime?: string | null
+          ordem?: number
+          post_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_post_assets_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          agendado_para: string | null
+          created_at: string
+          created_by: string | null
+          cta_texto: string | null
+          cta_url: string | null
+          estrategia_md: string
+          formato: string | null
+          hashtags: string[]
+          id: string
+          legenda: string
+          lote: string | null
+          persona: string | null
+          pilar: string | null
+          publicado_em: string | null
+          rede: Database["public"]["Enums"]["social_rede"]
+          slug: string
+          status: Database["public"]["Enums"]["social_status"]
+          tipo: Database["public"]["Enums"]["social_tipo"]
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          agendado_para?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_texto?: string | null
+          cta_url?: string | null
+          estrategia_md?: string
+          formato?: string | null
+          hashtags?: string[]
+          id?: string
+          legenda?: string
+          lote?: string | null
+          persona?: string | null
+          pilar?: string | null
+          publicado_em?: string | null
+          rede: Database["public"]["Enums"]["social_rede"]
+          slug: string
+          status?: Database["public"]["Enums"]["social_status"]
+          tipo?: Database["public"]["Enums"]["social_tipo"]
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          agendado_para?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_texto?: string | null
+          cta_url?: string | null
+          estrategia_md?: string
+          formato?: string | null
+          hashtags?: string[]
+          id?: string
+          legenda?: string
+          lote?: string | null
+          persona?: string | null
+          pilar?: string | null
+          publicado_em?: string | null
+          rede?: Database["public"]["Enums"]["social_rede"]
+          slug?: string
+          status?: Database["public"]["Enums"]["social_status"]
+          tipo?: Database["public"]["Enums"]["social_tipo"]
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_strategy: {
+        Row: {
+          conteudo_md: string
+          id: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          conteudo_md?: string
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          conteudo_md?: string
+          id?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       tour_schedules: {
         Row: {
           capacity: number
@@ -1226,6 +1360,17 @@ export type Database = {
       payment_method: "pix" | "credit_card" | "boleto"
       payment_status: "pending" | "paid" | "failed" | "refunded" | "expired"
       schedule_status: "open" | "sold_out" | "cancelled"
+      social_rede:
+        | "instagram_feed"
+        | "instagram_story"
+        | "instagram_reels"
+        | "facebook"
+        | "tiktok"
+        | "youtube_shorts"
+        | "whatsapp_status"
+        | "meta_ads"
+      social_status: "rascunho" | "aprovado" | "publicado" | "descartado"
+      social_tipo: "imagem" | "video" | "carrossel"
       tour_type: "scheduled" | "private" | "inquiry"
     }
     CompositeTypes: {
@@ -1365,6 +1510,18 @@ export const Constants = {
       payment_method: ["pix", "credit_card", "boleto"],
       payment_status: ["pending", "paid", "failed", "refunded", "expired"],
       schedule_status: ["open", "sold_out", "cancelled"],
+      social_rede: [
+        "instagram_feed",
+        "instagram_story",
+        "instagram_reels",
+        "facebook",
+        "tiktok",
+        "youtube_shorts",
+        "whatsapp_status",
+        "meta_ads",
+      ],
+      social_status: ["rascunho", "aprovado", "publicado", "descartado"],
+      social_tipo: ["imagem", "video", "carrossel"],
       tour_type: ["scheduled", "private", "inquiry"],
     },
   },
