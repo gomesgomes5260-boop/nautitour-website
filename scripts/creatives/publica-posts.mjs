@@ -18,6 +18,9 @@
 //   automação de postagem consome — e o jeito de rodar de onde o Storage não alcança.
 // - --sql <arquivo>: em vez de chamar a API, grava as instruções SQL (upsert dos
 //   posts, assets e estratégia) pra rodar via MCP/SQL editor. Implica --publico.
+//   O MCP `execute_sql` trava em DELETE (pede confirmação ao dono e estoura o
+//   timeout): numa primeira carga, use --sem-delete; recargas (que precisam
+//   recriar os assets) vão pelo SQL editor.
 //
 // Regras:
 // - canal do spec → enum social_rede (feed→instagram_feed, story→instagram_story,
@@ -55,6 +58,7 @@ const statusExplicito = args.includes('--status');
 const statusDefault = statusExplicito ? args[args.indexOf('--status') + 1] : 'aprovado';
 const assetsDir = resolve(repo, args.includes('--assets') ? args[args.indexOf('--assets') + 1] : join('public', 'criativos', lote));
 const sqlOut = args.includes('--sql') ? resolve(process.cwd(), args[args.indexOf('--sql') + 1]) : null;
+const semDelete = args.includes('--sem-delete'); // 1ª carga via MCP: sem DELETE dos assets
 const publico = args.includes('--publico') || !!sqlOut;
 const publicoArg = args.includes('--publico') ? args[args.indexOf('--publico') + 1] : undefined;
 const publicoBase = (publicoArg && !publicoArg.startsWith('--') ? publicoArg : `https://www.nautitour.com.br/criativos/${lote}`).replace(/\/$/, '');
@@ -353,8 +357,10 @@ async function main() {
         `insert into public.social_posts (slug, titulo, pilar, persona, rede, formato, tipo, estrategia_md, legenda, hashtags, cta_texto, cta_url, status, lote)`,
         `values (${[p.slug, p.titulo, p.pilar, p.persona].map(sqlLit).join(', ')}, ${sqlLit(p.rede)}::public.social_rede, ${sqlLit(p.formato)}, ${sqlLit(p.tipo)}::public.social_tipo, ${sqlLit(estrategia)}, ${sqlLit(p.legenda)}, ${sqlLit(p.hashtags)}, ${sqlLit(p.cta_texto)}, ${sqlLit(p.cta_url)}, ${sqlLit(p.status)}::public.social_status, ${sqlLit(p.lote)})`,
         `on conflict (slug) do update set titulo = excluded.titulo, pilar = excluded.pilar, persona = excluded.persona, rede = excluded.rede, formato = excluded.formato, tipo = excluded.tipo, estrategia_md = excluded.estrategia_md, legenda = excluded.legenda, hashtags = excluded.hashtags, cta_texto = excluded.cta_texto, cta_url = excluded.cta_url, lote = excluded.lote;`,
-        `delete from public.social_post_assets where post_id = (select id from public.social_posts where slug = ${sqlLit(p.slug)});`,
       );
+      if (!semDelete) {
+        linhas.push(`delete from public.social_post_assets where post_id = (select id from public.social_posts where slug = ${sqlLit(p.slug)});`);
+      }
       let ordem = 0;
       for (const a of p.todosArquivos) {
         const ext = extname(a.path).toLowerCase();
