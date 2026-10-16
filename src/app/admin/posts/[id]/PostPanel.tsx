@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, Check, Download, Trash2, Upload, Film } from 'lucide-react';
+import { Copy, Check, Download, Trash2, Upload, Film, Link2 } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import { STATUS_META, type SocialStatus } from '../redes';
 import { uploadAssetsAction, deleteAssetAction, setStatusAction, deletePostAction } from '../actions';
@@ -14,23 +14,37 @@ type AssetView = {
   mime: string | null;
   largura: number | null;
   altura: number | null;
+  urlPublica: string | null;
   viewUrl: string | null;
   downloadUrl: string | null;
 };
 
 export default function PostPanel({
-  postId, status, legenda, hashtags, assets, isOwner,
+  postId, status, legenda, hashtags, assets, ctaUrl, isOwner,
 }: {
   postId: string;
   status: SocialStatus;
   legenda: string;
   hashtags: string[];
   assets: AssetView[];
+  ctaUrl: string | null;
   isOwner: boolean;
 }) {
   const router = useRouter();
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const urlsPublicas = assets.filter((a) => a.urlPublica).map((a) => a.urlPublica as string);
+
+  async function copiarUrl(texto: string, chave: string) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiedUrl(chave);
+      setTimeout(() => setCopiedUrl(null), 2500);
+    } catch {
+      setErr('Não consegui copiar — selecione e copie manualmente.');
+    }
+  }
   const [confirmaApagarPost, setConfirmaApagarPost] = useState(false);
   const [apagarAsset, setApagarAsset] = useState<AssetView | null>(null);
   const [pending, startTransition] = useTransition();
@@ -121,14 +135,26 @@ export default function PostPanel({
                   {a.formato ?? '—'}{a.largura ? ` · ${a.largura}×${a.altura}` : ''}
                 </span>
                 <span className="flex items-center gap-1 shrink-0">
+                  {a.urlPublica && (
+                    <button
+                      type="button"
+                      onClick={() => copiarUrl(a.urlPublica as string, a.id)}
+                      className="inline-flex items-center gap-1 rounded-full border border-[var(--color-charcoal-200)] bg-white text-[var(--color-charcoal-900)] px-2 py-1 font-bold hover:border-[var(--color-charcoal-400)] transition-colors"
+                      title="Copiar URL pública"
+                    >
+                      {copiedUrl === a.id ? <Check size={11} className="text-[var(--color-success)]" /> : <Link2 size={11} />}
+                      URL
+                    </button>
+                  )}
                   {a.downloadUrl && (
                     <a
                       href={a.downloadUrl}
+                      download={a.urlPublica ? a.nome : undefined}
                       className="inline-flex items-center gap-1 rounded-full bg-[var(--color-charcoal-900)] text-white px-2 py-1 font-bold hover:bg-black transition-colors"
                       title={`Baixar ${a.nome}`}
                     >
                       <Download size={11} />
-                      {a.mime === 'video/mp4' ? 'MP4' : 'PNG'}
+                      {a.mime === 'video/mp4' ? 'MP4' : a.mime === 'image/jpeg' ? 'JPG' : 'PNG'}
                     </a>
                   )}
                   <button
@@ -143,6 +169,40 @@ export default function PostPanel({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* URLs públicas estáveis — é o que a automação de postagem (Meta API, n8n, Adspirer) consome */}
+      {urlsPublicas.length > 0 && (
+        <div className="mt-5 pt-5 border-t border-[var(--color-charcoal-100)]">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-charcoal-500)]">
+              URLs públicas (automação)
+            </h3>
+            <button
+              type="button"
+              onClick={() => copiarUrl([...urlsPublicas, ...(ctaUrl ? [`Destino: ${ctaUrl}`] : [])].join('\n'), 'todas')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-charcoal-200)] bg-white text-[var(--color-charcoal-900)] text-xs font-bold px-3 py-1.5 hover:border-[var(--color-charcoal-400)] transition-colors"
+            >
+              {copiedUrl === 'todas' ? <Check size={13} className="text-[var(--color-success)]" /> : <Copy size={13} />}
+              {copiedUrl === 'todas' ? 'Copiado!' : 'Copiar todas'}
+            </button>
+          </div>
+          <ul className="space-y-1">
+            {urlsPublicas.map((u) => (
+              <li key={u} className="font-mono text-[11px] text-[var(--color-charcoal-700)] break-all">
+                <a href={u} target="_blank" rel="noreferrer" className="hover:underline">{u}</a>
+              </li>
+            ))}
+            {ctaUrl && (
+              <li className="font-mono text-[11px] text-[var(--color-charcoal-500)] break-all">
+                Destino do CTA: <a href={ctaUrl} target="_blank" rel="noreferrer" className="hover:underline">{ctaUrl}</a>
+              </li>
+            )}
+          </ul>
+          <p className="mt-2 text-[11px] text-[var(--color-charcoal-500)]">
+            Servidas pelo site em /criativos (noindex). Não expiram — ao contrário dos links de download do bucket.
+          </p>
         </div>
       )}
 

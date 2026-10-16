@@ -169,7 +169,8 @@ export async function deletePostAction(id: string): Promise<ActionResult> {
     .from('social_post_assets')
     .select('storage_path')
     .eq('post_id', id);
-  const paths = (assets ?? []).map((a) => a.storage_path);
+  // Asset com URL pública (public/criativos) não tem nada no bucket pra remover.
+  const paths = (assets ?? []).map((a) => a.storage_path).filter((p): p is string => !!p);
   if (paths.length > 0) {
     const { error: stErr } = await admin.storage.from(BUCKET).remove(paths);
     if (stErr) console.error('[deletePostAction] storage', stErr); // segue: linha some, arquivo órfão é inofensivo
@@ -258,8 +259,10 @@ export async function deleteAssetAction(assetId: string): Promise<ActionResult> 
 
   const { error } = await admin.from('social_post_assets').delete().eq('id', assetId);
   if (error) return { ok: false, error: error.message };
-  const { error: stErr } = await admin.storage.from(BUCKET).remove([asset.storage_path]);
-  if (stErr) console.error('[deleteAssetAction] storage', stErr);
+  if (asset.storage_path) {
+    const { error: stErr } = await admin.storage.from(BUCKET).remove([asset.storage_path]);
+    if (stErr) console.error('[deleteAssetAction] storage', stErr);
+  }
   revalidatePath(`/admin/posts/${asset.post_id}`);
   revalidatePath('/admin/posts');
   return { ok: true };

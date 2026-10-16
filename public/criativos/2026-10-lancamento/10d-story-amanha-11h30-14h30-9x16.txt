@@ -1,0 +1,4 @@
+Sticker de link pro WhatsApp. Texto do sticker: "Chamar".
+
+
+Link: https://nautitour.com.br/api/wa?s=ig-story-amanha
