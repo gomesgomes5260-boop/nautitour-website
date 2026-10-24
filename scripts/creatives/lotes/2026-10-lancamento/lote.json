@@ -23,7 +23,8 @@
     "10b-story-amanha-11h30",
     "10c-story-amanha-12h",
     "12-anuncio-site",
-    "10d-story-amanha-11h30-14h30"
+    "10d-story-amanha-11h30-14h30",
+    "10e-story-hoje-amanha-11h30"
   ],
   "revisao_2026-10-10": {
     "aprovadas": [
@@ -61,5 +62,8 @@
   },
   "adicoes_2026-10-16": [
     "10d-story-amanha-11h30-14h30 — versão 11h30 e 14h30 com Armação dos Búzios no texto (pedido do dono). Regra de dias pendente: fatos-do-produto.md lista 11h30 só seg–sex e não tem 14h30."
+  ],
+  "adicoes_2026-10-24": [
+    "10e-story-hoje-amanha-11h30 — \"Vagas pra hoje e amanhã, 11h30\" com Armação dos Búzios no chapéu (pedido do dono). Só seg–qui."
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "nome": "10e-story-hoje-amanha-11h30",
+  "molde": "HF",
+  "formatos": [
+    "9x16"
+  ],
+  "arte_base": "scripts/creatives/bases/story-02.jpg",
+  "zonas": {
+    "texto": {
+      "x": 7,
+      "y": 53,
+      "w": 86,
+      "h": 31,
+      "alinhar": "centro",
+      "titulo": 6.4,
+      "fato": 3.3,
+      "cta": 3.3,
+      "chapeu": 3.4
+    },
+    "logo": {
+      "x": 30,
+      "y": 88,
+      "w": 40,
+      "h": 8
+    }
+  },
+  "titulo": "Vagas pra hoje e amanhã, 11h30.",
+  "fato": "12 praias em 2h30. R$ 60 por pessoa.",
+  "cta": {
+    "texto": "Chama no WhatsApp",
+    "tipo": "whatsapp",
+    "destino": "https://nautitour.com.br/api/wa?s=ig-story-hoje-amanha"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "story",
+  "persona": "Felipe (grupo)",
+  "destino": "https://nautitour.com.br/api/wa?s=ig-story-hoje-amanha",
+  "legenda": "Sticker de link pro WhatsApp. Texto do sticker: \"Chamar\".",
+  "hashtags": [],
+  "observacoes": "Versão pedida em 24/out: \"vagas pra hoje e amanhã, 11h30\" com Armação dos Búzios no chapéu. A saída das 11h30 é de seg a sex (fatos-do-produto.md): usar só de segunda a quinta, quando hoje E amanhã têm saída às 11h30 e as duas têm vaga de verdade (conferir no admin). Não usar sexta (amanhã é sábado, 9h30/12h).",
+  "chapeu": "Armação dos Búzios"
+}
