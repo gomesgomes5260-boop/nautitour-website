@@ -1,6 +1,6 @@
 {
   "lote": "2026-10-lancamento",
-  "atualizado": "2026-10-16",
+  "atualizado": "2026-10-24",
   "base_url": "https://www.nautitour.com.br/criativos/2026-10-lancamento/",
   "nota": "URL pública sem link no site e com noindex. Cada .jpg tem um .txt ao lado com legenda, hashtags e link de destino. Estratégia completa por peça em /admin/posts.",
   "pecas": [
@@ -98,6 +98,11 @@
       "arquivo": "10d-story-amanha-11h30-14h30-9x16.jpg",
       "url": "https://www.nautitour.com.br/criativos/2026-10-lancamento/10d-story-amanha-11h30-14h30-9x16.jpg",
       "texto": "https://www.nautitour.com.br/criativos/2026-10-lancamento/10d-story-amanha-11h30-14h30-9x16.txt"
+    },
+    {
+      "arquivo": "10e-story-hoje-amanha-11h30-9x16.jpg",
+      "url": "https://www.nautitour.com.br/criativos/2026-10-lancamento/10e-story-hoje-amanha-11h30-9x16.jpg",
+      "texto": "https://www.nautitour.com.br/criativos/2026-10-lancamento/10e-story-hoje-amanha-11h30-9x16.txt"
     },
     {
       "arquivo": "12-anuncio-site-1200x628.jpg",
