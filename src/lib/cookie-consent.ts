@@ -1,7 +1,11 @@
 // Cookie consent helpers (LGPD). Categorias:
 //   - essential: sempre true (sessão, CSRF, auth) — não opcional
 //   - analytics: GA4, Microsoft Clarity (medição anônima)
-//   - retargeting: futuro (Meta Pixel, Google Ads) — reservado
+//   - retargeting: Meta Pixel, Google Ads (remarketing)
+//   - marketing: e-mails de ofertas/novidades. Preferência do navegador —
+//     o opt-in que vale pra enviar e-mail é o do cliente (customers.
+//     marketing_opt_in, coletado no checkout/cadastro). Este flag só
+//     pré-marca o checkbox desses formulários.
 //
 // Cookie único `nautitour_consent` com payload JSON.
 
@@ -9,6 +13,7 @@ export type ConsentState = {
   essential: true;
   analytics: boolean;
   retargeting: boolean;
+  marketing: boolean;
   updatedAt: string;
 };
 
@@ -20,6 +25,7 @@ const DEFAULT_DECLINED: ConsentState = {
   essential: true,
   analytics: false,
   retargeting: false,
+  marketing: false,
   updatedAt: new Date(0).toISOString(),
 };
 
@@ -68,6 +74,7 @@ export function getConsent(): ConsentState | null {
       essential: true,
       analytics: parsed.analytics === true,
       retargeting: parsed.retargeting === true,
+      marketing: parsed.marketing === true,
       updatedAt: typeof parsed.updatedAt === 'string'
         ? parsed.updatedAt
         : new Date().toISOString(),
@@ -84,6 +91,7 @@ export function setConsent(consent: Omit<ConsentState, 'essential' | 'updatedAt'
     essential: true,
     analytics: consent.analytics,
     retargeting: consent.retargeting,
+    marketing: consent.marketing,
     updatedAt: new Date().toISOString(),
   };
   writeCookie(CONSENT_COOKIE, JSON.stringify(state), CONSENT_MAX_AGE);
@@ -96,15 +104,15 @@ export function setConsent(consent: Omit<ConsentState, 'essential' | 'updatedAt'
 }
 
 export function acceptAll(): void {
-  setConsent({ analytics: true, retargeting: true });
+  setConsent({ analytics: true, retargeting: true, marketing: true });
 }
 
 export function declineAll(): void {
-  setConsent({ analytics: false, retargeting: false });
+  setConsent({ analytics: false, retargeting: false, marketing: false });
 }
 
 export function hasConsent(
-  category: 'analytics' | 'retargeting'
+  category: 'analytics' | 'retargeting' | 'marketing'
 ): boolean {
   const consent = getConsent();
   if (!consent) return false;

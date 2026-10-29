@@ -322,7 +322,12 @@ export type Database = {
           full_name: string | null
           id: string
           is_guest: boolean
+          marketing_opt_in: boolean
+          marketing_opt_in_at: string | null
+          marketing_opt_in_source: string | null
+          marketing_opt_out_at: string | null
           phone: string | null
+          unsubscribe_token: string
           updated_at: string
         }
         Insert: {
@@ -333,7 +338,12 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_guest?: boolean
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          marketing_opt_in_source?: string | null
+          marketing_opt_out_at?: string | null
           phone?: string | null
+          unsubscribe_token?: string
           updated_at?: string
         }
         Update: {
@@ -344,7 +354,12 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_guest?: boolean
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          marketing_opt_in_source?: string | null
+          marketing_opt_out_at?: string | null
           phone?: string | null
+          unsubscribe_token?: string
           updated_at?: string
         }
         Relationships: []
@@ -1318,6 +1333,10 @@ export type Database = {
         Args: { p_key: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
       }
+      record_marketing_consent: {
+        Args: { p_email: string; p_opt_in: boolean; p_source?: string }
+        Returns: undefined
+      }
       mark_booking_payment_failed: {
         Args: {
           p_amount_cents: number
@@ -1330,6 +1349,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      marketing_unsubscribe: { Args: { p_token: string }; Returns: string }
       seller_create_booking: {
         Args: {
           p_amount_paid_cents?: number

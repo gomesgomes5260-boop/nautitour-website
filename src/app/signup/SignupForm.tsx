@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { signupAction } from './actions';
+import { useCookieConsent } from '@/lib/use-cookie-consent';
 
 const inputClass =
   'w-full border border-[var(--color-charcoal-200)] rounded-lg px-3 py-2.5 text-[var(--color-charcoal-900)] placeholder:text-[var(--color-charcoal-400)] focus:outline-none focus:border-[var(--color-red-600)] focus:ring-2 focus:ring-[var(--color-red-100)] transition-colors';
@@ -12,6 +13,10 @@ export default function SignupForm() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // null = não mexeu → herda a preferência "E-mails de ofertas" do banner.
+  const consent = useCookieConsent();
+  const [marketingChoice, setMarketingChoice] = useState<boolean | null>(null);
+  const marketingOptIn = marketingChoice ?? consent?.marketing ?? false;
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -25,7 +30,13 @@ export default function SignupForm() {
       return;
     }
     startTransition(async () => {
-      const result = await signupAction({ email, password, fullName, phone });
+      const result = await signupAction({
+        email,
+        password,
+        fullName,
+        phone,
+        marketingOptIn,
+      });
       if (!result) return; // redirected
       if (!result.ok) {
         setError(result.error);
@@ -101,6 +112,21 @@ export default function SignupForm() {
           onChange={(e) => setPassword(e.target.value)}
           className={inputClass}
         />
+      </label>
+
+      <label className="flex items-start gap-2.5 text-sm text-[var(--color-charcoal-700)] cursor-pointer">
+        <input
+          type="checkbox"
+          checked={marketingOptIn}
+          onChange={(e) => setMarketingChoice(e.target.checked)}
+          className="mt-0.5 w-4 h-4 shrink-0 rounded border-[var(--color-charcoal-300)] accent-[var(--color-red-600)]"
+        />
+        <span>
+          Quero receber ofertas e novidades da Nautitour por e-mail.{' '}
+          <span className="text-[var(--color-charcoal-500)]">
+            Opcional — cancela em 1 clique.
+          </span>
+        </span>
       </label>
 
       {error && (
