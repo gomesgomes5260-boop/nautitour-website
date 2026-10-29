@@ -26,6 +26,15 @@ export default function PrivacidadePage() {
         Usamos seus dados para confirmar reservas, organizar embarque, enviar
         comunicações relacionadas ao passeio e cumprir obrigações legais.
       </p>
+      <p>
+        <strong>E-mails de ofertas e novidades</strong>: enviamos apenas se você
+        marcar a opção correspondente no checkout ou no cadastro
+        (consentimento, art. 7º, I) ou se já for nosso cliente (legítimo
+        interesse, art. 7º, IX — ofertas de passeios relacionados ao que você
+        já comprou). Todo e-mail promocional traz um link de descadastro em
+        um clique; e-mails transacionais (confirmação, lembrete, alterações
+        da sua reserva) continuam sendo enviados normalmente.
+      </p>
 
       <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-2">3. Compartilhamento</h2>
       <p>
@@ -75,9 +84,14 @@ export default function PrivacidadePage() {
           consentimento.
         </li>
         <li>
-          <strong>Marketing</strong>: reservado para futuras integrações de
-          remarketing (Meta Pixel, Google Ads). Hoje não utilizamos. Opção
-          disponível na página de preferências.
+          <strong>Remarketing</strong>: Meta Pixel e Google Ads. Permitem
+          anúncios personalizados e a medição de conversões das nossas
+          campanhas. Só carregam se você der consentimento.
+        </li>
+        <li>
+          <strong>E-mails de ofertas</strong>: preferência que pré-marca a
+          opção de receber promoções por e-mail nos nossos formulários. O envio
+          só acontece para quem confirmou com o próprio e-mail.
         </li>
       </ul>
       <p className="mt-3">

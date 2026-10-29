@@ -9,10 +9,11 @@ export default function CookiePreferencesForm() {
   const consent = useCookieConsentOrDefault();
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
-  function save(next: { analytics?: boolean; retargeting?: boolean }) {
+  function save(next: { analytics?: boolean; retargeting?: boolean; marketing?: boolean }) {
     setConsent({
       analytics: next.analytics ?? consent.analytics,
       retargeting: next.retargeting ?? consent.retargeting,
+      marketing: next.marketing ?? consent.marketing,
     });
     setSavedAt(Date.now());
   }
@@ -39,10 +40,16 @@ export default function CookiePreferencesForm() {
         onChange={(v) => save({ analytics: v })}
       />
       <Category
-        label="Cookies de marketing"
-        description="Reservado pra futuras integrações de remarketing (Meta Pixel, Google Ads). Hoje não usamos."
+        label="Cookies de remarketing"
+        description="Meta Pixel e Google Ads. Permitem anúncios personalizados e medir conversões das campanhas."
         checked={consent.retargeting}
         onChange={(v) => save({ retargeting: v })}
+      />
+      <Category
+        label="E-mails de ofertas e novidades"
+        description="Pré-marca a opção de receber promoções por e-mail no checkout e no cadastro. O envio em si só acontece pra quem confirmou com o e-mail — e todo e-mail tem link de descadastro."
+        checked={consent.marketing}
+        onChange={(v) => save({ marketing: v })}
       />
 
       <div className="border-t border-[var(--color-charcoal-100)] pt-5 flex items-center justify-between gap-3 flex-wrap">

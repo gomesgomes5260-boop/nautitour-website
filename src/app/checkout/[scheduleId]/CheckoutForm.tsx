@@ -6,6 +6,7 @@ import { captureLeadAction } from './lead-actions';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import { analytics } from '@/lib/analytics';
 import { isValidCpf, normalizeCpf } from '@/lib/cpf';
+import { useCookieConsent } from '@/lib/use-cookie-consent';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -43,6 +44,11 @@ export default function CheckoutForm({
     { full_name: '', document: '', is_child: false },
   ]);
   const [notes, setNotes] = useState('');
+  // Opt-in de e-mail marketing. null = usuário ainda não mexeu → herda a
+  // preferência "E-mails de ofertas" do banner de cookies (pré-marca).
+  const consent = useCookieConsent();
+  const [marketingChoice, setMarketingChoice] = useState<boolean | null>(null);
+  const marketingOptIn = marketingChoice ?? consent?.marketing ?? false;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -115,6 +121,7 @@ export default function CheckoutForm({
           is_child: p.is_child,
         })),
         turnstileToken,
+        marketingOptIn,
       });
       // On success, server action redirects (this branch only runs on error)
       if (result && !result.ok) {
@@ -282,6 +289,20 @@ export default function CheckoutForm({
             placeholder="Restrições alimentares, idade das crianças, dúvidas..."
           />
         </Field>
+        <label className="flex items-start gap-2.5 mt-4 text-sm text-[var(--color-charcoal-700)] cursor-pointer">
+          <input
+            type="checkbox"
+            checked={marketingOptIn}
+            onChange={(e) => setMarketingChoice(e.target.checked)}
+            className="mt-0.5 w-4 h-4 shrink-0 rounded border-[var(--color-charcoal-300)] accent-[var(--color-red-600)]"
+          />
+          <span>
+            Quero receber ofertas e novidades da Nautitour por e-mail.{' '}
+            <span className="text-[var(--color-charcoal-500)]">
+              Opcional — você cancela em 1 clique a qualquer momento.
+            </span>
+          </span>
+        </label>
       </section>
 
       <section className="rounded-2xl bg-[var(--color-charcoal-900)] text-white p-6 sm:p-8">

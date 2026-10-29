@@ -7,6 +7,7 @@ import { cookieNameFor, signBookingCode } from '@/lib/booking-session';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
 import { isValidCpf, normalizeCpf } from '@/lib/cpf';
+import { recordMarketingConsent } from '@/lib/marketing-consent';
 
 export type CreateBookingInput = {
   scheduleId: string;
@@ -21,6 +22,8 @@ export type CreateBookingInput = {
     is_child?: boolean;
   }>;
   turnstileToken: string | null;
+  /** Checkbox "quero receber ofertas por e-mail" (LGPD opt-in). */
+  marketingOptIn?: boolean;
 };
 
 export type CreateBookingResult =
@@ -94,6 +97,12 @@ export async function createBookingAction(
   const row = data?.[0];
   if (!row?.booking_code) {
     return { ok: false, error: 'Falha ao criar reserva' };
+  }
+
+  // Opt-in de e-mail marketing — só registra quando marcou (desmarcado não
+  // é opt-out: pode ser cliente antigo que já aceitou). Best-effort.
+  if (input.marketingOptIn === true) {
+    await recordMarketingConsent(input.email, true, 'checkout');
   }
 
   // Bind this browser session to the booking. The payment actions check

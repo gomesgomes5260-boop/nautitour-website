@@ -20,6 +20,7 @@ export default function CookieBanner() {
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [retargeting, setRetargeting] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   if (HIDDEN_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
   if (consent === null && typeof window === 'undefined') return null;
@@ -37,7 +38,7 @@ export default function CookieBanner() {
   }
 
   function handleSaveCustom() {
-    setConsent({ analytics, retargeting });
+    setConsent({ analytics, retargeting, marketing });
     setDismissed(true);
   }
 
@@ -122,10 +123,16 @@ export default function CookieBanner() {
                 onChange={setAnalytics}
               />
               <ConsentToggle
-                label="Marketing"
-                description="Remarketing (reservado pra futuro)."
+                label="Remarketing"
+                description="Meta Pixel e Google Ads. Anúncios personalizados."
                 checked={retargeting}
                 onChange={setRetargeting}
+              />
+              <ConsentToggle
+                label="E-mails de ofertas"
+                description="Novidades e promoções da Nautitour por e-mail. Você confirma no checkout ou cadastro; cancela em 1 clique."
+                checked={marketing}
+                onChange={setMarketing}
               />
             </div>
             <div className="flex items-center justify-end gap-1.5">

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { checkAuthRateLimit, getClientIp } from '@/lib/rate-limit';
+import { recordMarketingConsent } from '@/lib/marketing-consent';
 
 export type SignupResult =
   | { ok: true; needsEmailConfirmation: boolean }
@@ -14,6 +15,8 @@ export async function signupAction(input: {
   password: string;
   fullName: string;
   phone: string;
+  /** Checkbox "quero receber ofertas por e-mail" (LGPD opt-in). */
+  marketingOptIn?: boolean;
 }): Promise<SignupResult> {
   const headersList = await headers();
   const ip = getClientIp(headersList);
@@ -53,6 +56,13 @@ export async function signupAction(input: {
       ok: false,
       error: 'Não foi possível criar a conta. Tente novamente.',
     };
+  }
+
+  // Opt-in de e-mail marketing — só no caminho de conta realmente criada
+  // (o caminho anti-enumeração acima retorna antes, de propósito: ninguém
+  // pode "inscrever" o e-mail de outra pessoa). Best-effort.
+  if (input.marketingOptIn === true && data.user) {
+    await recordMarketingConsent(input.email, true, 'signup');
   }
 
   // If email confirmation is enabled in Supabase, session will be null and the user

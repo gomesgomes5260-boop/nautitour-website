@@ -45,6 +45,7 @@ function getServerSnapshotDefault(): ConsentState {
     essential: true,
     analytics: false,
     retargeting: false,
+    marketing: false,
     updatedAt: new Date(0).toISOString(),
   };
 }

@@ -55,9 +55,9 @@ describe('cookie-consent', () => {
 
   it('getConsent retorna NOVA referência quando o cookie muda', async () => {
     const { getConsent, setConsent } = await import('./cookie-consent');
-    setConsent({ analytics: false, retargeting: false });
+    setConsent({ analytics: false, retargeting: false, marketing: false });
     const a = getConsent();
-    setConsent({ analytics: true, retargeting: false });
+    setConsent({ analytics: true, retargeting: false, marketing: false });
     const b = getConsent();
     expect(a).not.toBe(b);
     expect(a?.analytics).toBe(false);
@@ -70,6 +70,7 @@ describe('cookie-consent', () => {
     const c = getConsent();
     expect(c?.analytics).toBe(true);
     expect(c?.retargeting).toBe(true);
+    expect(c?.marketing).toBe(true);
     expect(c?.essential).toBe(true);
   });
 
@@ -79,6 +80,18 @@ describe('cookie-consent', () => {
     const c = getConsent();
     expect(c?.analytics).toBe(false);
     expect(c?.retargeting).toBe(false);
+    expect(c?.marketing).toBe(false);
+  });
+
+  it('cookie antigo sem a chave marketing é lido como marketing=false', async () => {
+    // Compat: cookies gravados antes da categoria existirem não têm `marketing`.
+    cookieStore = `nautitour_consent=${encodeURIComponent(
+      JSON.stringify({ essential: true, analytics: true, retargeting: true, updatedAt: '2026-01-01T00:00:00.000Z' })
+    )}`;
+    const { getConsent } = await import('./cookie-consent');
+    const c = getConsent();
+    expect(c?.analytics).toBe(true);
+    expect(c?.marketing).toBe(false);
   });
 
   it('null leituras consecutivas mantém estabilidade referencial', async () => {
