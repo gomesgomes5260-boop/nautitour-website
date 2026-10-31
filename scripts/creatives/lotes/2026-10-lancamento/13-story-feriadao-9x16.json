@@ -1,0 +1,24 @@
+{
+  "nome": "13-story-feriadao",
+  "molde": "HF",
+  "formatos": ["9x16"],
+  "arte_base": "scripts/creatives/bases/story-02.jpg",
+  "zonas": {
+    "texto": { "x": 7, "y": 53, "w": 86, "h": 31, "alinhar": "centro",
+               "titulo": 6.4, "fato": 3.3, "cta": 3.3, "chapeu": 3.4 },
+    "logo":  { "x": 30, "y": 88, "w": 40, "h": 8 }
+  },
+  "chapeu": "Feriadão em Búzios",
+  "titulo": "Três dias de escuna.",
+  "fato": "Sáb e dom, 9h30 e 12h. Seg, 11h30. R$ 60.",
+  "cta": { "texto": "Chama no WhatsApp", "tipo": "whatsapp",
+           "destino": "https://nautitour.com.br/api/wa?s=ig-story-feriadao" },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "story",
+  "persona": "Felipe (grupo) / Carolina (família)",
+  "destino": "https://nautitour.com.br/api/wa?s=ig-story-feriadao",
+  "legenda": "Sticker de link pro WhatsApp. Texto do sticker: \"Chamar\".",
+  "hashtags": [],
+  "observacoes": "Válido só de 31/out a 2/nov. Horários conferidos no banco em 31/out. Se for usar como anúncio pago, trocar assinatura pra escuna+nautitour."
+}
