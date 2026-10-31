@@ -27,7 +27,7 @@ por peça; o resultado volta pra cá como ajuste nos specs.
 | 08a–d | como-funciona | Educativo | feed | 4:5 ×4 | virou carrossel de 4 cards (embarque → paradas → bar + CTA) |
 | 09 | story-horarios | Venda | story | 9:16 | aprovada |
 | 10a/b/c/d/e | story-amanha | Venda | story | 9:16 ×5 | 5 versões (9h30 e 12h / 11h30 / 12h / **11h30 e 14h30 com Armação dos Búzios**, 16/out / **"Vagas pra hoje e amanhã, 11h30"**, 24/out) pedidas pelo dono; o 10 original saiu. A 10d fica com regra de dias pendente (fatos-do-produto não tem 14h30); a 10e só vale seg–qui (hoje e amanhã com saída às 11h30) |
-| 13 / 13b | feriadao | Venda | story + feed | 9:16 + 4:5 | Feriadão de Finados (31/out a 2/nov): story "Três dias de escuna." com chapéu "Feriadão em Búzios" e feed 4:5 na aérea de João Fernandes. Válidas só no feriadão; horários conferidos no banco em 31/out |
+| 13 / 13b | feriadao | Venda | story + feed | 9:16 + 4:5 | Feriadão de Finados (31/out a 2/nov): story "Saída sáb, dom e seg." com chapéu "Feriadão em Búzios" em destaque (título C escolhido pelo dono; seg 2/nov com 9h30 e 12h por decisão dele) e feed 4:5 na aérea de João Fernandes. Válidas só no feriadão; horários conferidos no banco em 31/out |
 | 11 | anuncio-whatsapp | Venda | meta-ads | 1200×628 | **descartada** (`_descartado-11-…json`) |
 | 12 | anuncio-site | Venda | meta-ads | 1200×628 | refeita: anuncio-kraft (logos na faixa de papel) |
 
