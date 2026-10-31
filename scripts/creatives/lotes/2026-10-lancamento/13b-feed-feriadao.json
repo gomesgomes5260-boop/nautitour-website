@@ -1,0 +1,48 @@
+{
+  "nome": "13b-feed-feriadao",
+  "molde": "HF",
+  "formatos": [
+    "4x5"
+  ],
+  "arte_base": "scripts/creatives/bases/foto-faixa-01.jpg",
+  "zonas": {
+    "texto": {
+      "x": 6,
+      "y": 58,
+      "w": 88,
+      "h": 25,
+      "alinhar": "centro",
+      "titulo": 7.4,
+      "fato": 3.1,
+      "cta": 3.0,
+      "chapeu": 4.0
+    },
+    "logo": {
+      "x": 32,
+      "y": 87,
+      "w": 36,
+      "h": 9
+    }
+  },
+  "chapeu": "Feriadão em Búzios",
+  "titulo": "Saída sáb, dom e seg.",
+  "fato": "Sáb, dom e seg: 9h30 e 12h. R$ 60.",
+  "cta": {
+    "texto": "Reserve pelo link",
+    "tipo": "site",
+    "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=story-feriadao"
+  },
+  "assinatura": "escuna",
+  "pilar": "5. Venda",
+  "canal": "feed",
+  "persona": "Felipe (grupo) / Carolina (família)",
+  "destino": "https://nautitour.com.br/passeio-escuna?utm_source=instagram&utm_medium=social&utm_campaign=story-feriadao",
+  "legenda": "Feriadão em Búzios tem escuna os três dias. ⛵\nSáb, dom e segunda às 9h30 e às 12h. R$ 60 por pessoa, bar a bordo e 3 paradas pra mergulho.\nReserva pelo link da bio ou chama no WhatsApp.",
+  "hashtags": [
+    "#EscunaEstrela",
+    "#Buzios",
+    "#PasseioDeEscuna",
+    "#RegiaoDosLagos"
+  ],
+  "observacoes": "Feed 4:5 do feriadão de Finados (31/out a 2/nov), base aérea de João Fernandes (foto-faixa-01). Título C escolhido pelo dono em 31/out; segunda 2/nov com saídas 9h30 e 12h (decisão do dono — conferir se as saídas existem no admin antes de publicar). Publicar na sexta 30 ou no sábado 31 de manhã."
+}
