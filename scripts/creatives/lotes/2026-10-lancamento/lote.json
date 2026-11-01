@@ -24,7 +24,9 @@
     "10c-story-amanha-12h",
     "12-anuncio-site",
     "10d-story-amanha-11h30-14h30",
-    "10e-story-hoje-amanha-11h30"
+    "10e-story-hoje-amanha-11h30",
+    "13-story-feriadao",
+    "13b-feed-feriadao"
   ],
   "revisao_2026-10-10": {
     "aprovadas": [
@@ -65,5 +67,9 @@
   ],
   "adicoes_2026-10-24": [
     "10e-story-hoje-amanha-11h30 — \"Vagas pra hoje e amanhã, 11h30\" com Armação dos Búzios no chapéu (pedido do dono). Só seg–qui."
+  ],
+  "adicoes_2026-10-31": [
+    "13-story-feriadao — story \"Feriadão em Búzios · Três dias de escuna.\" (31/out a 2/nov; sáb/dom 9h30 e 12h, seg 11h30; horários conferidos no banco em 31/out).",
+    "13b-feed-feriadao — feed 4:5 do feriadão, base aérea de João Fernandes, CTA site (utm_campaign=story-feriadao)."
   ]
 }
