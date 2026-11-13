@@ -149,7 +149,7 @@ export default function PostPanel({
                   {a.downloadUrl && (
                     <a
                       href={a.downloadUrl}
-                      download={a.urlPublica ? a.nome : undefined}
+                      download={a.nome}
                       className="inline-flex items-center gap-1 rounded-full bg-[var(--color-charcoal-900)] text-white px-2 py-1 font-bold hover:bg-black transition-colors"
                       title={`Baixar ${a.nome}`}
                     >
