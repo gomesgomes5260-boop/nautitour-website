@@ -41,15 +41,13 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     .order('ordem', { ascending: true });
   const lista = assets ?? [];
 
-  // Só assina o que vive no bucket; asset com URL pública (public/criativos) usa ela direto.
+  // Só assina (pra visualizar) o que vive no bucket; asset com URL pública (public/criativos,
+  // CDN) usa ela direto. O download sai sempre pelo nosso domínio (/api/admin/posts/download)
+  // — link de outro domínio com `download` não salva no iPhone, só abre pra tocar.
   const noBucket = lista.map((a) => a.storage_path).filter((p): p is string => !!p);
-  const { data: signed } = noBucket.length
-    ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(noBucket, 3600, { download: true })
-    : { data: [] };
   const { data: signedView } = noBucket.length
     ? await admin.storage.from(SOCIAL_BUCKET).createSignedUrls(noBucket, 3600)
     : { data: [] };
-  const downloadByPath = new Map((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
   const viewByPath = new Map((signedView ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
 
   const supabase = await createClient();
@@ -84,7 +82,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       altura: a.altura,
       urlPublica: a.url_publica,
       viewUrl: a.url_publica ?? (a.storage_path ? viewByPath.get(a.storage_path) : undefined) ?? null,
-      downloadUrl: a.url_publica ?? (a.storage_path ? downloadByPath.get(a.storage_path) : undefined) ?? null,
+      downloadUrl: `/api/admin/posts/download/${a.id}`,
     };
   });
 
