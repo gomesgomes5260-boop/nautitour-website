@@ -63,6 +63,7 @@ franja kraft do rasgo, coluna a coluna, preservando a bordinha de papel.
 |---|---|
 | `story-02-sem-texto.png` | Template story 9:16 (base `story-02`) só com rasgo, petróleo e logo Escuna Estrela — sem texto. Usar quando o texto for animado/legendado por fora |
 | `13-story-feriadao-overlay.png` | Peça 13 do feriadão com chapéu, título, fato e CTA — foi usado no vídeo 13c |
+| `14-story-fds-overlay.png` | Peça 14 "Este fim de semana · Saída sáb e dom." (9h30 e 12h, R$ 60, CTA WhatsApp) — reutilizável em qualquer fim de semana normal; usada no vídeo 14b |
 
 Os clipes entram com cover da área visível (1080×1100 a partir do topo) e pad
 até 1080×1920; o que fica sob o overlay não aparece.
