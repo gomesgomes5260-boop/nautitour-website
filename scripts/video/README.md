@@ -50,3 +50,20 @@ A tira **oficial é gerada no Higgsfield** (`gpt_image_2_5`, `aspect_ratio` 21:9
 
 Depois: recortar pelo alpha, redimensionar pra largura do vídeo e adicionar sombra suave (6 px pra baixo, blur 10,
 55 %). `tira.py` (tira procedural) fica só como fallback sem crédito — o dono reprovou o visual dela.
+
+## Overlays de arte pra vídeo (`scripts/video/overlays/`)
+
+Arte do molde HF com a área da foto transparente, pra pôr por cima de um vídeo
+(`ffmpeg ... -loop 1 -i overlay.png ... overlay=0:0:shortest=1`). Gerados por
+`scripts/video/overlay-de-arte.py <arte.png> <base.jpg> <saida.png>` a partir do
+render do molde e da `arte_base` do spec. A máscara sobe pelo petróleo e pela
+franja kraft do rasgo, coluna a coluna, preservando a bordinha de papel.
+
+| Arquivo | O que é |
+|---|---|
+| `story-02-sem-texto.png` | Template story 9:16 (base `story-02`) só com rasgo, petróleo e logo Escuna Estrela — sem texto. Usar quando o texto for animado/legendado por fora |
+| `13-story-feriadao-overlay.png` | Peça 13 do feriadão com chapéu, título, fato e CTA — foi usado no vídeo 13c |
+| `14-story-fds-overlay.png` | Peça 14 "Este fim de semana · Saída sáb e dom." (9h30 e 12h, R$ 60, CTA WhatsApp) — reutilizável em qualquer fim de semana normal; usada no vídeo 14b |
+
+Os clipes entram com cover da área visível (1080×1100 a partir do topo) e pad
+até 1080×1920; o que fica sob o overlay não aparece.
